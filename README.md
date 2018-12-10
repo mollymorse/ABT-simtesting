@@ -5,7 +5,7 @@ We used simulation testing to evaluate the performance of the virtual population
 Methods and results are documented in Molly Morse's master's thesis ([Morse 2018](https://www.researchgate.net/profile/Molly_Morse/publication/327562078_MISSPECIFYING_THE_MAGURO_EVALUATING_STOCK_ASSESSMENT_PERFORMANCE_ON_MIXED_STOCKS_OF_ATLANTIC_BLUEFIN_TUNA/links/5b96ec88a6fdccfd54403c18/MISSPECIFYING-THE-MAGURO-EVALUATING-STOCK-ASSESSMENT-PERFORMANCE-ON-MIXED-STOCKS-OF-ATLANTIC-BLUEFIN-TUNA.pdf)).
 <br>
 <br>
-Simulations are run using first the "OM+VPAsims_BFT2017_Deterministic_V2.R" and second the "OM+VPAsims_BFT2017_basecase_V5.R" scripts. Directories for storing estimation model input and output files must first be created locally using the first lines of code under the "RUNNING SIMULATIONS" section of either of these scripts (will need to be uncommented). Note that working directories may need to be changed in order to run the simulations. 
+Simulations are run using first the "OM+VPAsims_BFT2017_deterministic_V2.R" and second the "OM+VPAsims_BFT2017_basecase_V5.R" scripts. Directories for storing estimation model input and output files must first be created locally using the first lines of code under the "RUNNING SIMULATIONS" section of either of these scripts (will need to be uncommented). Summary plots may be generated using the "bluefin_sims_plotting.R" script. Note that working directories may need to be changed in order to run the simulations. 
 <br>
 <br>
 Any questions should be directed to Molly Morse, mmorse1@umassd.edu.

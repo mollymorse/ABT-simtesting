@@ -4,8 +4,9 @@
 
 #Conditioned on 2017 Atlantic bluefin tuna stock assessment VPA
 
-#Set the operating model working directory
-setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/R Code + Inputs")
+#SET THE OPERATING MODEL WORKING DIRECTORY
+masterdir <- ""  #insert local master directory for all folders & files, e.g., "C:/Users/morse/bluefin/"
+setwd(paste(masterdir, "Inputs", sep = ""))
 
 
 ############################ DEFINE MATRICES ##############################
@@ -318,7 +319,7 @@ CPUE.FUN <- function(east, cv.file) {
   
   if(east==TRUE) {
     print("East indices generated!")
-    setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East")
+    setwd(paste(masterdir, "East", sep = ""))
     
     # Calculate Q1 & Q3 abundance for east stock
     Naa.E.Q3 <- array(NA, c(nyr,nage), dimnames = list(year = 1974:2015, age = 1:nage))
@@ -386,11 +387,11 @@ CPUE.FUN <- function(east, cv.file) {
     # CPUES/CVs not used (insert -999)
     not.used <- c(1:7,39:80,85,121:142,163:204,244:285,294:320,325:371,376,379:405,411:416)  #currently need to respecify this by hand
     Indices.file <- Indices[-not.used,]
-    write.csv(Indices.file, file = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East/Ecpues.csv")
+    write.csv(Indices.file, file = "Ecpues.csv")
     
   } else {
     print("West indices generated!")
-    setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West")
+    setwd(paste(masterdir, "West", sep = ""))
     
     # Calculate Q1&Q3 abundance for west stock
     Naa.W.Q1 <- array(NA, c(nyr,nage), dimnames = list(year = 1974:2015, age = 1:nage))
@@ -457,7 +458,7 @@ CPUE.FUN <- function(east, cv.file) {
     # Insert -999 in the place of yearly CPUE/CV values not used 
     not.used <- c(1:10,43:62,85:90,95,104:145,169:187,211:261,272:355,379:380,415:507,510:511,516,547:564,597:630,639:708)
     Indices.file <- Indices[-not.used,]
-    write.csv(Indices.file, file = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West/Wcpues.csv")
+    write.csv(Indices.file, file = "Wcpues.csv")
   }
 }
 
@@ -466,7 +467,7 @@ CAA.FUN <- function(east) {
   
   if (east==TRUE) {
     print("East PCAA & CAA generated!")
-    setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East")
+    setwd(paste(masterdir, "East", sep = ""))
     # Format Epcaa into matrix w/ plus group
     Epcaa.det <- aperm(a = Epcaa, perm = c("year", "gear", "age"))  #transpose Epcaa matrix to create matrix for storing new deterministic PCAAs
     dim(Epcaa.det) <- c((nyr*ngrE), nage)  #rename dimensions of new Epcaa matrix
@@ -489,18 +490,18 @@ CAA.FUN <- function(east) {
     # Remove rows that did not have PCAA entries in the 2017 stock assessment (assumes 1s for all values not entered--see VPA-2BOX manual v 3.01 p 41)
     pcaa.not.used <- c(1:7,39:80,85,121:142,163:204,244:285,295:405)
     Epcaa.det.mat <- Epcaa.det.mat[-pcaa.not.used,]
-    write.csv(Epcaa.det.mat, file = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East/Epcaa.csv")  #write .csv file for deterministic Epcaa data
+    write.csv(Epcaa.det.mat, file = "Epcaa.csv")  #write .csv file for deterministic Epcaa data
     
     # Format Ecaa into plus groups
     Ecaa.plus <- rowSums(Ecaa[,nageE:nage])  #calculate plus group from Ecaa from operating model
     Ecaa.10 <- cbind(Ecaa[, 1:(nageE-1)], Ecaa.plus)  #create new matrix of Ecaa ages 1-10+
     colnames(Ecaa.10)[nageE] <- nageE  #rename column "Ecaa.plus" as "10"
     # Ecaa.10 <- Ecaa.10 * exp((0.863^2)/2)  #bias correction ##SWITCH ON/OFF##
-    write.csv(Ecaa.10, file = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East/Ecaa.csv")  #write .csv file for deterministic Ecaa data (1-10+)
+    write.csv(Ecaa.10, file = "Ecaa.csv")  #write .csv file for deterministic Ecaa data (1-10+)
     
   } else { 
     print("West PCAA & CAA generated!")
-    setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West")
+    setwd(paste(masterdir, "West", sep = ""))
     # Format Wpcaa into matrix w/ plus group
     Wpcaa.det <- aperm(a = Wpcaa, perm = c("year", "gear", "age"))  #transpose Wpcaa matrix to create matrix for storing new deterministic pcaas
     dim(Wpcaa.det) <- c((nyr*ngrW), nage)  #rename dimensions of new Wpcaa matrix
@@ -525,109 +526,6 @@ CAA.FUN <- function(east) {
 }
 
 
-#######################  CALCULATE HARVEST RATIO  ###########################
-
-HR.FUN <- function(stock.is) {
-  
-  if (stock.is=="East") {
-    # East Population Harvest Ratio (=number of fish caught/exploitable abundance)
-    print("East operating model harvest ratio calculated!")
-    # Calculate Z (total mortality)
-    naa.plus <- rep(NA, nyr)
-    naa.E <- array(NA,c(nyr,(nageE-1)),dimnames=list(year=head(yrs,1):tail(yrs,1),age=1:(nageE-1)))
-    for (y in 1:nyr) {
-      naa.plus[y] <- sum(naa[y,(nageE:nage),1,1:7,1])  #plus group for NAA (east POPULATION)
-      for (a in 1:(nageE-1)) {
-        naa.E[y,a] <- sum(naa[y,a,1,1:7,1])  #sum over quarter 1, zones 1-7, unit 1 (east POPULATION)
-      }
-    }
-    # for (y in 1:nyr) {
-    #   naa.plus[y] <- sum(naa[y,(nageE:nage),1,4:7,1:2])  #plus group for NAA (east STOCK)
-    #   for (a in 1:(nageE-1)) {
-    #     naa.E[y,a] <- sum(naa[y,a,1,4:7,1:2])  #sum over quarter 1, zones 4-7, units 1-2 (east STOCK)
-    #   }
-    # }
-    naa.E <- cbind(naa.E, naa.plus)  #new NAA matrix with 10+ group
-    Z <- matrix(NA, nrow = (nyr-1), ncol = (nageE-1))
-    for (y in 1:(nyr-1))
-      for (a in 1:(nageE-1)) {
-        Z[y,a] <- log(naa.E[y,a]/naa.E[y+1,a+1])  #Z calculation
-      }
-    
-    # Calculate F (=Z-M)
-    Fatage <- matrix(NA, nrow = (nyr-1), ncol = (nageE-1))  #fishing mortality
-    for (y in 1:(nyr-1))
-      for (a in 1:(nageE-1)) {
-        Fatage[y,a] <- Z[y,a] - M[a,1]  #PROBLEM WITH LAST AGE (LARGE NEGATIVE)--MAYBE DON'T USE PLUS GROUPS?
-      }
-    
-    # Calculate selectivity, S
-    Select <- matrix(NA, nrow = (nyr-1), ncol = (nageE-1))
-    for (y in 1:(nyr-1))
-      for (a in 1:(nageE-1)) {
-        Select[y,a] <- Fatage[y,a]/max(Fatage[y,])
-      }
-    
-    # Calculate harvest ratio using CAA from observation model and NAA from operating model output
-    Ecaa.HR <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East/Ecaa.csv", header = TRUE)
-    Ecaa.HR <- Ecaa.HR[,-1]
-    HR.OM <- rep(NA, nyr-1)
-    for (y in 1:(nyr-1)) {
-      HR.OM[y] <- sum(Ecaa.HR[y,(1:nageE-1)])/sum(naa.E[y,(1:nageE-1)]*Select[y,(1:nageE-1)])
-    }  
-    assign("HR.OM", HR.OM, .GlobalEnv)
-    
-  } else {
-    
-    # West Population Harvest Ratio  (=number of fish caught/exploitable abundance)
-    print("West operating model harvest ratio calculated!")
-    
-    # Calculate Z (total mortality)
-    naa.plus <- rep(NA, nyr)
-    naa.W <- array(NA,c(nyr,(nageW-1)),dimnames=list(year=head(yrs,1):tail(yrs,1),age=1:(nageW-1)))
-    for (y in 1:nyr) {
-      naa.plus[y] <- sum(naa[y,(nageW:nage),1,1:7,2])  #plus group for NAA (west POPULATION)
-      for (a in 1:(nageW-1)) {
-        naa.W[y,a] <- sum(naa[y,a,1,1:7,2])  #sum over quarter 1, zones 1-7, unit 2 (west POPULATION)
-      }
-    }
-    # for (y in 1:nyr) {
-    #   naa.plus[y] <- sum(naa[y,(nageW:nage),1,1:3,1:2])  #plus group for NAA (west STOCK)
-    #   for (a in 1:(nageW-1)) {
-    #     naa.W[y,a] <- sum(naa[y,a,1,1:3,1:2])  #sum over quarter 1, zones 1-3, units 1-2 (west STOCK)
-    #   }
-    # }
-    naa.W <- cbind(naa.W, naa.plus)  #new NAA matrix with 16+ group
-    Z <- matrix(NA, nrow = (nyr-1), ncol = (nageW-1))
-    for (y in 1:(nyr-1))
-      for (a in 1:(nageW-1)) {
-        Z[y,a] <- log(naa.W[y,a]/naa.W[y+1,a+1])  #Z calculation
-      }
-    
-    # Calculate F (=Z-M)
-    Fatage <- matrix(NA, nrow = (nyr-1), ncol = (nageW-1))  #fishing mortality
-    for (y in 1:(nyr-1))
-      for (a in 1:(nageW-1)) {
-        Fatage[y,a] <- Z[y,a] - M[a,1]  #PROBLEM WITH LAST AGE (LARGE NEGATIVE)--MAYBE DON'T USE PLUS GROUPS?
-      }
-    
-    # Calculate selectivity, S
-    Select <- matrix(NA, nrow = (nyr-1), ncol = (nageW-1))
-    for (y in 1:(nyr-1))
-      for (a in 1:(nageW-1)) {
-        Select[y,a] <- Fatage[y,a]/max(Fatage[y,])
-      }
-    
-    # Calculate harvest ratio using CAA from observation model and NAA from operating model output
-    Wcaa.HR <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West/Wcaa.csv")
-    Wcaa.HR <- Wcaa.HR[,-1]
-    HR.OM <- rep(NA, nyr-1)
-    for (y in 1:(nyr-1)) {
-      HR.OM[y] <- sum(Wcaa.HR[y,(1:nageW-1)])/sum(naa.W[y,(1:nageW-1)]*Select[y,(1:nageW-1)])
-    }  
-    assign("HR.OM", HR.OM, .GlobalEnv)
-  }
-}
 
 
 ##########################  WRITE CONTROL FILE  ###############################
@@ -677,7 +575,7 @@ write_c1VPA <- function(dir_out                            = dirRun,
 
 {
   
-  control_file_name                <- paste(dir_out, "/Run", run_num, "/", name_run, run_num,".c1", sep="")
+  control_file_name                <- paste(dir_out, "Run", run_num, "/", name_run, run_num,".c1", sep="")
   control_file                     <<- paste(name_run, run_num, ".c1", sep = "") # make control_file a global variable to be called later in call to VPA-2BOX
   run_title                        <- paste(name_run, years[1], "-", years[2], " Run ", run_num, sep = "")
   data_file_name                   <- paste(name_run, run_num, ".d1", sep="")
@@ -796,7 +694,7 @@ sep="", file=control_file_name) # Prints the above objects to this file
 CTRLFILE.FUN <- function(east, run.num) {
   if(east==TRUE) {
     # Runs function to create EAST control file
-    write_c1VPA(            dir_out                            = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East", # directory for saving control file (output of function)
+    write_c1VPA(            dir_out                            = paste(masterdir, "East/", sep = ""), # directory for saving control file (output of function)
                             name_run                           = "BFTE2017_",
                             years                              = c(head(yrs,1), tail(yrs,1)),
                             run_num                            = run.num,
@@ -840,7 +738,7 @@ CTRLFILE.FUN <- function(east, run.num) {
   } else {
     
     # Runs function to create WEST control file
-    write_c1VPA(            dir_out                            = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West", # directory for saving control file (output of function)
+    write_c1VPA(            dir_out                            = paste(masterdir, "West/", sep = ""), # directory for saving control file (output of function)
                             name_run                           = "BFTW2017_",
                             years                              = c(head(yrs,1), tail(yrs,1)),
                             run_num                            = run.num,
@@ -1056,8 +954,8 @@ DATAFILE.FUN <- function(east, run.num, file.caaE, file.cpue.specE, file.cpueE, 
                          file.caaW, file.cpue.specW, file.cpueW, file.pcaaW, file.waaW) {
   if(east==TRUE) {
     # Runs function to create data file (East)
-    write_d1VPA(            dir_data                  = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East/", # directory where data are found?
-                            dir_out                   = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East/", # directory for saving data file (output of function)
+    write_d1VPA(            dir_data                  = paste(masterdir, "East/", sep = ""), # directory where data are found?
+                            dir_out                   = paste(masterdir, "East/", sep = ""), # directory for saving data file (output of function)
                             name_run                  = 'BFTE2017_',
                             run_num                   = run.num,
                             years                     = c(head(yrs,1), tail(yrs,1)),
@@ -1080,8 +978,8 @@ DATAFILE.FUN <- function(east, run.num, file.caaE, file.cpue.specE, file.cpueE, 
                             year_max_cpue             = 2015)
   } else {
     # Runs function to create data file (West)
-    write_d1VPA(            dir_data                  = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West/", # directory where data are found?
-                            dir_out                   = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West/", # directory for saving data file (output of function)
+    write_d1VPA(            dir_data                  = paste(masterdir, "West/", sep = ""), # directory where data are found?
+                            dir_out                   = paste(masterdir, "West/", sep = ""), # directory for saving data file (output of function)
                             name_run                  = 'BFTW2017_',
                             run_num                   = run.num,
                             years                     = c(head(yrs,1), tail(yrs,1)),
@@ -1512,7 +1410,7 @@ PARAMFILE.FUN <- function(east, run.num) {
   
   if(east==TRUE) {
     # Runs function to create parameter file (East)
-    write_p1VPA(dir_out                              = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East/",
+    write_p1VPA(dir_out                              = paste(masterdir, "East/", sep = ""),
                 name_run                             = "BFTE2017_",
                 run_num                              = run.num,
                 q_toggle                             = "east",
@@ -1537,7 +1435,6 @@ PARAMFILE.FUN <- function(east, run.num) {
                 # reference_age_final                  = f_ratio_list$reference_age_final,
                 # NATURAL MORTALITY PARAMETERS
                 min_bound_terminal_M_vector          = rep(0, 10),
-                #terminal_M_vector                    = c(0.65,0.51,0.42,0.34,0.30,0.27,0.25,0.24,0.21,0.20),
                 terminal_M_vector                    = as.numeric(paste(M[1:nageE,1]*4)),
                 max_bound_terminal_M_vector          = rep(1.0, 10),
                 indicator_M                          = rep(0.0, 10),
@@ -1567,13 +1464,14 @@ PARAMFILE.FUN <- function(east, run.num) {
                 D_best_VAR                           = rep(1,10),
                 max_bound_VAR                        = rep(0.1,10),
                 D_max_VAR                            = rep(4,10),
-                indicator_VAR                        = c(1,-0.1,1,-0.1,-0.1,1,-0.1,1,1,1),
+                indicator_VAR                        = c(1,-0.1,1,-0.1,-0.1,1,-0.1,1,1,1),   #ICCAT(2017) default - estimate FRAER2
+                # indicator_VAR                        = c(1,-0.1,1,-0.1,-0.1,1,-0.1,1,-0.1,1),  #set FRAER2=FRAER1
                 standard_deviation_prior_VAR         = rep(0.4,10)
                 # reference_age_parameter_VAR          = seq((tail(reference_age_parameter_SR,1)+1),(tail(reference_age_parameter_SR,1)+cpue_number_p))
     )
   } else {
     # Runs function to create parameter file (West)
-    write_p1VPA(dir_out                              = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West/",
+    write_p1VPA(dir_out                              = paste(masterdir, "West/", sep = ""),
                 name_run                             = "BFTW2017_",
                 run_num                              = run.num,
                 q_toggle                             = "west",
@@ -1699,12 +1597,6 @@ RESULTS.FUN <- function(east, run.num, t, directoryE, directoryW) {
     assign("NAA.res", NAA.res, .GlobalEnv)
     NAA.filenm.1 <- paste(directoryE, run.num, "/E_NAA_VPA_resultsrun", run.num, ".csv", sep = "")
     write.csv(NAA.res, file = NAA.filenm.1)
-    # Plot N-at-age 9
-    NAA9.filenm <- paste(directoryE, run.num, "/E_NAA9_VPA_plotrun", run.num, ".jpg", sep = "")
-    jpeg(filename = NAA9.filenm, width = 480, height = 500)
-    plot(head(yrs,1):tail(yrs,1), NAA.res[1:42,9], type = "l", main = "Eastern Age-9 Abundance", xlab = "year",
-         ylab = "abundance (numbers)", xaxs="i", yaxs = "i")
-    dev.off()
     
     # SSB from VPA
     SSB.res <- as.matrix(Results[175:216, 2], nrow = nyr, ncol = 1) # Save SSB results
@@ -1755,27 +1647,6 @@ RESULTS.FUN <- function(east, run.num, t, directoryE, directoryW) {
     jpeg(filename = F.filenm.2, width = 480, height = 500)
     matplot(head(yrs,1):tail(yrs,1), F.res[1:nyr,1:nageE], ylim = c(0,0.6), type = "l", ylab = "Fishing mortality rate",
             xlab = "Year", main = "Eastern Stock F (VPA)", xaxs="i", yaxs = "i")
-    dev.off()
-    
-    # Harvest ratio
-    Sel <- matrix(NA, nrow = nyr, ncol = nageE)  #selectivity matrix
-    for (y in 1:nyr)
-      for (a in 1:nageE) {
-        Sel[y,a] <- F.res[y,a]/max(F.res[y,])  #calculate selectivity from F-at-age
-      }
-    Cat <- as.matrix(Results[127:168,2:11], nrow = nyr, ncol = nageE)  #catch data
-    Cat <- apply(Cat, c(1,2), as.numeric)
-    Hratio <- rep(NA, nyr)
-    for (y in 1:nyr) {
-      Hratio[y] <- sum(Cat[y,1:nageE])/sum(NAA.res[y,1:nageE]*Sel[y,1:nageE])  #calculate harvest ratio 
-    }
-    assign("Hratio", Hratio, .GlobalEnv)
-    HR.filenm.1 <- paste(directoryE, run.num, "/E_HR_VPA_resultsrun", run.num, ".csv", sep = "")
-    write.csv(Hratio, file = HR.filenm.1)
-    HR.filenm.2 <- paste(directoryE, run.num, "/E_HR_VPA_resultsplot", run.num, ".jpg", sep = "")
-    jpeg(filename = HR.filenm.2, width = 480, height = 500)
-    plot(head(yrs,1):tail(yrs,1), Hratio, ylim = c(0,3), pch = 19, type = "b", ylab = "Harvest ratio", 
-         xlab = "Years", main = "Eastern Harvest Ratio", xaxs="i", yaxs = "i")
     dev.off()
     
     # Save output statistics
@@ -1853,27 +1724,6 @@ RESULTS.FUN <- function(east, run.num, t, directoryE, directoryW) {
             xlab = "Year", main = "Western Stock F (VPA)", xaxs="i", yaxs = "i")
     dev.off()
     
-    # Harvest ratio
-    Sel <- matrix(NA, nrow = nyr, ncol = nageW)  #selectivity matrix
-    for (y in 1:nyr)
-      for (a in 1:nageW) {
-        Sel[y,a] <- F.res[y,a]/max(F.res[y,])  #calculate selectivity from F-at-age
-      }
-    Cat <- as.matrix(Results[127:168,2:17], nrow = nyr, ncol = nageW)  #catch data
-    Cat <- apply(Cat, c(1,2), as.numeric)
-    Hratio <- rep(NA,nyr)
-    for (y in 1:nyr) {
-      Hratio[y] <- sum(Cat[y,1:nageW])/sum(NAA.res[y,1:nageW]*Sel[y,1:nageW])  #calculate harvest ratio 
-    }
-    assign("Hratio", Hratio, .GlobalEnv)
-    HR.filenm.1 <- paste(directoryW, run.num, "/W_HR_VPA_resultsrun", run.num, ".csv", sep = "")
-    write.csv(Hratio, file = HR.filenm.1)
-    HR.filenm.2 <- paste(directoryW, run.num, "/W_HR_VPA_resultsplot", run.num, ".jpg", sep = "")
-    jpeg(filename = HR.filenm.2, width = 480, height = 500)
-    plot(head(yrs,1):tail(yrs,1), Hratio, ylim = c(0,3), pch = 19, type = "b", ylab = "Harvest ratio", 
-         xlab = "Years", main = "Western Harvest Ratio", xaxs="i", yaxs = "i")
-    dev.off()
-    
     # Save output statistics
     obj.fun <- Results[8,5] # total objective function
     assign("obj.fun", obj.fun, .GlobalEnv)
@@ -1892,22 +1742,21 @@ RESULTS.FUN <- function(east, run.num, t, directoryE, directoryW) {
 # Create directories ("Run #X") for storing files for each simulation within 
 # each East & West directory. Number of directories is equal to the number of 
 # realizations. Run 0 is intended as the deterministic run; Runs 1-100+ are 
-# realizations of pseudodata with measurement error. (uncomment to use)
+# realizations of pseudodata with measurement error. (UNCOMMENT TO USE)
 # stock.set = "East"
-# dir = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/"
-# for (r in 0:50) {
-#   path <- paste(dir, stock.set, "/Run", r, sep = "")
+# for (r in 0:5) {
+#   path <- paste(masterdir, stock.set, "/Run", r, sep = "")
 #   print(path)
 #   dir.create(path = path, showWarnings = TRUE)
 # }
 
 # Copy VPA-2BOX executable file to all directories created above. 
 # MAKE SURE YOU'RE USING THE LEGITIMATE, MOST RECENT VERSION DIRECTLY FROM 
-# MATT LAURETTA OR CLAY PORCH AND NOT A CORRUPTED COPY. (uncomment to use)
-# for (r in 0:50){
-#   from.path <- paste(dir, "Misc/vpa-2box.exe", sep = "")
+# MATT LAURETTA OR CLAY PORCH AND NOT A CORRUPTED COPY. (UNCOMMENT TO USE)
+# for (r in 0:5){
+#   from.path <- paste(masterdir, "Misc/vpa-2box.exe", sep = "")
 #   print(from.path)
-#   to.path <- paste(dir, stock.set, "/Run", r, sep="")
+#   to.path <- paste(masterdir, stock.set, "/Run", r, sep="")
 #   print(to.path)
 #   file.copy(from = from.path, to = to.path)
 # }
@@ -1918,7 +1767,7 @@ RESULTS.FUN <- function(east, run.num, t, directoryE, directoryW) {
 # Make adjustments to arguments of sub-functions.
 SIMS.FUN <- function(decide, error, run.num1, directory) {
   
-  CPUE.FUN(east = decide, cv.file = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/R Code + Inputs/CVs.csv")
+  CPUE.FUN(east = decide, cv.file = paste(masterdir, "Inputs/CVs.csv", sep = ""))
   
   CAA.FUN(east = decide)
   
@@ -1938,8 +1787,8 @@ SIMS.FUN <- function(decide, error, run.num1, directory) {
               ctrl.file = control_file)
   
   RESULTS.FUN(east = decide, run.num = run.num1,
-              directoryE = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East/Run",
-              directoryW = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West/Run")
+              directoryE = paste(masterdir, "East/Run", sep = ""),
+              directoryW = paste(masterdir, "West/Run", sep = ""))
   
 }
 
@@ -1980,7 +1829,7 @@ MASTER.FUN <- function(nsims, yrs, stock.set, dir) {
 
 # RUN SIMULATIONS & READ IN RESULTS
 
-MASTER.FUN(nsims = 1, yrs = 1974:2015, stock.set = "East", dir = "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/")
+MASTER.FUN(nsims = 1, yrs = 1974:2015, stock.set = "East", dir = masterdir)
 
 
 ################################ END #######################################

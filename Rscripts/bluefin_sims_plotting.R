@@ -1,8 +1,19 @@
 ################### Molly Morse #####################
-####### Additional Plotting for Bluefin Stock #######
-########### Assessment Simulation Testing ###########
+####### Plotting for Bluefin Stock Assessment #######
+############### Simulation Testing ##################
 #####################################################
 
+
+# This code may be used to plot the outputs of Atlantic bluefin tuna simulations
+# run using the "OM+VPAsims_BFT2017_basecase_V5.R" script. This file has not been
+# cleaned and working directories throughout will need to be changed to your own
+# local working directory.
+
+# Direct any questions to Molly Morse, mmorse1@umassd.edu
+
+
+
+#### LOAD LIBRARIES ####
 library(RColorBrewer)
 library(stringr)
 library(ggplot2)
@@ -13,14 +24,14 @@ library(gridExtra)
 library(scales)
 library(grid)
 library(cowplot)
+
 yrs <- 1974:2015
-par(family = "serif", font.lab = 2)
+
 
 #### Revised plots for eastern simulations ####
 
 ## 100 Runs ##
 setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East - 100 Sims - 1")
-#setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_4/East")
 nsims <- 100
 # SSB #
 BFTE.100.SSB <- read.csv("E_SSB_data.csv")

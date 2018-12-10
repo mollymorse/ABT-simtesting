@@ -8,7 +8,7 @@ Methods and results are documented in Molly Morse's master's thesis ([Morse 2018
 Simulations are run using first the "OM+VPAsims_BFT2017_deterministic_V2.R" and second the "OM+VPAsims_BFT2017_basecase_V5.R" scripts. Directories for storing estimation model input and output files must first be created locally using the first lines of code under the "RUNNING SIMULATIONS" section of either of these scripts (will need to be uncommented). Summary plots may be generated using the "bluefin_sims_plotting.R" script. Note that working directories may need to be changed in order to run the simulations. 
 <br>
 <br>
-Questions should be directed to Molly Morse, mmorse1@umassd.edu.
+Atlantic bluefin tuna simulation testing framework created by Molly Morse (UMass Dartmouth), Lisa Kerr (GMRI), and Steven Cadrin (UMass Dartmouth). Questions should be directed to Molly Morse, mmorse1@umassd.edu.
 <br>
 <br>
 <br>

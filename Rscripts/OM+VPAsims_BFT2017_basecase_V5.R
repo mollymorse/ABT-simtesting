@@ -1,5 +1,8 @@
 ####################################################################################################
-## BLUEFIN TUNA OPERATING MODEL FOR GENERATING PSEUDODATA (L.KERR 2017, modified by M.MORSE 2018) ##
+############################ ATLANTIC BLUEFIN TUNA OPERATING MODEL #################################
+########################### AND SIMULATION TESTING ESTIMATION MODEL ################################
+########################################## (STOCHASTIC) ############################################
+########################## LISA KERR 2017, modified by MOLLY MORSE 2018 ############################
 ####################################################################################################
 
 #Conditioned on 2017 Atlantic bluefin tuna stock assessment VPA

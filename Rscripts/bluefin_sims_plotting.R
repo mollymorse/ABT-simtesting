@@ -1,7 +1,7 @@
-################### Molly Morse #####################
-####### Plotting for Bluefin Stock Assessment #######
-############### Simulation Testing ##################
-#####################################################
+######################################################################################
+####### PLOTTING FOR ATLANTIC BLUEFIN TUNA STOCK ASSESSMENT SIMULATION TESTING #######
+################################ MOLLY MORSE 2018 ####################################
+######################################################################################
 
 
 # This code may be used to plot the outputs of Atlantic bluefin tuna simulations

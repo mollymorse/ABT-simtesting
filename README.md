@@ -2,7 +2,7 @@
 We used simulation testing to evaluate the performance of the virtual population analysis models used to manage Atlantic bluefin tuna fisheries (ICCAT 2018) on fishery pseudodata generated using an operating model that incorporated movement and mixing of populations.
 <br>
 <br>
-Methods and results are documented in Molly Morse's thesis (Morse 2018) and in a manuscript submitted for journal publication.
+Methods and results are documented in Molly Morse's thesis (Morse 2018).
 <br>
 <br>
 Simulations are run using first the "OM+VPAsims_BFT2017_Deterministic_V2.R" and second the "OM+VPAsims_BFT2017_basecase_V5.R" scripts. Directories for storing estimation model input and output files must first be created locally using the first lines of code under the "RUNNING SIMULATIONS" section of either of these scripts (will need to be uncommented). Note that working directories may need to be changed in order to run the simulations. 

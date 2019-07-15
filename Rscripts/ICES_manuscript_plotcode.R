@@ -15,6 +15,7 @@ library(scales)
 library(grid)
 library(cowplot)
 yrs <- 1974:2015
+nyr <- 42
 # run the following 3 lines to import "Times New Roman" and other fonts if haven't done already (must have extrafont package installed)
 # font_import()
 # y
@@ -695,7 +696,7 @@ E.selfSSB.PRB <- ggplot(E.SSB.biasavgdf, aes(years,vals)) +
 
 
 ## EAST APICAL F ##
-wd <- setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East - 500 Sims - 1/Converged")
+wd <- "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East - 500 Sims - 1/Converged"
 setwd(wd)
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
                  list.files(path = wd, pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
@@ -708,7 +709,7 @@ for (i in 1:length(runnums_e)) {
                                       fill = T, col.names = 1:max(count.fields(
                                         result_file_name
                                       ))))
-  F.res <- as.matrix(Results[32:73, 2:11], nrow = nyr, ncol = nageE)
+  F.res <- as.matrix(Results[32:73, 2:11], nrow = nyr, ncol = 10)
   F.res <- apply(F.res, c(1,2), as.numeric)
   
   for (j in 1:42) {
@@ -742,7 +743,7 @@ for (j in 1:length(runnums_e))
 E.F.biasavg             <- rowMeans(E.F.bias)
 E.F.biasavgdf           <- as.data.frame(cbind(1974:2015, E.F.biasavg))
 colnames(E.F.biasavgdf) <- c("years", "vals")
-E.F.PRB <-
+# E.F.PRB <-
   ggplot(E.F.biasavgdf, aes(x = years, y = vals)) +
   geom_bar(stat = "identity", fill = "gray70") +
   theme_classic() +
@@ -826,9 +827,9 @@ W.baseSSB.PRB <-
 
 
 ## WEST APICAL F ##
-setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/West - 500 Sims - 1/Converged")
+setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West - 500 Sims - 2/Converged")
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
-                 list.files(path="C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/West - 500 Sims - 1/Converged", pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
+                 list.files(path="C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West - 500 Sims - 2/Converged", pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
 runnums_w <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
 W.all.F.ap <- array(NA, c(nyr,length(runnums_w)), dimnames = list(year = 1974:2015, run = runnums_w))
 
@@ -838,7 +839,7 @@ for (i in 1:length(runnums_w)) {
                                       fill = T, col.names = 1:max(count.fields(
                                         result_file_name
                                       ))))
-  F.res <- as.matrix(Results[32:73, 2:17], nrow = nyr, ncol = nageW)
+  F.res <- as.matrix(Results[32:73, 2:17], nrow = nyr, ncol = 16)
   F.res <- apply(F.res, c(1,2), as.numeric)
   for (j in 1:42) {
     W.all.F.ap[j, i] <- max(F.res[j, ])
@@ -908,9 +909,9 @@ W.F.PRB <-
 
 #### ESTIMATION MODEL PLOTS ####
 
-# EAST Recruitment #
+# EAST Recruitment Cross-test #
 years <- matrix(1974:2011,nrow = 38,ncol=1)
-E.R.data <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/East - 500 Sims - 1/Converged/E_R_data_converge.csv", header = TRUE)
+E.R.data <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East - 500 Sims - 1/Converged/E_R_data_converge.csv", header = TRUE)
 E.R.data[1:38,1] <- years
 E.R.sims <- as.data.frame(E.R.data[1:38,1:475]) #create data frame of simulations data
 colnames(E.R.sims) <- c("years",1:474)
@@ -921,7 +922,8 @@ allLevels <- levels(factor(c(E.R.sims_1$years,E.R.om$years)))  #change the x var
 E.R.sims_1$years <- factor(E.R.sims_1$years,levels=(allLevels))
 E.R.om$years <- factor(E.R.om$years,levels=(allLevels))
 
-E.R.plot <- 
+# b&W
+# E.R.plot <-
   ggplot(data=E.R.om, aes(x=factor(years), y=OM)) +
   geom_boxplot(data=E.R.sims_1,aes(x=years, y=value), color="black",fill="gray80") + 
   stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
@@ -945,9 +947,38 @@ E.R.plot <-
                                    size = 20))
 
 
-# EAST SSB #
+# color
+grob1 <- grobTree(textGrob("B", x = 0.05, y = 0.95, hjust = 0,
+                             gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+  
+E.R.plot <-
+  ggplot(data=E.R.om, aes(x=factor(years), y=OM)) +
+  geom_boxplot(data=E.R.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1") + 
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  labs(y = "", x = "", title = "East") +
+  theme_classic() +
+  scale_x_discrete(breaks = seq(1974,2011,10)) +
+  scale_y_continuous(breaks = seq(0,8000000,4000000)) +
+  coord_cartesian(ylim = c(0,8000000)) +
+  theme(plot.title = element_text(family = "Times New Roman",
+                                  face = "bold",
+                                  size = 24,
+                                  hjust = 0.5,
+                                  margin = margin(b = 10)),
+        #axis.title.y = element_text(family = "Times New Roman",
+        #                            face = "bold",
+        #                            size = 24),
+        axis.text.x = element_text(family = "Times New Roman",
+                                  size = 20),
+        # axis.text.x = element_blank(),
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 20)) +
+  annotation_custom(grob1)
+
+
+# EAST SSB Cross-test #
 years <- matrix(1974:2015,nrow = 42,ncol=1)
-E.SSB.data <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/East - 500 Sims - 1/Converged/E_SSB_data_converge.csv", header = TRUE)
+E.SSB.data <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East - 500 Sims - 1/Converged/E_SSB_data_converge.csv", header = TRUE)
 E.SSB.data[,1] <- years
 E.SSB.sims <- as.data.frame(E.SSB.data[1:42,1:475]) #create data frame of simulations data
 colnames(E.SSB.sims) <- c("years",1:474)
@@ -961,7 +992,8 @@ E.SSB.sims_1$years <- factor(E.SSB.sims_1$years,levels=(allLevels))
 E.SSB.omp$years <- factor(E.SSB.omp$years,levels=(allLevels))
 E.SSB.oms$years <- factor(E.SSB.oms$years,levels=(allLevels))
 
-E.SSB.plot <- 
+# b&w
+# E.SSB.plot <- 
   ggplot(data=E.SSB.omp, aes(x=factor(years),y=OMP)) +
   geom_boxplot(data=E.SSB.sims_1,aes(x=years, y=value), color="black",fill="gray80") +
   geom_line(data=E.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="dashed",size=1.5,color="black") +
@@ -980,6 +1012,33 @@ E.SSB.plot <-
     axis.text.x = element_blank(),
     axis.text.y = element_text(family = "Times New Roman",
                                size = 20))
+
+# color
+grob2 <- grobTree(textGrob("D", x = 0.05, y = 0.95, hjust = 0,
+                            gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+  
+E.SSB.plot <-
+  ggplot(data=E.SSB.omp, aes(x=factor(years),y=OMP)) +
+  geom_boxplot(data=E.SSB.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1") +
+  geom_line(data=E.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="dashed",size=1.5,color="black") +
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  labs(y="",x="") +
+  theme_classic() +
+  scale_x_discrete(breaks = seq(1974,2015,10)) +
+  scale_y_continuous(breaks = seq(0,1500000,500000),label=scientific_format(digits = 2)) +
+  coord_cartesian(ylim = c(0,1500000)) +
+  theme(
+    #axis.title.y = element_text(family = "Times New Roman",
+    #                               face = "bold",
+    #                              size = 14),
+    axis.text.x = element_text(family = "Times New Roman",
+                              size = 20),
+    # axis.text.x = element_blank(),
+    axis.text.y = element_text(family = "Times New Roman",
+                               size = 20)) +
+  annotation_custom(grob2)
+
+
 
 # EAST SSB Self-Test #
 E.SSB.data <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/East/Converged/E_SSB_data_converge.csv", header = TRUE)
@@ -1030,7 +1089,8 @@ allLevels        <- levels(factor(c(E.F.ap.gg$years, E.F.ap.OM$years)))
 E.F.ap.gg$years  <- factor(E.F.ap.gg$years, levels = (allLevels))
 E.F.ap.OM$years  <- factor(E.F.ap.OM$years, levels = (allLevels))
 
-E.F.plot <-
+# b&w
+# E.F.plot <-
   ggplot(data = E.F.ap.OM, aes(x = years, y = OM)) +
   geom_boxplot(data = E.F.ap.gg, aes(x = years, y = value), color = "black", fill = "gray80") + 
   stat_summary(fun.y = mean, geom = "line", aes(group = 1), size = 1.5, color = "black") +
@@ -1045,13 +1105,32 @@ E.F.plot <-
         axis.text.y = element_text(family = "Times New Roman",
                                    size = 20))
 
+# color
+grob3 <- grobTree(textGrob("F", x = 0.05, y = 0.95, hjust = 0,
+                            gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+  
+E.F.plot <-
+  ggplot(data = E.F.ap.OM, aes(x = years, y = OM)) +
+  geom_boxplot(data = E.F.ap.gg, aes(x = years, y = value), color = "lightblue4", fill = "lightblue1") + 
+  stat_summary(fun.y = mean, geom = "line", aes(group = 1), size = 1.5, color = "black") +
+  labs(y = "Fishing mortality rate", x = "") +
+  theme_classic() +
+  scale_x_discrete(breaks = seq(1974,2015,10)) +
+  scale_y_continuous(breaks = seq(0, 3, 1), labels = scales::number_format(accuracy = 0.1)) +
+  coord_cartesian(ylim = c(0,3)) +
+  theme(axis.title.y = element_blank(),
+        axis.text.x = element_text(family = "Times New Roman",
+                                   size = 20),
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 20)) +
+  annotation_custom(grob3)
 
 
 
 
 ## WEST Recruitment ##
 years <- matrix(1974:2011,nrow = 38,ncol=1)
-W.R.data <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/West - 500 Sims - 2/Converged/W_R_data_converge.csv", header = TRUE)
+W.R.data <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West - 500 Sims - 2/Converged/W_R_data_converge.csv", header = TRUE)
 W.R.data[1:38,1] <- years
 W.R.sims <- as.data.frame(W.R.data[1:38,1:406]) #create data frame of simulations data
 colnames(W.R.sims) <- c("years",1:405)
@@ -1062,7 +1141,8 @@ allLevels <- levels(factor(c(W.R.sims_1$years,W.R.om$years)))  #change the x var
 W.R.sims_1$years <- factor(W.R.sims_1$years,levels=(allLevels))
 W.R.om$years <- factor(W.R.om$years,levels=(allLevels))
 
-W.R.plot <- 
+# b&w
+# W.R.plot <- 
   ggplot(data=W.R.om, aes(x=factor(years), y=OM)) +
   geom_boxplot(data=W.R.sims_1,aes(x=years, y=value), color="black",fill="gray80") + 
   stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
@@ -1087,10 +1167,40 @@ W.R.plot <-
                                    size = 20)) +
   scale_y_continuous(breaks = seq(0,2000000,1000000), label=scientific_format(digits = 2))
 
+# color
+grob4 <- grobTree(textGrob("A", x = 0.05, y = 0.95, hjust = 0,
+                            gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+  
+W.R.plot <- 
+  ggplot(data=W.R.om, aes(x=factor(years), y=OM)) +
+  geom_boxplot(data=W.R.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1") + 
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  labs(y = "Recruitment 
+(numbers)", x = "", title = "West") +
+  theme_classic() +
+  scale_x_discrete(breaks = seq(1974,2011,10)) +
+  coord_cartesian(ylim = c(0,2000000)) +
+  theme(plot.title = element_text(family = "Times New Roman", 
+                                  size = 24,
+                                  face = "bold",
+                                  hjust = 0.5,
+                                  margin = margin(b = 10)),
+        axis.title.y = element_text(family = "Times New Roman",
+                                    size = 24,
+                                    face = "bold",
+                                    margin = margin(r = 10)),
+        axis.text.x = element_text(family = "Times New Roman",
+                                  size = 20),
+        # axis.text.x = element_blank(),    
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 20)) +
+  scale_y_continuous(breaks = seq(0,2000000,1000000), label=scientific_format(digits = 2)) +
+  annotation_custom(grob4)
+
 
 # WEST SSB #
 years <- matrix(1974:2015,nrow = 42,ncol=1)
-W.SSB.data <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/West - 500 Sims - 2/Converged/W_SSB_data_converge.csv", header = TRUE)
+W.SSB.data <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West - 500 Sims - 2/Converged/W_SSB_data_converge.csv", header = TRUE)
 W.SSB.data[,1] <- years
 W.SSB.sims <- as.data.frame(W.SSB.data[1:42,1:406]) #create data frame of simulations data
 colnames(W.SSB.sims) <- c("years",1:405)
@@ -1104,7 +1214,8 @@ W.SSB.sims_1$years <- factor(W.SSB.sims_1$years,levels=(allLevels))
 W.SSB.omp$years <- factor(W.SSB.omp$years,levels=(allLevels))
 W.SSB.oms$years <- factor(W.SSB.oms$years,levels=(allLevels))
 
-W.SSB.plot <- 
+# b&w
+# W.SSB.plot <- 
   ggplot(data=W.SSB.omp, aes(x=factor(years), y=OMP)) +
   geom_boxplot(data=W.SSB.sims_1,aes(x=years, y=value), color="black",fill="gray80") +
   geom_line(data=W.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="longdash",size=1.5,color="black") +
@@ -1125,6 +1236,32 @@ W.SSB.plot <-
         axis.text.y = element_text(family = "Times New Roman",
                                    size = 20))
 
+# color
+grob5 <- grobTree(textGrob("C", x = 0.05, y = 0.95, hjust = 0,
+                            gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+  
+W.SSB.plot <- 
+  ggplot(data=W.SSB.omp, aes(x=factor(years), y=OMP)) +
+  geom_boxplot(data=W.SSB.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1") +
+  geom_line(data=W.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="longdash",size=1.5,color="black") +
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  labs(y = "SSB
+(tonnes)", x = "") +
+  theme_classic() +
+  scale_x_discrete(breaks = seq(1974,2015,10)) +
+  scale_y_continuous(breaks = seq(0,200000,100000)) +
+  coord_cartesian(ylim = c(0,200000)) +
+  theme(axis.title.y = element_text(family = "Times New Roman",
+                                    face = "bold",
+                                    size = 24,
+                                    margin = margin(r = 10)),
+        axis.text.x = element_text(family = "Times New Roman",
+                                  size = 20),
+        # axis.text.x = element_blank(),
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 20)) +
+  annotation_custom(grob5)
+
 
 ## WEST APICAL F ##
 W.F.ap     <- cbind(1974:2015, W.all.F.ap) %>% 
@@ -1140,7 +1277,8 @@ allLevels        <- levels(factor(c(W.F.ap.gg$years, W.F.ap.OM$years)))
 W.F.ap.gg$years  <- factor(W.F.ap.gg$years, levels = (allLevels))
 W.F.ap.OM$years  <- factor(W.F.ap.OM$years, levels = (allLevels))
 
-W.F.plot <-
+# b&w
+# W.F.plot <-
   ggplot(data = W.F.ap.OM, aes(x = years, y = OM)) +
   geom_boxplot(data = W.F.ap.gg, aes(x = years, y = value), color = "black", fill = "gray80") + 
   stat_summary(fun.y = mean, geom = "line", aes(group = 1), size = 1.5, color = "black") +
@@ -1158,26 +1296,61 @@ rate", x = "") +
         axis.text.y = element_text(family = "Times New Roman",
                                    size = 20))
 
+# color
+grob6 <- grobTree(textGrob("E", x = 0.05, y = 0.95, hjust = 0,
+                            gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+  
+W.F.plot <-
+  ggplot(data = W.F.ap.OM, aes(x = years, y = OM)) +
+  geom_boxplot(data = W.F.ap.gg, aes(x = years, y = value), color = "lightblue4", fill = "lightblue1") + 
+  stat_summary(fun.y = mean, geom = "line", aes(group = 1), size = 1.5, color = "black") +
+  labs(y = "Fishing mortality 
+rate", x = "") +
+  theme_classic() +
+  scale_x_discrete(breaks = seq(1974,2015,10)) +
+  scale_y_continuous(breaks = seq(0, 2, 1), labels = scales::number_format(accuracy = 0.1)) +
+  coord_cartesian(ylim = c(0, 2)) +
+  theme(axis.title.y = element_text(family = "Times New Roman",
+                                    face = "bold",
+                                    size = 24,
+                                    margin = margin(r = 10)),
+        axis.text.x = element_text(family = "Times New Roman",
+                                   size = 20),
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 20)) +
+  annotation_custom(grob6)
 
 
 
 
 
-# LAYOUT w/ RELATIVE BIAS #
+
+# w/ relative bias
 grid.arrange(W.R.plot, E.R.plot,
              W.baseR.PRB, E.baseR.PRB,
              W.SSB.plot, E.SSB.plot,
              W.baseSSB.PRB, E.baseSSB.PRB,
              nrow = 4, ncol = 2,
              heights=c(5,3,5,3))
+# w/o relative bias
+grid.arrange(W.R.plot, E.R.plot,
+             W.SSB.plot, E.SSB.plot,
+             W.F.plot, E.F.plot,
+             nrow = 3, ncol = 2)
 
-jpeg("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Publishing/CJFAS - Bluefin Tuna Simulations/Figures/EMplots.jpeg",
-     width = 1100, height = 1200, units = "px", quality = 100)
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Figures/EMplots.jpeg",
+     width = 4000, height = 4200, units = "px", quality = 100, res = 300)
+# w/ relative bias
+# plot_grid(W.R.plot, E.R.plot,
+#           W.baseR.PRB, E.baseR.PRB,
+#           W.SSB.plot, E.SSB.plot,
+#           W.baseSSB.PRB, E.baseSSB.PRB,
+#           ncol = 2, nrow = 4, align = "v", rel_heights = c(7,3,7,3))
+# w/o relative bias
 plot_grid(W.R.plot, E.R.plot,
-          W.baseR.PRB, E.baseR.PRB,
           W.SSB.plot, E.SSB.plot,
-          W.baseSSB.PRB, E.baseSSB.PRB,
-          ncol = 2, nrow = 4, align = "v", rel_heights = c(7,3,7,3))
+          W.F.plot, E.F.plot,
+          ncol = 2, nrow = 3, align = "v")
 dev.off()
 
 
@@ -1201,8 +1374,10 @@ allLevels <- levels(factor(c(E.SSB.sims_1$years,E.SSB.omp$years,E.SSB.oms$years)
 E.SSB.sims_1$years <- factor(E.SSB.sims_1$years,levels=(allLevels))
 E.SSB.omp$years <- factor(E.SSB.omp$years,levels=(allLevels))
 E.SSB.oms$years <- factor(E.SSB.oms$years,levels=(allLevels))
+
 # boxplot (grayscale)
-E.selfSSB.plot <- ggplot(data=E.SSB.omp, aes(x=factor(years),y=OMP)) +
+# E.selfSSB.plot <- 
+  ggplot(data=E.SSB.omp, aes(x=factor(years),y=OMP)) +
   geom_boxplot(data=E.SSB.sims_1,aes(x=years, y=value), color="black",fill="gray80") +
   geom_line(data=E.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="dashed",size=1.5,color="black") +
   stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
@@ -1221,6 +1396,34 @@ E.selfSSB.plot <- ggplot(data=E.SSB.omp, aes(x=factor(years),y=OMP)) +
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
                                    size = 22))
+
+# color
+grob7 <- grobTree(textGrob("D", x = 0.05, y = 0.95, hjust = 0,
+                             gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+  
+E.selfSSB.plot <- 
+  ggplot(data=E.SSB.omp, aes(x=factor(years),y=OMP)) +
+  geom_boxplot(data=E.SSB.sims_1,aes(x=years, y=value), color = "lightblue4", fill = "lightblue1") +
+  geom_line(data=E.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="dashed",size=1.5,color="black") +
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  labs(y="",x="") +
+  theme_classic() +
+  scale_x_discrete(breaks = seq(1974,2015,10)) +
+  scale_y_continuous(breaks = seq(0,1500000,500000),label=scientific_format(digits = 2)) +
+  coord_cartesian(ylim = c(0,1500000)) +
+  theme(axis.title.y = element_blank(),
+        # axis.title.y = element_text(family = "Times New Roman",
+        #                             face = "bold",
+        #                             size = 24,
+        #                             margin = margin(r = 10)),
+        axis.text.x = element_text(family = "Times New Roman",
+                                    size = 20),
+        # axis.text.x = element_blank(),
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 22)) +
+  annotation_custom(grob7)
+
+
 
 
 # SSB bias barplot
@@ -1262,7 +1465,10 @@ E.R.sims_1 <- melt(E.R.sims, id.vars = "years") #melt sims data
 allLevels <- levels(factor(c(E.R.sims_1$years,E.R.om$years)))  #change the x vars in both datasets to factors that contain all the levels of both vars
 E.R.sims_1$years <- factor(E.R.sims_1$years,levels=(allLevels))
 E.R.om$years <- factor(E.R.om$years,levels=(allLevels))
-E.selfR.plot <- ggplot(data=E.R.om, aes(x=factor(years), y=OM)) +
+
+# grayscale
+# E.selfR.plot <- 
+  ggplot(data=E.R.om, aes(x=factor(years), y=OM)) +
   geom_boxplot(data=E.R.sims_1,aes(x=years, y=value), color="black",fill="gray80") + 
   stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
   labs(y="",x="", title = "East") +
@@ -1286,6 +1492,37 @@ E.selfR.plot <- ggplot(data=E.R.om, aes(x=factor(years), y=OM)) +
                                   size = 24,
                                   hjust = 0.5,
                                   margin = margin(b = 10)))
+
+# color
+grob8 <- grobTree(textGrob("B", x = 0.05, y = 0.95, hjust = 0,
+                             gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+
+E.selfR.plot <- 
+  ggplot(data=E.R.om, aes(x=factor(years), y=OM)) +
+  geom_boxplot(data=E.R.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1") + 
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  labs(y="",x="", title = "East") +
+  theme_classic() +
+  scale_x_discrete(breaks = seq(1974,2011,10)) +
+  scale_y_continuous(breaks = seq(0,8000000,4000000)) +
+  coord_cartesian(ylim = c(0,8000000)) +
+  theme(
+    # axis.title.y = element_text(family = "Times New Roman",
+    #                             face = "bold",
+    #                             size = 24,
+    #                             margin = margin(r = 10)),
+    axis.text.x = element_text(family = "Times New Roman",
+                                size = 20),
+    axis.title.y = element_blank(),
+    # axis.text.x = element_blank(),
+    axis.text.y = element_text(family = "Times New Roman",
+                               size = 22),
+    plot.title = element_text(family = "Times New Roman", 
+                              face = "bold", 
+                              size = 24,
+                              hjust = 0.5,
+                              margin = margin(b = 10))) +
+  annotation_custom(grob8)
 
 # R bias barplot
 E.R.biasdata <- as.data.frame(read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/East/Converged/E_R_bias_data_converge.csv", header = TRUE))
@@ -1313,6 +1550,10 @@ E.selfR.PRB <- ggplot(E.R.biasavgdf, aes(years,vals)) +
                                    margin = margin(t = 10)))
 
 # F boxplot
+
+Fa <- as.matrix(read.csv("C:/Users/mmorse1/Documents/Simulations_selftest/OM Output/Fa.csv", header = T))[, -1]
+Fa <- array(Fa, c(42, 29, 2), dimnames = list(year = 1974:2015, age = 1:29, unit = 1:2))
+
 #East OM (end at age 10)
 F.OM.E <- array(NA, c(42,10),dimnames=list(year=1974:2015,age=1:10))
 for (y in 1:42)
@@ -1353,15 +1594,16 @@ F.ap.gg <- melt(F.ap, id.vars = "years")
 allLevels <- levels(factor(c(F.ap.gg$years, F.ap.OM$years)))
 F.ap.gg$years  <- factor(F.ap.gg$years,levels=(allLevels))
 F.ap.OM$years  <- factor(F.ap.OM$years,levels=(allLevels))
-#plot
-E.F.self.plot <-
+
+# grayscale
+# E.F.self.plot <-
   ggplot(data=F.ap.OM, aes(x=years, y=OM)) +
   geom_boxplot(data=F.ap.gg,aes(x=years, y=value), color="black", fill="gray80") + 
   stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5, color="black") +
   labs(y = "", x = "") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1974,2015,10)) +
-  scale_y_continuous(breaks = seq(0, 3, 1)) +
+  scale_y_continuous(breaks = seq(0, 3, 1), labels = scales::number_format(accuracy = 0.1)) +
   coord_cartesian(ylim = c(0,3)) +
   theme(axis.title.y = element_blank(),
         # axis.title.y = element_text(family = "Times New Roman",
@@ -1372,6 +1614,29 @@ E.F.self.plot <-
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
                                    size = 22))
+
+# color
+grob9 <- grobTree(textGrob("F", x = 0.05, y = 0.95, hjust = 0,
+                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+E.F.self.plot <-
+  ggplot(data=F.ap.OM, aes(x=years, y=OM)) +
+  geom_boxplot(data=F.ap.gg,aes(x=years, y=value), color="lightblue4", fill="lightblue1") + 
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5, color="black") +
+  labs(y = "", x = "") +
+  theme_classic() +
+  scale_x_discrete(breaks = seq(1974,2015,10)) +
+  scale_y_continuous(breaks = seq(0, 3, 1), labels = scales::number_format(accuracy = 0.1)) +
+  coord_cartesian(ylim = c(0,3)) +
+  theme(axis.title.y = element_blank(),
+        # axis.title.y = element_text(family = "Times New Roman",
+        #                                 face = "bold",
+        #                                 size = 24),
+        axis.text.x = element_text(family = "Times New Roman",
+                                  size = 20),
+        # axis.text.x = element_blank(),
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 22)) +
+  annotation_custom(grob9)
 
 # F bias barplot
 setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/East/Converged")
@@ -1462,6 +1727,32 @@ W.selfSSB.plot <- ggplot(data=W.SSB.omp, aes(x=factor(years),y=OMP)) +
     axis.text.y = element_text(family = "Times New Roman",
                                size = 22))
 
+# color
+grob10 <- grobTree(textGrob("C", x = 0.05, y = 0.95, hjust = 0,
+                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+W.selfSSB.plot <- 
+  ggplot(data=W.SSB.omp, aes(x=factor(years),y=OMP)) +
+  geom_boxplot(data=W.SSB.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1") +
+  geom_line(data=W.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="dashed",size=1.5,color="black") +
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  labs(y="SSB
+(tonnes)",x="") +
+  theme_classic() +
+  scale_x_discrete(breaks = seq(1974,2015,10)) +
+  scale_y_continuous(breaks = seq(0,80000,40000),label=scientific_format(digits = 2)) +
+  coord_cartesian(ylim = c(0,80000)) +
+  theme(
+    axis.title.y = element_text(family = "Times New Roman",
+                                face = "bold",
+                                size = 24,
+                                margin = margin(r = 10)),
+    axis.text.x = element_text(family = "Times New Roman",
+                              size = 20),
+    # axis.text.x = element_blank(),
+    axis.text.y = element_text(family = "Times New Roman",
+                               size = 22)) +
+  annotation_custom(grob10)
+
 
 # SSB bias barplot
 setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/West/Converged")
@@ -1501,6 +1792,7 @@ W.R.sims_1 <- melt(W.R.sims, id.vars = "years") #melt sims data
 allLevels <- levels(factor(c(W.R.sims_1$years,W.R.om$years)))  #change the x vars in both datasets to factors that contain all the levels of both vars
 W.R.sims_1$years <- factor(W.R.sims_1$years,levels=(allLevels))
 W.R.om$years <- factor(W.R.om$years,levels=(allLevels))
+# grayscale
 W.selfR.plot <- ggplot(data=W.R.om, aes(x=factor(years), y=OM)) +
   geom_boxplot(data=W.R.sims_1,aes(x=years, y=value), color="black",fill="gray80") + 
   stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
@@ -1524,6 +1816,36 @@ W.selfR.plot <- ggplot(data=W.R.om, aes(x=factor(years), y=OM)) +
                                   size = 24,
                                   hjust = 0.5,
                                   margin = margin(b = 10)))
+
+# color
+grob11 <- grobTree(textGrob("A", x = 0.05, y = 0.95, hjust = 0,
+                            gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+
+W.selfR.plot <- 
+  ggplot(data=W.R.om, aes(x=factor(years), y=OM)) +
+  geom_boxplot(data=W.R.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1") + 
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  labs(y="Recruitment
+(numbers)",x="", title = "West") +
+  theme_classic() +
+  scale_x_discrete(breaks = seq(1974,2011,10)) +
+  scale_y_continuous(breaks = seq(0,2000000,1000000)) +
+  coord_cartesian(ylim = c(0,2000000)) +
+  theme(axis.title.y = element_text(family = "Times New Roman",
+                                    face = "bold",
+                                    size = 24,
+                                    margin = margin(r = 10)),
+        axis.text.x = element_text(family = "Times New Roman",
+                                  size = 20),
+        # axis.text.x = element_blank(),
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 22),
+        plot.title = element_text(family = "Times New Roman", 
+                                  face = "bold", 
+                                  size = 24,
+                                  hjust = 0.5,
+                                  margin = margin(b = 10))) +
+  annotation_custom(grob11)
 
 # R bias barplot
 W.R.biasdata <- as.data.frame(read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/West/Converged/W_R_bias_data_converge.csv", header = TRUE))
@@ -1590,7 +1912,7 @@ F.ap.W.gg <- melt(F.ap.W, id.vars = "years")
 allLevels <- levels(factor(c(F.ap.W.gg$years, F.ap.W.OM$years)))
 F.ap.W.gg$years  <- factor(F.ap.W.gg$years,levels=(allLevels))
 F.ap.W.OM$years  <- factor(F.ap.W.OM$years,levels=(allLevels))
-#plot
+#plot grayscale
 W.F.self.plot <-
   ggplot(data=F.ap.W.OM, aes(x=years, y=OM)) +
   geom_boxplot(data=F.ap.W.gg,aes(x=years, y=value), color="black", fill="gray80") + 
@@ -1599,7 +1921,7 @@ W.F.self.plot <-
 rate", x = "") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1974,2015,10)) +
-  scale_y_continuous(breaks = seq(0, 2, 1)) +
+  scale_y_continuous(breaks = seq(0, 2, 1), labels = scales::number_format(accuracy = 0.1)) +
   coord_cartesian(ylim = c(0,2)) +
   theme(plot.title = element_text(family = "Times New Roman",
                                   face = "bold",
@@ -1614,6 +1936,35 @@ rate", x = "") +
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
                                    size = 22))
+
+# color
+grob12 <- grobTree(textGrob("E", x = 0.05, y = 0.95, hjust = 0,
+                            gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+
+W.F.self.plot <-
+  ggplot(data=F.ap.W.OM, aes(x=years, y=OM)) +
+  geom_boxplot(data=F.ap.W.gg,aes(x=years, y=value), color="lightblue4", fill="lightblue1") + 
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5, color="black") +
+  labs(y = "Fishing mortality
+rate", x = "") +
+  theme_classic() +
+  scale_x_discrete(breaks = seq(1974,2015,10)) +
+  scale_y_continuous(breaks = seq(0, 2, 1), labels = scales::number_format(accuracy = 0.1)) +
+  coord_cartesian(ylim = c(0,2)) +
+  theme(plot.title = element_text(family = "Times New Roman",
+                                  face = "bold",
+                                  size = 24,
+                                  hjust = 0.5,
+                                  margin = margin(b = 10)),
+        axis.title.y = element_text(family = "Times New Roman",
+                                    face = "bold",
+                                    size = 24),
+        axis.text.x = element_text(family = "Times New Roman",
+                                  size = 20),
+        # axis.text.x = element_blank(),
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 22)) +
+  annotation_custom(grob12)
 
 # F bias barplot
 setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/West/Converged")
@@ -1693,16 +2044,22 @@ plot_grid(W.selfR.plot, W.selfR.PRB, W.selfSSB.plot,
 dev.off()
 
 #EAST & WEST
-jpeg("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Publishing/CJFAS - Bluefin Tuna Simulations/Figures/selftestplots_EW.jpeg",
-     width = 1100, height = 1200, units = "px", quality = 100)
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Figures/selftestplots_EW.jpeg",
+      width = 4000, height = 4200, units = "px", quality = 100, res = 300)
+# w/bias plots
+# plot_grid(W.selfR.plot,   E.selfR.plot,
+#           W.selfR.PRB,    E.selfR.PRB,
+#           W.selfSSB.plot, E.selfSSB.plot,
+#           W.selfSSB.PRB,  E.selfSSB.PRB,
+#           W.F.self.plot,  E.F.self.plot,
+#           W.selfF.PRB,    E.selfF.PRB,
+#           ncol = 2, nrow = 6, align = "v",
+#           rel_heights = c(7,3,7,3,7,3))
+#w/o bias plots
 plot_grid(W.selfR.plot,   E.selfR.plot,
-          W.selfR.PRB,    E.selfR.PRB,
           W.selfSSB.plot, E.selfSSB.plot,
-          W.selfSSB.PRB,  E.selfSSB.PRB,
           W.F.self.plot,  E.F.self.plot,
-          W.selfF.PRB,    E.selfF.PRB,
-          ncol = 2, nrow = 6, align = "v",
-          rel_heights = c(7,3,7,3,7,3))
+          ncol = 2, nrow = 3, align = "v")
 dev.off()
 
 

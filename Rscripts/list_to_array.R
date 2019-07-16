@@ -115,7 +115,7 @@ east_new <- array(rep(east_all_target, 29), dim = c(7, 7, 4, 29),
                            dimnames = list(paste0('start', 1:7), paste0('end',1:7), paste0('season', 1:4), paste0('age', 1:29)))
 
 
-# New movement matrix to export at csv and use in OM (need to check to make sure has the same structure as the original base case movement matrix)
+# New movement matrix to export at csv and use in OM
 new_move <- abind(east_new, west_new, along = 5)  
 dimnames(new_move) <- list(start = 1:7, end = 1:7, season = 1:4, age = 1:29, unit = 1:2)
 

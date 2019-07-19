@@ -75,20 +75,30 @@ west_juv <- boxar
 ball.e = array(rep(NA, 7*7*list_len), dim = c(7, 7, list_len), dimnames = list(paste0('start', 1:7), paste0('end',1:7), paste0('run',1:list_len)))
 
 # use matrix multiplication over all 4 quarters for each replicate
+# west juveniles
 for(i in 1:dim(west_juv)[4]){
   b2 = west_juv[,,,i]
-  # ball.w = b1[[1]]%*%b1[[2]]%*%b1[[3]]%*%b1[[4]]
   ball.e[,,i] = b2[,,1]%*%b2[,,2]%*%b2[,,3]%*%b2[,,4]
-  # (e.w = get.loglin(ball.e, ball.w))
+}
+
+# west adults
+for(i in 1:dim(west_ad)[4]){
+  b2 = west_ad[,,,i]
+  ball.e[,,i] = b2[,,1]%*%b2[,,2]%*%b2[,,3]%*%b2[,,4]
+}
+
+# east all
+for(i in 1:dim(east_all)[4]){
+  b2 = east_all[,,,i]
+  ball.e[,,i] = b2[,,1]%*%b2[,,2]%*%b2[,,3]%*%b2[,,4]
 }
 
 
+
 # residence: sum over "home" zones for each replicate
-east_overall  = apply(ball.e, 3, function(x) sum(x[4:7, 4:7])) #east
-west_adults   = apply(ball.e, 3, function(x) sum(x[1:3, 1:3])) #west adult
 west_juvenile = apply(ball.e, 3, function(x) sum(x[1:3, 1:3])) #west juv
-
-
+west_adults   = apply(ball.e, 3, function(x) sum(x[1:3, 1:3])) #west adult
+east_overall  = apply(ball.e, 3, function(x) sum(x[4:7, 4:7])) #east
 
 
 
@@ -117,28 +127,31 @@ west_juvenile = apply(ball.e, 3, function(x) sum(x[1:3, 1:3])) #west juv
 
 
 # calculate low movement (high residence) quantile (75th) and high movement (low residence) quantile (25th)
-# is this not just taking all replicates that are in the top 25th percentile residency?
-lowidx = which(east_overall >= quantile(east_overall, .75))# low movement out of the east
-highidx = which(east_overall >= quantile(east_overall, .25)) # high movement out of the east
+# takes all replicates that are in the top 25th percentile residency (& revised to also take all replicates
+# in the bottom 25th percentile residency (top movement))
+lowidx = which(west_juvenile >= quantile(west_juvenile, .75))# low movement out of the west
+highidx = which(west_juvenile <= quantile(west_juvenile, .25)) # high movement out of the west
 
 lowidx = which(west_adults >= quantile(west_adults, .75))# low movement out of the west
-highidx = which(west_adults >= quantile(west_adults, .25)) # high movement out of the west
+highidx = which(west_adults <= quantile(west_adults, .25)) # high movement out of the west
 
-lowidx = which(west_juvenile >= quantile(west_juvenile, .75))# low movement out of the west
-highidx = which(west_juvenile >= quantile(west_juvenile, .25)) # high movement out of the west
+lowidx = which(east_overall >= quantile(east_overall, .75))# low movement out of the east
+highidx = which(east_overall <= quantile(east_overall, .25)) # high movement out of the east
 
 
-# save low / high movement replicates
-# and then isn't this just taking the first sequential replicate that was in the top 25th
-# percentile residency (not necessarily the value AT the percentile)? why the 2nd element?
-elow_ex = east_all[,,,lowidx[2]]
-ehigh_ex = east_all[,,,highidx[2]]
+# save low (& high) movement replicates
+# takes a random sample (the first sequential replicate) of the top 25th percentile residency (and bottom 25th for high movement)
+# west juvenile
+wjlow_ex = west_juv[,,,lowidx[2]]
+wjhigh_ex = west_juv[,,,highidx[2]]
 
+# west adult
 walow_ex = west_ad[,,,lowidx[2]]
 wahigh_ex = west_ad[,,,highidx[2]]
 
-wjlow_ex = west_juv[,,,lowidx[2]]
-wjhigh_ex = west_juv[,,,highidx[2]]
+# east all
+elow_ex = east_all[,,,lowidx[2]]
+ehigh_ex = east_all[,,,highidx[2]]
 
 
 # plot
@@ -180,6 +193,8 @@ sapply(1:4, function(x) {
 #### Build new OM movement matrices ####
 
 library(abind)
+
+# low movement matrices should be used for export 
 
 # West: use juv for ages 1-8, adult for ages 9-29
 west_juv_target_2 <- array(rep(wjhigh_ex, 8), dim = c(7, 7, 4, 8), 

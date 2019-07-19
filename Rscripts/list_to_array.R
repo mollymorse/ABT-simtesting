@@ -160,7 +160,7 @@ seasons = c('Winter','Spring','Summer','Fall')
 # low
 par(mfrow=c(2,2))
 sapply(1:4, function(x) {
-  image.plot(1:7, 1:7, wjlow_ex[,, x], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
+  image.plot(1:7, 1:7, elow_ex[,, x], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
   text(ex7[,1], ex7[,2], paste0(round(t(elow_ex[,, x]),2)))#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
   grid(7, 7, col = 'grey50')
   axis(1, at = 1:7, labels=paste0('e',1:7), cex.axis = 1.3, font.axis = 2)
@@ -175,7 +175,7 @@ sapply(1:4, function(x) {
 # high
 par(mfrow=c(2,2))
 sapply(1:4, function(x) {
-  image.plot(1:7, 1:7, wjhigh_ex[,, x], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
+  image.plot(1:7, 1:7, ehigh_ex[,, x], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
   text(ex7[,1], ex7[,2], paste0(round(t(ehigh_ex[,, x]),2)))#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
   grid(7, 7, col = 'grey50')
   axis(1, at = 1:7, labels=paste0('e',1:7), cex.axis = 1.3, font.axis = 2)
@@ -222,8 +222,23 @@ write.csv(new_move, "MoveMatrix.csv")
 # new_move <- as.matrix(read.csv("MoveMatrix.csv", header = TRUE))
 # new_move <- array(new_move[, -1], c(7, 7, 4, 29, 2))
 
+
+
+
 # compare to original movematrix (from base case OM simulation)
 old_move <- as.matrix(read.csv("C:/Users/mmorse1/Documents/Simulations_2/R Code + Inputs/MoveMatrix.csv"), header = T)
 old_move <- array(old_move[1:7,2:1624],c(7,7,4,29,2),dimnames=list(zone=1:7,zone=1:7,quarter=1:4,age=1:29,unit=1:2))
 
-
+par(mfrow=c(2,2))
+sapply(1:4, function(x) {
+  image.plot(1:7, 1:7, old_move[,,x,11,2], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
+  text(ex7[,1], ex7[,2], paste0(round(t(old_move[,,x,11,2]),2)))#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
+  grid(7, 7, col = 'grey50')
+  axis(1, at = 1:7, labels=paste0('e',1:7), cex.axis = 1.3, font.axis = 2)
+  axis(2, at = 1:7, labels=paste0('s',1:7), cex.axis = 1.3, font.axis = 2)
+  box()
+  segments(3.5, y0 = 3.5, x1 = 7.5, y1 = 3.5, lwd = 2, col = 2, lty = 2)
+  segments(3.5, y0 = 3.5, x1 = 3.5, y1 = 7.5, lwd = 2, col = 2, lty = 2)
+  title(paste0(seasons[x], ' base movement'))
+}
+)

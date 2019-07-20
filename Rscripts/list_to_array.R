@@ -19,7 +19,7 @@ library(plyr)
 # east_3D_trans_all
 
 
-this_list <- allboxtrans  # CHANGE HERE: which list object to transform
+this_list <- east_3D_trans_all  # CHANGE HERE: which list object to transform
 list_len  <- length(this_list)
 
 # make the array for the matrices
@@ -38,10 +38,50 @@ for(i in 1:list_len){  # use nreps here
 # boxq.low = alply(apply(boxar, c(1,2,3), function(x) quantile(x, c(.025), na.rm=T)), 3)  # here's your quantiles..
 # boxq.high = alply(apply(boxar, c(1,2,3), function(x) quantile(x, c(.975), na.rm=T)), 3)
 
-# Save to respective arrays (all X# replicates)
+# Save to respective arrays; need to store iteratively from code above  (all X# replicates)
 west_juv <- boxar
-# west_ad  <- boxar
-# east_all <- boxar
+west_ad  <- boxar
+east_all <- boxar
+
+# MEAN of replicates
+boxmean_wjuv = apply(west_juv, c(1,2,3), mean, na.rm=T) 
+boxmean_wad  = apply(west_ad,  c(1,2,3), mean, na.rm=T) 
+boxmean_eall = apply(east_all, c(1,2,3), mean, na.rm=T) 
+
+wjuvmean <- array(rep(boxmean_wjuv, 8), dim = c(7, 7, 4, 8), 
+                           dimnames = list(start = 1:7, end = 1:7, quarter = 1:4, age = 1:8))
+wadmean  <- array(rep(boxmean_wad, 21), dim = c(7, 7, 4, 21), 
+                           dimnames = list(start = 1:7, end = 1:7, quarter = 1:4, age = 9:29))
+wmean    <- abind(wjuvmean, wadmean, along = 4)
+
+emean    <- array(rep(boxmean_eall, 29), dim = c(7, 7, 4, 29), 
+                  dimnames = list(start = 1:7, end = 1:7, quarter = 1:4, age = 1:29))
+
+# Mean movement matrix to export at csv and use in OM
+mean_move <- abind(emean, wmean, along = 5)  
+dimnames(mean_move) <- list(start = 1:7, end = 1:7, season = 1:4, age = 1:29, unit = 1:2)
+setwd("C:/Users/mmorse1/Documents/Simulations_lomov/R Code + Inputs")
+write.csv(mean_move, "MoveMatrix_mean.csv")
+
+# MEDIAN of replicates
+boxmedian_wjuv = apply(west_juv, c(1,2,3), median, na.rm=T)
+boxmedian_wad  = apply(west_ad,  c(1,2,3), median, na.rm=T)
+boxmedian_eall = apply(east_all, c(1,2,3), median, na.rm=T)
+
+wjuvmed <- array(rep(boxmedian_wjuv, 8), dim = c(7, 7, 4, 8), 
+                  dimnames = list(start = 1:7, end = 1:7, quarter = 1:4, age = 1:8))
+wadmed  <- array(rep(boxmedian_wad, 21), dim = c(7, 7, 4, 21), 
+                  dimnames = list(start = 1:7, end = 1:7, quarter = 1:4, age = 9:29))
+wmed    <- abind(wjuvmed, wadmed, along = 4)
+
+emed    <- array(rep(boxmedian_eall, 29), dim = c(7, 7, 4, 29), 
+               dimnames = list(start = 1:7, end = 1:7, quarter = 1:4, age = 1:29))
+
+# Median movement matrix to export at csv and use in OM
+median_move <- abind(emed, wmed, along = 5)  
+dimnames(median_move) <- list(start = 1:7, end = 1:7, season = 1:4, age = 1:29, unit = 1:2)
+setwd("C:/Users/mmorse1/Documents/Simulations_lomov/R Code + Inputs")
+write.csv(median_move, "MoveMatrix_median.csv")
 
 
 
@@ -156,6 +196,7 @@ ehigh_ex = east_all[,,,highidx[2]]
 
 # plot
 seasons = c('Winter','Spring','Summer','Fall')
+ex7 = expand.grid(1:7, 1:7)
 
 # low
 par(mfrow=c(2,2))
@@ -197,9 +238,9 @@ library(abind)
 # low movement matrices should be used for export 
 
 # West: use juv for ages 1-8, adult for ages 9-29
-west_juv_target_2 <- array(rep(wjhigh_ex, 8), dim = c(7, 7, 4, 8), 
+west_juv_target_2 <- array(rep(wjhigh_ex, 8),  dim = c(7, 7, 4, 8), 
                            dimnames = list(paste0('start', 1:7), paste0('end', 1:7), paste0('season', 1:4), paste0('age', 1:8)))
-west_ad_target_2  <- array(rep(wahigh_ex,  8), dim = c(7, 7, 4, 21), 
+west_ad_target_2  <- array(rep(wahigh_ex, 21), dim = c(7, 7, 4, 21), 
                            dimnames = list(paste0('start', 1:7), paste0('end', 1:7), paste0('season', 1:4), paste0('age', 9:29)))
 
 west_new <- abind(west_juv_target_2, west_ad_target_2, along = 4)
@@ -240,5 +281,35 @@ sapply(1:4, function(x) {
   segments(3.5, y0 = 3.5, x1 = 7.5, y1 = 3.5, lwd = 2, col = 2, lty = 2)
   segments(3.5, y0 = 3.5, x1 = 3.5, y1 = 7.5, lwd = 2, col = 2, lty = 2)
   title(paste0(seasons[x], ' base movement'))
+}
+)
+
+
+
+
+# no movement 
+no_move <- matrix(c(1, 0, 0, 0, 0, 0, 0,
+                    0, 1, 0, 0, 0, 0, 0,
+                    0, 0, 1, 0, 0, 0, 0,
+                    0, 0, 0, 1, 0, 0, 0,
+                    0, 0, 0, 0, 1, 0, 0,
+                    0, 0, 0, 0, 0, 1, 0,
+                    0, 0, 0, 0, 0, 0, 1),
+                  nrow = 7, ncol = 7, byrow = TRUE)
+no_move <- array(no_move, c(7, 7, 4, 29, 2), dimnames = list(start=1:7,end=1:7,quarter=1:4,age=1:29,unit=1:2))
+setwd(paste0("C:/Users/mmorse1/Documents/Simulations_lomov/R Code + Inputs"))
+write.csv(no_move, "MoveMatrix_nomove.csv")
+
+par(mfrow=c(2,2))
+sapply(1:4, function(x) {
+  image.plot(1:7, 1:7, no_move[,,x,11,2], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
+  text(ex7[,1], ex7[,2], paste0(round(t(no_move[,,x,11,2]),2)))#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
+  grid(7, 7, col = 'grey50')
+  axis(1, at = 1:7, labels=paste0('e',1:7), cex.axis = 1.3, font.axis = 2)
+  axis(2, at = 1:7, labels=paste0('s',1:7), cex.axis = 1.3, font.axis = 2)
+  box()
+  segments(3.5, y0 = 3.5, x1 = 7.5, y1 = 3.5, lwd = 2, col = 2, lty = 2)
+  segments(3.5, y0 = 3.5, x1 = 3.5, y1 = 7.5, lwd = 2, col = 2, lty = 2)
+  title(paste0(seasons[x], ' no movement'))
 }
 )

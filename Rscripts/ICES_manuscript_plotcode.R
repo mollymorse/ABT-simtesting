@@ -50,11 +50,12 @@ colnames(SSB_om_e) <- c("years","Population view","Stock view")
 SSB_om_e <- melt(SSB_om_e, id.vars = "years")
 
 #plot
-# SSB_om_e_plot <- 
+SSB_om_e_plot <-
 ggplot(data = SSB_om_e, aes(x=years,y=value,linetype=variable)) +
-  geom_line(aes(size = variable)) +
+  #geom_line(aes(size = variable)) +
+  geom_line(size = 1.5, color = 1) +
   theme_classic() +
-  labs(y = "", x="", title="") +
+  labs(y = "SSB (tonnes)", x="", title="East") +
   theme(plot.title = element_text(family = "Times New Roman",
                                   size = 24,
                                   face = "bold",
@@ -72,7 +73,7 @@ ggplot(data = SSB_om_e, aes(x=years,y=value,linetype=variable)) +
                                    size = 19),
         legend.key.width = unit(2, "cm")) +
   scale_size_manual(values = c(1,1,2)) +
-  scale_linetype_manual(values = c("solid","dotted","solid")) +
+  scale_linetype_manual(values = c("solid","dashed")) +
   scale_y_continuous(label=scientific_format(digits = 1), breaks = seq(0,1000000,500000)) +
   coord_cartesian(ylim=c(0,1000000))
 
@@ -93,11 +94,12 @@ colnames(SSB_om_w) <- c("years","Population view","Stock view")
 SSB_om_w <- melt(SSB_om_w, id.vars = "years")
 
 #plot
-# SSB_om_w_plot <- 
+SSB_om_w_plot <-
 ggplot(data = SSB_om_w, aes(x=years,y=value,linetype=variable)) +
-  geom_line(aes(size = variable)) +
+  # geom_line(aes(size = variable)) +
+  geom_line(size = 1.5, color = 1) +
   theme_classic() +
-  labs(y = "", x="", title="") +
+  labs(y = "SSB (tonnes)", x="", title="West") +
   theme(plot.title = element_text(family = "Times New Roman",
                                   size = 24,
                                   face = "bold",
@@ -115,11 +117,15 @@ ggplot(data = SSB_om_w, aes(x=years,y=value,linetype=variable)) +
                                    size = 19),
         legend.key.width = unit(2, "cm")) +
   scale_size_manual(values = c(1,1,2)) +
-  scale_linetype_manual(values = c("solid","dotted","solid")) +
-  scale_y_continuous(label=scientific_format(digits = 1), breaks = seq(0,1000000,500000)) +
-  coord_cartesian(ylim=c(0,1000000))
+  scale_linetype_manual(values = c("solid","dashed")) +
+  scale_y_continuous(label=scientific_format(digits = 1), breaks = seq(0,600000,300000)) +
+  coord_cartesian(ylim=c(0,600000))
 
-
+jpeg("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/OM_ssb_meanmove.jpeg",
+     width = 4400, height = 2200, units = "px", quality = 100, res = 300)
+grid.arrange(SSB_om_w_plot, SSB_om_e_plot,
+             ncol = 2, nrow = 1)
+dev.off()
 
 
 
@@ -3805,13 +3811,15 @@ F01.data <- rbind(F01.data.w, F01.data.e)
 true.df <- data.frame(c(0.119511074319948, 0.336578739314839, 0.293933398300163, 0.620620839)) #east pop, stock; west pop, stock
 true.df2 <- cbind(c("east", "east", "west", "west"), c("pop", "stock", "pop", "stock"), true.df)
 colnames(true.df2) <- c("stock", "view", "value")
+F01.data$ratio <- as.numeric(as.character(F01.data$ratio))
 
 West <- ggplot(data=subset(F01.data,stock %in% c("West")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(F01.data,stock %in% c("West")), color="black", fill="gray80") +
+  geom_boxplot(data=subset(F01.data,stock %in% c("West")), color="lightblue4", fill="lightblue1") +
   geom_abline(intercept=0.293933398300163, slope=0, linetype=1, size=1) +
   geom_abline(intercept=0.620620839, slope=0, linetype=2, size=1) +
   geom_abline(intercept=1, slope=0, linetype=3, size=1) +
   theme_classic() +
+  scale_y_continuous(breaks = seq(0, 4, 1), labels = scales::number_format(accuracy = 0.1)) +
   coord_cartesian(ylim = c(0,3.5)) +
   theme(plot.margin = unit(c(0,0,0,0), "cm")) +
   labs(y="Fcurrent/F0.1", x="") +
@@ -3828,12 +3836,14 @@ West <- ggplot(data=subset(F01.data,stock %in% c("West")), aes(x=stock, y=ratio)
                                    color = 1),
         axis.text.y = element_text(family = "Times New Roman",
                                    size = 22))
+
 East <- ggplot(data=subset(F01.data,stock %in% c("East")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(F01.data,stock %in% c("East")), color="black", fill="gray80") +
+  geom_boxplot(data=subset(F01.data,stock %in% c("East")), color="lightblue4", fill="lightblue1") +
   geom_abline(intercept=0.119511074319948, slope=0, linetype=1, size=1) +
   geom_abline(intercept=0.336578739314839, slope=0, linetype=2, size=1) +
   geom_abline(intercept=1, slope=0, linetype=3, size=1) +
   theme_classic() +
+  scale_y_continuous(breaks = seq(0, 4, 1), labels = scales::number_format(accuracy = 0.1)) +
   coord_cartesian(ylim = c(0,3.5)) +
   theme(plot.margin = unit(c(0,0,0,-.1), "cm")) +
   labs(y="", x="") +
@@ -3852,8 +3862,8 @@ East <- ggplot(data=subset(F01.data,stock %in% c("East")), aes(x=stock, y=ratio)
 
 # LAYOUT #
 
-jpeg("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Publishing/CJFAS - Bluefin Tuna Simulations/Figures/FvsF01-2.jpeg",
-     width = 800, height = 800, units = "px", quality = 100)
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Figures/FvsF01.jpeg",
+     width = 2000, height = 2000, units = "px", quality = 100, res = 300)
 plot_grid(West, East, rel_widths = c(10,9))
 dev.off()
 

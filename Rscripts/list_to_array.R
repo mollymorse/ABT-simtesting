@@ -10,7 +10,7 @@ library(plyr)
 
 
 # Load these R data objects from Ben into the environment:
-# alltrans_3D_juvenile_WABT_.Rdata
+# alltrans_3D_juvenile_WABT.Rdata
 # alltrans_3D_nojuvs.Rdata
 
 # list objects to use:
@@ -272,8 +272,8 @@ old_move <- array(old_move[1:7,2:1624],c(7,7,4,29,2),dimnames=list(zone=1:7,zone
 
 par(mfrow=c(2,2))
 sapply(1:4, function(x) {
-  image.plot(1:7, 1:7, old_move[,,x,11,2], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
-  text(ex7[,1], ex7[,2], paste0(round(t(old_move[,,x,11,2]),2)))#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
+  image.plot(1:7, 1:7, old_move[,,x,11,1], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
+  text(ex7[,1], ex7[,2], paste0(round(t(old_move[,,x,11,1]),2)))#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
   grid(7, 7, col = 'grey50')
   axis(1, at = 1:7, labels=paste0('e',1:7), cex.axis = 1.3, font.axis = 2)
   axis(2, at = 1:7, labels=paste0('s',1:7), cex.axis = 1.3, font.axis = 2)

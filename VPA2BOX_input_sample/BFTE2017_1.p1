@@ -1,0 +1,102 @@
+# PARAMETER FILE FOR PROGRAM VPA_2BOX, Version 3.0
+## Parameter file generated automatically with the write_p1VPA R function on Thu Apr 05 12:05:33 2018
+#-----------------------------------------------------------------------------
+#        The specifications are entered in the order indicated 
+#        by the existing comments. Additional comments must be preceded by a number symbol
+#        in the first column, otherwise the line is perceived as free format input.
+#
+#      	Each parameter in the model must have its own specification lines unless a dollar 
+#      	symbol is placed in the first column followed by an integer value (n), which 
+#      	tells the program that the next n parameters abide by the same specifications.
+#
+#      	The format of each specification line is as follows
+#
+#      	column 1
+#      	|   number of parameters to which these specifications apply
+#      	|   |    lower bound
+#      	|   |    |       best estimate (prior expectation)
+#      	|   |    |       |       upper bound
+#      	|   |    |       |       |       method of estimation
+#      	|   |    |       |       |       |      standard deviation of prior 
+#      	$   5    0       1.2     2.0     1      0.1
+#
+#	The methods of estimation include:
+#	0  	set equal to the value given for the best estimate (a fixed constant)
+#	1	estimate in the usual frequentist (non-Bayesian) sense 
+#	2(0.1)	estimate as a random deviation from the previous parameter
+#	3(0.2)	estimate as a random deviation from the previous constant or type 1 parameter
+#	4(0.3)	estimate as random deviation from the best estimate.
+#	-0.1  	set equal to the value of the closest previous estimated parameter
+#	-n  	set equal to the value of the nth parameter in the list (estimated or not)
+#-----------------------------------------------------------------------------
+#=============================================================================
+# TERMINAL F PARAMETERS: (lower bound, best estimate, upper bound, indicator, reference age)
+#   	Note 1: the method indicator for the terminal F parameters is unique in that if it is
+#   	zero but the best estimate is set to a value < 9, then the 'best estimate'
+#   	is taken to be the vulnerability relative to the reference age in the last 
+#   	(fifth) column.  Otherwise these parameters are treated the same as the
+#    	others below and the fifth column is the standard deviation of the prior.
+# 	Note 2: the last age is represented by an F-ratio parameter (below), so the number
+#     	of entries here should be 1 fewer than the number of ages 
+#-----------------------------------------------------------------------------
+  0.1000D-06   0.2000D+00   0.5000D+01      1.0   0.0100D+01
+  0.1000D-06   0.2000D+00   0.5000D+01      1.0   0.0100D+01
+  0.1000D-06   0.2000D+00   0.5000D+01      1.0   0.0100D+01
+  0.1000D-06   0.2000D+00   0.5000D+01      1.0   0.0100D+01
+  0.1000D-06   0.2000D+00   0.5000D+01      1.0   0.0100D+01
+  0.1000D-06   0.2000D+00   0.5000D+01      1.0   0.0100D+01
+  0.1000D-06   0.2000D+00   0.5000D+01      1.0   0.0100D+01
+  0.1000D-06   0.2000D+00   0.5000D+01      1.0   0.0100D+01
+  0.1000D-06   0.2000D+00   0.5000D+01      1.0   0.0100D+01
+#=============================================================================
+# F-RATIO PARAMETERS F{oldest}/F{oldest-1} one parameter (set of specifications) for each year
+#-----------------------------------------------------------------------------
+$ 1  0.0100D-01   1.2500D+00   4.0000D+01      1.0   0.3000D+00
+$ 6  0.0100D-01   1.2500D+00   4.0000D+01      -0.1   0.3000D+00
+$ 1  0.0100D-01   1.2500D+00   4.0000D+01      1.0   0.3000D+00
+$ 14  0.0100D-01   1.2500D+00   4.0000D+01      -0.1   0.3000D+00
+$ 1  0.0100D-01   1.2500D+00   4.0000D+01      1.0   0.3000D+00
+$ 11  0.0100D-01   1.2500D+00   4.0000D+01      -0.1   0.3000D+00
+$ 8  0.0100D-01   1.0000D+00   4.0000D+01      0.0   0.3000D+00
+#=============================================================================
+# NATURAL MORTALITY PARAMETERS: one parameter (set of specifications) for each age
+#-----------------------------------------------------------------------------
+  0.0000D+00   0.3800D+00   1.0000D+00      0.0   0.1000D+00
+  0.0000D+00   0.3000D+00   1.0000D+00      0.0   0.1000D+00
+  0.0000D+00   0.2400D+00   1.0000D+00      0.0   0.1000D+00
+  0.0000D+00   0.2000D+00   1.0000D+00      0.0   0.1000D+00
+  0.0000D+00   0.1800D+00   1.0000D+00      0.0   0.1000D+00
+  0.0000D+00   0.1600D+00   1.0000D+00      0.0   0.1000D+00
+  0.0000D+00   0.1400D+00   1.0000D+00      0.0   0.1000D+00
+  0.0000D+00   0.1300D+00   1.0000D+00      0.0   0.1000D+00
+  0.0000D+00   0.1200D+00   1.0000D+00      0.0   0.1000D+00
+  0.0000D+00   0.1000D+00   1.0000D+00      0.0   0.1000D+00
+#=============================================================================
+# MIXING PARAMETERS: one parameter (set of specifications) for each age
+#-----------------------------------------------------------------------------
+$ 10  0.0000D+00   0.0000D+00   1.0000D+00      0.0   0.1000D+00
+#=============================================================================
+# STOCK-RECRUITMENT PARAMETERS: five parameters so 5 sets of specifications
+#-----------------------------------------------------------------------------
+  0.0000D+00   0.2507D+06   0.1000D+21      0.0   0.4000D+00
+  0.0000D+00   0.1660D+05   0.1000D+21      0.0   0.0000D+00
+  0.0000D+00   0.1580D+00   0.9000D+00      0.0   0.0000D+00
+  0.0000D+00   0.1000D+01   0.2000D+01      0.0   0.0000D+00
+  0.0000D+00   0.1000D+01   0.2000D+01      0.0   0.0000D+00
+#=============================================================================
+# VARIANCE SCALING PARAMETER (lower bound, best estimate, upper bound, indicator, std. dev.) 
+#   this parameter scales the input variance up or down as desired
+#   In principal, if you estimate this you should obtain more accurate estimates of the
+#   magnitude of the parameter variances-- all other things being equal.
+#-----------------------------------------------------------------------------
+  0.0000D+00   0.1000D+01   0.1000D+04      1.0   0.4000D+00
+  0.0000D+00   0.1000D+01   0.1000D+04      -0.1   0.4000D+00
+  0.0000D+00   0.1000D+01   0.1000D+04      1.0   0.4000D+00
+  0.0000D+00   0.1000D+01   0.1000D+04      -0.1   0.4000D+00
+  0.0000D+00   0.1000D+01   0.1000D+04      -0.1   0.4000D+00
+  0.0000D+00   0.1000D+01   0.1000D+04      1.0   0.4000D+00
+  0.0000D+00   0.1000D+01   0.1000D+04      -0.1   0.4000D+00
+  0.0000D+00   0.1000D+01   0.1000D+04      1.0   0.4000D+00
+  0.0000D+00   0.1000D+01   0.1000D+04      1.0   0.4000D+00
+  0.0000D+00   0.1000D+01   0.1000D+04      1.0   0.4000D+00
+@ END PARAMETER INPUT

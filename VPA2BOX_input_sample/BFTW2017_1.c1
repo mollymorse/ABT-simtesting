@@ -1,0 +1,91 @@
+#-----------------------------------------------------------------------------
+#--               CONTROL FILE FOR PROGRAM VPA-2BOX, Version 3.0           ---
+#-----------------------------------------------------------------------------
+#  INSTRUCTIONS: the control options are entered in the order specified.
+#                Additional comment lines may be inserted anywhere in this 
+#                file provided they are preceded by a # symbol in the FIRST 
+#                column, otherwise the line is perceived as free-format data.
+#-----------------------------------------------------------------------------
+# Input file generated automatically with the write_c1VPA R function on Fri Aug 17 14:20:59 2018
+#-----------------------------------------------------------------------------
+# TITLES AND FILE NAMES (MUST BE PLACED WITHIN SINGLE QUOTES)
+#-----------------------------------------------------------------------------
+#|--------must be 50 characters or less----------|
+'BFTW2017_1974-2015 Run 1'
+'BFTW2017_1.d1'
+'BFTW2017_1.p1'
+'BFTW2017_1_RESULTS.R'
+'BFTW2017_1.e1'
+'BFTW2017_1.spd'
+'none'
+#-----------------------------------------------------------------------------
+# MODEL TYPE OPTIONS
+#-----------------------------------------------------------------------------
+1
+1
+#-----------------------------------------------------------------------------
+# TAGGING DATA SWITCH
+#-----------------------------------------------------------------------------
+# tagging data switch (0=do not use tagging data, 1=use tagging data)
+# |  weighting factor for modifying importance of tagging data in objective function
+# |  |     tag timing factors
+# |  |     |    
+0 1 0 0 
+#-----------------------------------------------------------------------------
+# SEARCH ALGORITHM CONTROLS
+#-----------------------------------------------------------------------------
+-50
+600
+10
+0.4
+#-----------------------------------------------------------------------------
+# INDEX WEIGHTING CONTROLS
+#-----------------------------------------------------------------------------
+1
+0
+1
+#-----------------------------------------------------------------------------
+# CONSTRAINT ON VULNERABILITY (PARTIAL RECRUITMENT) 
+#-----------------------------------------------------------------------------
+# apply this penalty to the last N years (SET N = 0 TO IGNORE)
+# |  standard deviation controlling the severity of the penalty
+# |  |  first age affected   
+# |  |  |  last age affected
+# |  |  |  | 
+3 0.5 1 15
+#-----------------------------------------------------------------------------
+# CONSTRAINTS ON RECRUITMENT 
+#-----------------------------------------------------------------------------
+# apply this penalty to the last N years (SET N = 0 TO IGNORE)
+# |  standard deviation controlling the severity of the penalty
+0 0.1 links the recruitments in the last n years
+0 0.1 1 links the recruitments of the two stocks
+#        |
+#        ratio of stock (sex) 1 to stock (sex) 2 {a value of 1 means a 1:1 ratio}
+#-----------------------------------------------------------------------------
+# CONSTRAINT ON SPAWNER-RECRUIT RELATIONSHIP
+#-----------------------------------------------------------------------------
+# PDF of spawner-recruit penalty: 0=none, 1=lognormal, 2=normal (-)=estimate sigma by MLE
+# |  first and last years to use in fitting (in terms of recruits)
+# |  |
+0 1974 1998
+#               (note: check the parameter file to make sure you are estimating the S/R 
+#                           parameters when pdf not 0, or not estimating them when pdf=0))
+#-----------------------------------------------------------------------------
+# PARAMETER ESTIMATION OPTIONS
+#----------------------------------------------------------------------------
+1
+1
+#-----------------------------------------------------------------------------
+# BOOTSTRAP ANALYSES 
+#-----------------------------------------------------------------------------
+# Number of bootstraps to run (negative value = do a parametric bootstrap)
+# |   Use Stine correction to inflate bootstrap residuals (0=NO)
+# |   |   File type (0 = ASC-II, 1=Binary)
+# |   |   |
+0 1 1
+#-----------------------------------------------------------------------------
+# RETROSPECTIVE ANALYSES (CANNOT DO RETROSPECTIVE ANALYSES AND BOOTSTRAPS AT SAME TIME)
+#-----------------------------------------------------------------------------
+0
+@@EOF@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@

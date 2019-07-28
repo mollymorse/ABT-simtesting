@@ -14,6 +14,7 @@ library(gridExtra)
 library(scales)
 library(grid)
 library(cowplot)
+library(readr)
 yrs <- 1974:2015
 nyr <- 42
 # run the following 3 lines to import "Times New Roman" and other fonts if haven't done already (must have extrafont package installed)
@@ -130,6 +131,69 @@ dev.off()
 
 
 
+## Population SSB by area (for stacked area charts) ##
+e_area <- read_csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/Pssb-eastarea.csv")
+w_area <- read_csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/Pssb-westarea.csv")
+e_area <- melt(e_area, id.vars = "year")
+w_area <- melt(w_area, id.vars = "year")
+
+grob1 <- grobTree(textGrob("E", x = 0.05, y = 0.95, hjust = 0,
+                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+w_area_plot <-
+  ggplot(w_area, aes(year, value, fill = variable)) +
+  geom_area(color = "black") +
+  scale_fill_manual(values = c("black", "gray85")) +
+  theme_classic() +
+  labs(y = "SSB
+(tonnes)", x = "") +
+  theme(axis.title.y = element_text(family = "Times New Roman",
+                                    size = 24,
+                                    face = "bold"),
+        axis.text.x = element_text(family = "Times New Roman",
+                                   size = 20),
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 20),
+        legend.position = c(0.08, 0.8),
+        legend.title = element_blank(),
+        legend.text = element_text(family = "Times New Roman",
+                                   size = 17),
+        # legend.key.width = unit(.8, "cm"),
+        legend.key.size = unit(.8, "cm")) +
+  scale_y_continuous(label = scientific_format(digits = 1), breaks = seq(0,100000,50000)) +
+  scale_x_continuous(breaks = seq(1974,2015,10)) +
+  coord_cartesian(ylim=c(0,100000)) +
+  annotation_custom(grob1)
+
+
+grob2 <- grobTree(textGrob("F", x = 0.05, y = 0.95, hjust = 0,
+                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+e_area_plot <-
+  ggplot(e_area, aes(year, value, fill =  variable)) +
+  geom_area(color = "black") +
+  scale_fill_manual(values = c("black", "gray85")) +
+  theme_classic() +
+  labs(y = "", x = "") +
+  theme(axis.text.x = element_text(family = "Times New Roman",
+                                   size = 20),
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 20),
+        legend.position = c(0.08, 0.8),
+        legend.title = element_blank(),
+        legend.text = element_text(family = "Times New Roman",
+                                   size = 17),
+        # legend.key.width = unit(1, "cm")) +
+        legend.key.size = unit(.8, "cm")) +
+  scale_y_continuous(label = scientific_format(digits = 1), breaks = seq(0,1000000,500000)) +
+  scale_x_continuous(breaks = seq(1974,2015,10)) +
+  coord_cartesian(ylim=c(0,1000000)) +
+  annotation_custom(grob2)
+
+
+
+
+
+
+
 #### COMPARING OM to ICCAT ####
 
 setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/Misc")
@@ -176,10 +240,12 @@ ICCAT.E.SSB <- ICCAT[,2]
 E.SSB <- cbind(1974:2015, OM.E.SSB.P.base, OM.E.SSB.S.base) #w/o ICCAT
 E.SSB.df <- as.data.frame(E.SSB)
 # colnames(E.SSB.df) <- c("years","Population view","Stock view","ICCAT") #w/ ICCAT
-colnames(E.SSB.df) <- c("years","Population view","Stock view") #w/o ICCAT
+colnames(E.SSB.df) <- c("years","Population","Stock") #w/o ICCAT
 E.SSB_1 <- melt(E.SSB.df, id.vars = "years")
 
-# E.SSB.OM.plot <-
+grob3 <- grobTree(textGrob("D", x = 0.05, y = 0.95, hjust = 0,
+                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+E.SSB.OM.plot <-
   ggplot(data = E.SSB_1, aes(x = years, y = value)) +
   geom_line(aes(linetype = variable), size = 1.5) +  
   theme_classic() +
@@ -187,24 +253,29 @@ E.SSB_1 <- melt(E.SSB.df, id.vars = "years")
   theme(plot.title = element_text(family = "Times New Roman",
                                   size = 24,
                                   face = "bold",
-                                  hjust = 0.5),
+                                  hjust = 0.5,
+                                  margin = margin(b = 10)),
         axis.title.y = element_text(family = "Times New Roman",
                                     size = 24,
                                     face = "bold"),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 22),
+        # axis.text.x = element_text(family = "Times New Roman",
+        #                            size = 22),
+        axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22),
-        legend.position = c(0.25, 0.85),
+                                   size = 20),
+        legend.position = c(0.1, 0.8),
         legend.title = element_blank(),
         legend.text = element_text(family = "Times New Roman",
-                                   size = 19),
-        legend.key.width = unit(2, "cm")) +
+                                   size = 17),
+        legend.key.width = unit(1.6, "cm"),
+        legend.key.size = unit(.8, "cm")) +
   # scale_size_manual(values = c(1, 1, 2)) +
-  # scale_linetype_manual(values = c("solid","dashed","solid)) +
+  scale_linetype_manual(values = c("solid","dashed")) +
   scale_y_continuous(label = scientific_format(digits = 1), breaks = seq(0,1000000,500000)) +
   scale_x_continuous(breaks = seq(1974,2015,10)) +
-  coord_cartesian(ylim=c(0,1000000))
+  coord_cartesian(ylim=c(0,1000000)) +
+  annotation_custom(grob3)
+  
 
 
 
@@ -222,9 +293,11 @@ ICCAT.W.SSB <- ICCAT[,3]
 W.SSB <- cbind(1974:2015,  OM.W.SSB.P.base, OM.W.SSB.S.base) #w/o ICCAT
 W.SSB.df <- as.data.frame(W.SSB)
 # colnames(W.SSB.df) <- c("years","Population view","Stock view","ICCAT") #w/ ICCAT
-colnames(W.SSB.df) <- c("years","Population view","Stock view")
+colnames(W.SSB.df) <- c("years","Population","Stock")
 W.SSB_1 <- melt(W.SSB.df, id.vars="years")
 
+grob4 <- grobTree(textGrob("C", x = 0.05, y = 0.95, hjust = 0,
+                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
 W.SSB.OM.plot <-
   ggplot(data = W.SSB_1, aes(x = years,y = value)) +
   geom_line(aes(linetype = variable), size = 1.5) +
@@ -234,25 +307,29 @@ W.SSB.OM.plot <-
   theme(plot.title = element_text(family ="Times New Roman",
                                   size = 24,
                                   face = "bold",
-                                  hjust = 0.5),
+                                  hjust = 0.5,
+                                  margin = margin(b = 10)),
         axis.title.y = element_text(family = "Times New Roman",
                                     size = 24,
                                     face = "bold",
                                     margin = margin(r = 10)),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 22),
+        # axis.text.x = element_text(family = "Times New Roman",
+        #                            size = 22),
+        axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22),
-        legend.position = c(0.25, 0.85),
+                                   size = 20),
+        legend.position = c(0.1, 0.8),
         legend.title = element_blank(),
         legend.text = element_text(family = "Times New Roman",
-                                   size = 19),
-        legend.key.width = unit(2, "cm")) +
-  # scale_linetype_manual(values = c("solid", "dotted", "solid")) +
+                                   size = 17),
+        legend.key.width = unit(1.6, "cm"),
+        legend.key.size = unit(.8, "cm")) +
+  scale_linetype_manual(values = c("solid", "dashed")) +
   # scale_size_manual(values = c(1,1,2)) +
   scale_y_continuous(label=scientific_format(digits = 1), breaks = seq(0,100000,50000)) +
   scale_x_continuous(breaks = seq(1974,2015,10)) +
-  coord_cartesian(ylim=c(0,100000))
+  coord_cartesian(ylim=c(0,100000)) +
+  annotation_custom(grob4)
 
 
 ## OM EAST RECRUITMENT ##
@@ -267,6 +344,8 @@ E.R.df <- as.data.frame(E.R)
 colnames(E.R.df) <- c("years") #w/o alt OM
 E.R_1 <- melt(E.R.df, id.vars="years")
 
+grob5 <- grobTree(textGrob("B", x = 0.05, y = 0.95, hjust = 0,
+                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
 E.R.OM.plot <-
   ggplot(data = E.R_1,aes(x = years, y = value)) +
   geom_line(size = 1.5) +
@@ -283,13 +362,14 @@ E.R.OM.plot <-
         #                           size = 14),
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22),
+                                   size = 20),
         legend.position = "right",
         legend.title = element_blank(),
         legend.text = element_text(family = "Times New Roman")) +
   scale_y_continuous(label=scientific_format(digits = 2), breaks = seq(0,6000000,2000000)) +
   scale_x_continuous(breaks = seq(1974,2015,10)) +
-  coord_cartesian(ylim=c(0,6000000))
+  coord_cartesian(ylim=c(0,6000000)) +
+  annotation_custom(grob5)
 
 
 ## OM WEST RECRUITMENT ##
@@ -308,6 +388,8 @@ W.R_1 <- melt(W.R.df, id.vars="years")
 # W.R.df <- as.data.frame(W.R)
 # colnames(W.R.df) <- c("years", "Base/ICCAT")
 # W.R_1 <- melt(W.R.df, id.vars="years")
+grob6 <- grobTree(textGrob("A", x = 0.05, y = 0.95, hjust = 0,
+                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
 W.R.OM.plot <-
   ggplot(data=W.R_1,aes(x = years, y = value)) +
   geom_line(size = 1.5) +
@@ -326,25 +408,27 @@ W.R.OM.plot <-
         #                           size = 14),
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22),
+                                   size = 20),
         legend.position = "none",
         legend.title = element_blank()) +
   scale_y_continuous(label=scientific_format(digits = 2)) +
   scale_x_continuous(breaks = seq(1974,2015,10)) +
-  coord_cartesian(xlim=c(1974:2015))
+  coord_cartesian(xlim=c(1974:2015)) +
+  annotation_custom(grob6)
 
 
 ## OM PLOT LAYOUTS ##
-jpeg("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Publishing/Revisions - Bluefin Tuna Simulations/Figures/OMplots.jpeg",
-     width = 1200, height = 900, units = "px", quality = 100)
-grid.arrange(W.R.OM.plot, E.R.OM.plot,
-             W.SSB.OM.plot, E.SSB.OM.plot,
-             ncol = 2, nrow = 2)
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Figures/OMplots.jpeg",
+     width = 4000, height = 4200, units = "px", quality = 100, res = 300)
+# grid.arrange(W.R.OM.plot, E.R.OM.plot,
+#              W.SSB.OM.plot, E.SSB.OM.plot,
+#              w_area_plot, e_area_plot,
+#              ncol = 2, nrow = 3)
+plot_grid(W.R.OM.plot, E.R.OM.plot,
+          W.SSB.OM.plot, E.SSB.OM.plot,
+          w_area_plot, e_area_plot,
+          ncol = 2, nrow = 3, align = "v")
 dev.off()
-
-
-
-
 
 
 
@@ -373,7 +457,7 @@ ggplot(data = df.plot, aes(x=years,y=value,linetype=variable, color= variable)) 
                                    size = 22),
         axis.text.y = element_text(family = "Times New Roman",
                                    size = 22),
-        legend.position = c(0.2, 0.85),
+        legend.position = c(0.2, 0.8),
         legend.title = element_blank(),
         legend.text = element_text(family = "Times New Roman",
                                    size = 19),
@@ -405,7 +489,7 @@ ggplot(data = dfw.plot, aes(x=years,y=value,linetype=variable, color= variable))
                                    size = 22),
         axis.text.y = element_text(family = "Times New Roman",
                                    size = 22),
-        legend.position = c(0.2, 0.85),
+        legend.position = c(0.2, 0.8),
         legend.title = element_blank(),
         legend.text = element_text(family = "Times New Roman",
                                    size = 19),

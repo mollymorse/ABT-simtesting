@@ -36,8 +36,6 @@ lowidx = which(east_overall >= quantile(east_overall, .75))# low movement out of
 highidx = which(east_overall >= quantile(east_overall, .25)) # high movement out of the east
 
 # some plots
-ehigh_ex = east_all[,,,highidx[2]]
-
 elow_ex = east_all[,,,lowidx[2]]
 
 seasons = c('winter','Spring','Summer','Fall')
@@ -58,6 +56,8 @@ sapply(1:4, function(x) {
 )
 
 # high
+ehigh_ex = east_all[,,,highidx[2]]
+
 par(mfrow=c(2,2))
 sapply(1:4, function(x) {
   image.plot(1:7, 1:7, ehigh_ex[,, x], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
@@ -68,7 +68,7 @@ sapply(1:4, function(x) {
   box()
   segments(3.5, y0 = 3.5, x1 = 7.5, y1 = 3.5, lwd = 2, col = 2, lty = 2)
   segments(3.5, y0 = 3.5, x1 = 3.5, y1 = 7.5, lwd = 2, col = 2, lty = 2)
-  title(paste0(seasons[x], ' low movement example'))
+  title(paste0(seasons[x], ' high movement example'))
 }
 )
 

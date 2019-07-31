@@ -119,8 +119,8 @@ ggplot(data = SSB_om_w, aes(x=years,y=value,linetype=variable)) +
         legend.key.width = unit(2, "cm")) +
   scale_size_manual(values = c(1,1,2)) +
   scale_linetype_manual(values = c("solid","dashed")) +
-  scale_y_continuous(label=scientific_format(digits = 1), breaks = seq(0,600000,300000)) +
-  coord_cartesian(ylim=c(0,600000))
+  scale_y_continuous(label=scientific_format(digits = 1), breaks = seq(0,100000,50000)) +
+  coord_cartesian(ylim=c(0,100000))
 
 jpeg("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/OM_ssb_meanmove.jpeg",
      width = 4400, height = 2200, units = "px", quality = 100, res = 300)
@@ -506,11 +506,11 @@ ggplot(data = dfw.plot, aes(x=years,y=value,linetype=variable, color= variable))
 
 
 # West #
-nsims <- 500
+nsims <- 10
 notconverge <- c()
 folder <- paste("West")
 for (n in 0:nsims) {
-  wd <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/Run", n, sep = "")
+  wd <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/Run", n, sep = "")
   setwd(wd)
   
   # VPA-2BOX.LOG file
@@ -532,7 +532,7 @@ for (n in 0:nsims) {
   
   if (cormat!="-NaN" & numbound < 1) {  #i.e., convergence criteria met
     results.from <- paste("BFTW2017_", n, "_RESULTS.R", sep = "")
-    results.to <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/Converged/BFTW2017_", n, "_RESULTS.R", sep = "")##Create "Converged" folder## 
+    results.to <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/Converged/BFTW2017_", n, "_RESULTS.R", sep = "")##Create "Converged" folder## 
     file.copy(results.from, results.to)  #copy converged results files to a new directory
   } else {  #i.e., convergence criteria not met
     notconverge <- append(notconverge,n)  #save nsim to remove from SSB, R results files
@@ -541,25 +541,34 @@ for (n in 0:nsims) {
 length(notconverge)  #gives number of runs that DID NOT converge
 100-(length(notconverge))/nsims*100  #gives % run that DID converge
 notconverge
-SSB.flnm <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/W_SSB_data.csv", sep = "")
+SSB.flnm <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/W_SSB_data.csv", sep = "")
 SSB.result <- read.csv(SSB.flnm, header = TRUE)  #read in all SSB results
 SSB.result <- SSB.result[1:42,-1]  #remove 1st col (years)
+if (length(notconverge) >= 1) {
+  SSB.converge <- SSB.result[,-notconverge]  #remove SSB results from runs that didn't converge
+} else {
+  SSB.converge <- SSB.result
+}
 SSB.converge <- SSB.result[,-notconverge]  #remove SSB results from runs that didn't converge
-SSB.write <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/Converged/W_SSB_data_converge.csv", sep = "")
+SSB.write <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/Converged/W_SSB_data_converge.csv", sep = "")
 write.csv(SSB.converge, SSB.write)  #write a new SSB results file only converged runs
 
-SSB.bias.flnm <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/W_SSB_bias_data.csv", sep = "")
+SSB.bias.flnm <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/W_SSB_bias_data.csv", sep = "")
 SSB.bias <- read.csv(SSB.bias.flnm, header = TRUE)  #read in all SSB results
 SSB.bias <- SSB.bias[1:42,-1]  #remove 1st col (years)
 SSB.bias.converge <- SSB.bias[,-notconverge]  #remove SSB results from runs that didn't converge
-SSB.bias.write <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/Converged/W_SSB_bias_data_converge.csv", sep = "")
+SSB.bias.write <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/Converged/W_SSB_bias_data_converge.csv", sep = "")
 write.csv(SSB.bias.converge, SSB.bias.write)  #write a new SSB results file only converged runs
 
-R.flnm <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/W_R_data.csv", sep = "")
+R.flnm <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/W_R_data.csv", sep = "")
 R.result <- read.csv(R.flnm, header = TRUE)  #read in all R results
 R.result <- R.result[1:42,-1]  #remove 1st col (years)
-R.converge <- R.result[,-notconverge]  #remove R results from runs that didn't converge
-R.write <- paste( "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/Converged/W_R_data_converge.csv", sep = "")
+if (length(notconverge) >= 1) {
+  R.converge <- R.result[,-notconverge]  #remove R results from runs that didn't converge
+} else {
+  R.converge <- R.result
+}
+R.write <- paste( "C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/Converged/W_R_data_converge.csv", sep = "")
 write.csv(R.converge, R.write)
 
 R.bias.flnm <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/W_R_bias_data.csv", sep = "")
@@ -589,11 +598,11 @@ legend(x = 1975, y = 2400000, legend = c("stochastic runs", "stochastic mean", "
        col = c("orchid1",2,4,1), lty = 1, lwd = c(1,2,2,3), cex = 0.8)
 
 # East #
-nsims <- 500
+nsims <- 10
 notconverge <- c()
-folder <- paste("East - 500 Sims - 2")
-for (n in 0:nsims) {
-  wd <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/Run", n, sep = "")
+folder <- paste("East")
+for (n in 1:nsims) {
+  wd <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/Run", n, sep = "")
   setwd(wd)
   
   # VPA-2BOX.LOG file
@@ -620,7 +629,7 @@ for (n in 0:nsims) {
   
   if (cormat!="-NaN" & numbound < 1 & xsq != "-NaN") {  #i.e., convergence criteria met
     results.from <- paste("BFTE2017_", n, "_RESULTS.R", sep = "")
-    results.to <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/Converged/BFTE2017_", n, "_RESULTS.R", sep = "")
+    results.to <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/Converged/BFTE2017_", n, "_RESULTS.R", sep = "")
     file.copy(results.from, results.to)  #copy converged results files to a new directory
   } else {  #i.e., convergence criteria not met
     notconverge <- append(notconverge,n)  #save nsim to remove from SSB, R results files
@@ -632,32 +641,40 @@ notconverge
 E500.notconv <- notconverge
 E500 <- c(1:500)
 E500.conv <- E500[-E500.notconv]
-SSB.flnm <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/E_SSB_data.csv", sep = "")
+SSB.flnm <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/E_SSB_data.csv", sep = "")
 SSB.result <- read.csv(SSB.flnm, header = TRUE)  #read in all SSB results
 SSB.result <- SSB.result[1:42,-1]  #remove 1st col (years)
-SSB.converge <- SSB.result[,-notconverge]  #remove SSB results from runs that didn't converge
-SSB.write <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/Converged/E_SSB_data_converge.csv", sep = "")
+if (length(notconverge) >= 1) {
+  SSB.converge <- SSB.result[,-notconverge]  #remove SSB results from runs that didn't converge
+} else {
+  SSB.converge <- SSB.result
+}
+SSB.write <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/Converged/E_SSB_data_converge.csv", sep = "")
 write.csv(SSB.converge, SSB.write)  #write a new SSB results file only converged runs
 
-SSB.bias.flnm <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/E_SSB_bias_data.csv", sep = "")
+SSB.bias.flnm <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/E_SSB_bias_data.csv", sep = "")
 SSB.bias <- read.csv(SSB.bias.flnm, header = TRUE)  #read in all SSB results
 SSB.bias <- SSB.bias[1:42,-1]  #remove 1st col (years)
 SSB.bias.converge <- SSB.bias[,-notconverge]  #remove SSB results from runs that didn't converge
-SSB.bias.write <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/Converged/E_SSB_bias_data_converge.csv", sep = "")
+SSB.bias.write <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/Converged/E_SSB_bias_data_converge.csv", sep = "")
 write.csv(SSB.bias.converge, SSB.bias.write)  #write a new SSB results file only converged runs
 
-R.flnm <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/E_R_data.csv", sep = "")
+R.flnm <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/E_R_data.csv", sep = "")
 R.result <- read.csv(R.flnm, header = TRUE)  #read in all R results
 R.result <- R.result[1:42,-1]  #remove 1st col (years)
-R.converge <- R.result[,-notconverge]  #remove R results from runs that didn't converge
-R.write <- paste( "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/Converged/E_R_data_converge.csv", sep = "")
+if (length(notconverge) >= 1) {
+  R.converge <- R.result[,-notconverge]  #remove R results from runs that didn't converge
+} else {
+  R.converge <- R.result
+}
+R.write <- paste( "C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/Converged/E_R_data_converge.csv", sep = "")
 write.csv(R.converge, R.write)
 
-R.bias.flnm <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/E_R_bias_data.csv", sep = "")
+R.bias.flnm <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/E_R_bias_data.csv", sep = "")
 R.bias <- read.csv(R.bias.flnm, header = TRUE)  #read in all R results
 R.bias <- R.bias[1:42,-1]  #remove 1st col (years)
 R.bias.converge <- R.bias[,-notconverge]  #remove R results from runs that didn't converge
-R.bias.write <- paste( "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/Converged/E_R_bias_data_converge.csv", sep = "")
+R.bias.write <- paste( "C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/Converged/E_R_bias_data_converge.csv", sep = "")
 write.csv(R.bias.converge, R.bias.write)
 # convergence plots #
 #boxplot - ggplot2
@@ -999,13 +1016,17 @@ W.F.PRB <-
 
 #### ESTIMATION MODEL PLOTS ####
 
+e_wd   <- "C:/Users/mmorse1/Documents/Simulations_lomov/"
+e_fldr <- "East"
+
 # EAST Recruitment Cross-test #
 years <- matrix(1974:2011,nrow = 38,ncol=1)
-E.R.data <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East - 500 Sims - 1/Converged/E_R_data_converge.csv", header = TRUE)
+E.R.data <- read.csv(paste0(e_wd, e_fldr, "/Converged/E_R_data_converge.csv"), header = TRUE)
 E.R.data[1:38,1] <- years
-E.R.sims <- as.data.frame(E.R.data[1:38,1:475]) #create data frame of simulations data
-colnames(E.R.sims) <- c("years",1:474)
-E.R.om <- as.data.frame(E.R.data[1:38,c(1,476)]) #create data frame of operating model data
+dat_col <- ncol(E.R.data) - 3
+E.R.sims <- as.data.frame(E.R.data[1:38, 1:dat_col]) #create data frame of simulations data
+colnames(E.R.sims) <- c("years", 1:(dat_col - 1))
+E.R.om <- as.data.frame(E.R.data[1:38, c(1,(dat_col + 1))]) #create data frame of operating model data
 colnames(E.R.om) <- c("years","OM")
 E.R.sims_1 <- melt(E.R.sims, id.vars = "years") #melt sims data
 allLevels <- levels(factor(c(E.R.sims_1$years,E.R.om$years)))  #change the x vars in both datasets to factors that contain all the levels of both vars
@@ -1067,14 +1088,15 @@ E.R.plot <-
 
 
 # EAST SSB Cross-test #
-years <- matrix(1974:2015,nrow = 42,ncol=1)
-E.SSB.data <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East - 500 Sims - 1/Converged/E_SSB_data_converge.csv", header = TRUE)
+years <- matrix(1974:2015, nrow = 42, ncol=1)
+E.SSB.data <- read.csv(paste0(e_wd, e_fldr, "/Converged/E_SSB_data_converge.csv"), header = TRUE)
 E.SSB.data[,1] <- years
-E.SSB.sims <- as.data.frame(E.SSB.data[1:42,1:475]) #create data frame of simulations data
-colnames(E.SSB.sims) <- c("years",1:474)
-E.SSB.omp <- as.data.frame(E.SSB.data[,c(1,476)]) #create data frame of operating model data
+dat_col <- ncol(E.SSB.data) - 4
+E.SSB.sims <- as.data.frame(E.SSB.data[1:42, 1:dat_col]) #create data frame of simulations data
+colnames(E.SSB.sims) <- c("years", 1:(dat_col - 1))
+E.SSB.omp <- as.data.frame(E.SSB.data[,c(1, (dat_col + 1))]) #create data frame of operating model data
 colnames(E.SSB.omp) <- c("years","OMP")
-E.SSB.oms <- as.data.frame(E.SSB.data[,c(1,477)])
+E.SSB.oms <- as.data.frame(E.SSB.data[,c(1, (dat_col + 2))])
 colnames(E.SSB.oms) <- c("years","OMS")
 E.SSB.sims_1 <- melt(E.SSB.sims, id.vars = "years") #melt sims data
 allLevels <- levels(factor(c(E.SSB.sims_1$years,E.SSB.omp$years,E.SSB.oms$years)))  #change the x vars in both datasets to factors that contain all the levels of both vars
@@ -1219,12 +1241,17 @@ E.F.plot <-
 
 
 ## WEST Recruitment ##
+
+w_wd   <- "C:/Users/mmorse1/Documents/Simulations_lomov/"
+w_fldr <- "West"
+
 years <- matrix(1974:2011,nrow = 38,ncol=1)
-W.R.data <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West - 500 Sims - 2/Converged/W_R_data_converge.csv", header = TRUE)
+W.R.data <- read.csv(paste0(w_wd, w_fldr, "/Converged/W_R_data_converge.csv"), header = TRUE)
 W.R.data[1:38,1] <- years
-W.R.sims <- as.data.frame(W.R.data[1:38,1:406]) #create data frame of simulations data
-colnames(W.R.sims) <- c("years",1:405)
-W.R.om <- as.data.frame(W.R.data[1:38,c(1,407)]) #create data frame of operating model data
+dat_col <- ncol(W.R.data) - 3
+W.R.sims <- as.data.frame(W.R.data[1:38, 1:dat_col]) #create data frame of simulations data
+colnames(W.R.sims) <- c("years",1:(dat_col - 1))
+W.R.om <- as.data.frame(W.R.data[1:38, c(1,(dat_col + 1))]) #create data frame of operating model data
 colnames(W.R.om) <- c("years","OM")
 W.R.sims_1 <- melt(W.R.sims, id.vars = "years") #melt sims data
 allLevels <- levels(factor(c(W.R.sims_1$years,W.R.om$years)))  #change the x vars in both datasets to factors that contain all the levels of both vars

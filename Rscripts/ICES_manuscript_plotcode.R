@@ -506,10 +506,10 @@ ggplot(data = dfw.plot, aes(x=years,y=value,linetype=variable, color= variable))
 
 
 # West #
-nsims <- 10
+nsims <- 500
 notconverge <- c()
 folder <- paste("West")
-for (n in 0:nsims) {
+for (n in 1:nsims) {
   wd <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/Run", n, sep = "")
   setwd(wd)
   
@@ -571,11 +571,11 @@ if (length(notconverge) >= 1) {
 R.write <- paste( "C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/Converged/W_R_data_converge.csv", sep = "")
 write.csv(R.converge, R.write)
 
-R.bias.flnm <- paste("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/W_R_bias_data.csv", sep = "")
+R.bias.flnm <- paste("C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/W_R_bias_data.csv", sep = "")
 R.bias <- read.csv(R.bias.flnm, header = TRUE)  #read in all R results
 R.bias <- R.bias[1:42,-1]  #remove 1st col (years)
 R.bias.converge <- R.bias[,-notconverge]  #remove R results from runs that didn't converge
-R.bias.write <- paste( "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/", folder, "/Converged/W_R_bias_data_converge.csv", sep = "")
+R.bias.write <- paste( "C:/Users/mmorse1/Documents/Simulations_lomov/", folder, "/Converged/W_R_bias_data_converge.csv", sep = "")
 write.csv(R.bias.converge, R.bias.write)
 
 BFTW.100.SSB <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/West - 100 Sims/W_SSB_data_converge.csv")
@@ -598,7 +598,7 @@ legend(x = 1975, y = 2400000, legend = c("stochastic runs", "stochastic mean", "
        col = c("orchid1",2,4,1), lty = 1, lwd = c(1,2,2,3), cex = 0.8)
 
 # East #
-nsims <- 10
+nsims <- 500
 notconverge <- c()
 folder <- paste("East")
 for (n in 1:nsims) {
@@ -803,7 +803,7 @@ E.selfSSB.PRB <- ggplot(E.SSB.biasavgdf, aes(years,vals)) +
 
 
 ## EAST APICAL F ##
-wd <- "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East - 500 Sims - 1/Converged"
+wd <- "C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged"
 setwd(wd)
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
                  list.files(path = wd, pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
@@ -934,7 +934,7 @@ W.baseSSB.PRB <-
 
 
 ## WEST APICAL F ##
-setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West - 500 Sims - 2/Converged")
+setwd("C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged")
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
                  list.files(path="C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West - 500 Sims - 2/Converged", pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
 runnums_w <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
@@ -1188,9 +1188,13 @@ E.SSB.plot <- ggplot(data=E.SSB.omp, aes(x=factor(years),y=OMP)) +
 
 
 ## EAST APICAL F ##
-E.F.ap     <- cbind(1974:2015, E.all.F.ap) %>% 
+# E.F.ap     <- cbind(1974:2015, E.all.F.ap) %>% 
+#   as.data.frame()
+# E.F.ap.OM  <- cbind(1974:2015, E.F.OM.ap) %>%
+#   as.data.frame()
+E.F.ap      <- cbind(1974:2015, all.F.ap.E) %>%
   as.data.frame()
-E.F.ap.OM  <- cbind(1974:2015, E.F.OM.ap) %>%
+E.F.ap.OM   <- cbind(1974:2015, F.OM.ap.E)  %>%
   as.data.frame()
 
 colnames(E.F.ap)    <- c("years", runnums_e)
@@ -1317,13 +1321,14 @@ W.R.plot <-
 
 # WEST SSB #
 years <- matrix(1974:2015,nrow = 42,ncol=1)
-W.SSB.data <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West - 500 Sims - 2/Converged/W_SSB_data_converge.csv", header = TRUE)
+W.SSB.data <- read.csv(paste0(w_wd, w_fldr, "/Converged/W_SSB_data_converge.csv"), header = TRUE)
 W.SSB.data[,1] <- years
-W.SSB.sims <- as.data.frame(W.SSB.data[1:42,1:406]) #create data frame of simulations data
-colnames(W.SSB.sims) <- c("years",1:405)
-W.SSB.omp <- as.data.frame(W.SSB.data[,c(1,407)]) #create data frame of operating model data
+dat_col <- ncol(W.SSB.data) - 4
+W.SSB.sims <- as.data.frame(W.SSB.data[1:42, 1:dat_col]) #create data frame of simulations data
+colnames(W.SSB.sims) <- c("years", 1:(dat_col - 1))
+W.SSB.omp <- as.data.frame(W.SSB.data[, c(1, (dat_col + 1))]) #create data frame of operating model data
 colnames(W.SSB.omp) <- c("years","OMP")
-W.SSB.oms <- as.data.frame(W.SSB.data[,c(1,408)])
+W.SSB.oms <- as.data.frame(W.SSB.data[, c(1, (dat_col + 2))])
 colnames(W.SSB.oms) <- c("years","OMS")
 W.SSB.sims_1 <- melt(W.SSB.sims, id.vars = "years") #melt sims data
 allLevels <- levels(factor(c(W.SSB.sims_1$years,W.SSB.omp$years,W.SSB.oms$years)))  #change the x vars in both datasets to factors that contain all the levels of both vars
@@ -1381,9 +1386,13 @@ W.SSB.plot <-
 
 
 ## WEST APICAL F ##
-W.F.ap     <- cbind(1974:2015, W.all.F.ap) %>% 
+# W.F.ap     <- cbind(1974:2015, W.all.F.ap) %>% 
+#   as.data.frame()
+# W.F.ap.OM  <- cbind(1974:2015, W.F.OM.ap) %>%
+#   as.data.frame()
+W.F.ap      <- cbind(1974:2015, all.F.ap.W) %>%
   as.data.frame()
-W.F.ap.OM  <- cbind(1974:2015, W.F.OM.ap) %>%
+W.F.ap.OM   <- cbind(1974:2015, F.OM.ap.W)  %>%
   as.data.frame()
 
 colnames(W.F.ap)    <- c("years", runnums_w)
@@ -1455,7 +1464,7 @@ grid.arrange(W.R.plot, E.R.plot,
              W.F.plot, E.F.plot,
              nrow = 3, ncol = 2)
 
-jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Figures/EMplots.jpeg",
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Figures/EMplots_lomov.jpeg",
      width = 4000, height = 4200, units = "px", quality = 100, res = 300)
 # w/ relative bias
 # plot_grid(W.R.plot, E.R.plot,
@@ -2885,66 +2894,66 @@ for (y in 1:42)
     F.OM.E[y,a] <- sum(Fa[y,a,1:4,4:7])
   }
 
-F.OM.ap <- matrix(NA, nrow = 42, ncol = 1)
+F.OM.ap.E <- matrix(NA, nrow = 42, ncol = 1)
 for (y in 1:42) {
-  F.OM.ap[y, ] <- max(F.OM.E[y, ])  #calc apical Fs (only to age 10; not summed over ages 10-29)
+  F.OM.ap.E[y, ] <- max(F.OM.E[y, ])  #calc apical Fs (only to age 10; not summed over ages 10-29)
 }
 
 #East OM (age 10 as plus group)
-F.OM.E2 <- array(NA, c(42,29),dimnames=list(year=1974:2015,age=1:29))
-for (y in 1:42)
-  for (a in 1:29) {
-    F.OM.E2[y, a] <- sum(Fa[y, a, 1:4, 4:7])
-  }
+# F.OM.E2 <- array(NA, c(42,29),dimnames=list(year=1974:2015,age=1:29))
+# for (y in 1:42)
+#   for (a in 1:29) {
+#     F.OM.E2[y, a] <- sum(Fa[y, a, 1:4, 4:7])
+#   }
+# 
+# F.OM.E2pl <- array(NA, c(42,1), dimnames = list(year = 1974:2015, age=10))
+# for (y in 1:42) {
+#   F.OM.E2pl[y] <- sum(F.OM.E2[y, 10:29])  #sum all plus group ages Fs
+# }
+# F.OM.E2new <- cbind(F.OM.E2[, 1:9], F.OM.E2pl)  #bind ages 1-9 with plus group
+# 
+# F.OM.ap2 <- matrix(NA, nrow = 42, ncol = 1)
+# for (i in 1:42) {
+#   F.OM.ap2[i, ] <- max(F.OM.E2new[i, ])  #calc apical Fs
+# }
 
-F.OM.E2pl <- array(NA, c(42,1), dimnames = list(year = 1974:2015, age=10))
-for (y in 1:42) {
-  F.OM.E2pl[y] <- sum(F.OM.E2[y, 10:29])  #sum all plus group ages Fs
-}
-F.OM.E2new <- cbind(F.OM.E2[, 1:9], F.OM.E2pl)  #bind ages 1-9 with plus group
 
-F.OM.ap2 <- matrix(NA, nrow = 42, ncol = 1)
-for (i in 1:42) {
-  F.OM.ap2[i, ] <- max(F.OM.E2new[i, ])  #calc apical Fs
-}
-
-
-#West OM
+#West OM (end at age 16)
 F.OM.W <- array(NA, c(42,16),dimnames=list(year=1974:2015,age=1:16))
 for (y in 1:42)
   for (a in 1:16) {
     F.OM.W[y,a] <- sum(Fa[y,a,1:4,1:3])
   }
 
-#West OM (age 16 as plus group)
-F.OM.W2 <- array(NA, c(42,29),dimnames=list(year=1974:2015,age=1:29))
-for (y in 1:42)
-  for (a in 1:29) {
-    F.OM.W2[y, a] <- sum(Fa[y, a, 1:4, 1:3])
-  }
-
-F.OM.W2pl <- array(NA, c(42,1), dimnames = list(year = 1974:2015, age=16))
-for (y in 1:42) {
-  F.OM.W2pl[y] <- sum(F.OM.W2[y, 16:29])
-}
-F.OM.W2new <- cbind(F.OM.W2[, 1:15], F.OM.W2pl)
-
-F.OM.ap <- matrix(NA, nrow = 42, ncol = 1)
+F.OM.ap.W <- matrix(NA, nrow = 42, ncol = 1)
 for (i in 1:42) {
-  F.OM.ap[i, ] <- max(F.OM.W[i, ])
+  F.OM.ap.W[i, ] <- max(F.OM.W[i, ])  #calc apical Fs (end at age 16; not summed over ages 16-29)
 }
 
-F.OM.ap2 <- matrix(NA, nrow = 42, ncol = 1)
-for (i in 1:42) {
-  F.OM.ap2[i, ] <- max(F.OM.W2new[i, ])
-}
+# #West OM (age 16 as plus group)
+# F.OM.W2 <- array(NA, c(42,29),dimnames=list(year=1974:2015,age=1:29))
+# for (y in 1:42)
+#   for (a in 1:29) {
+#     F.OM.W2[y, a] <- sum(Fa[y, a, 1:4, 1:3])  #sum over quarters and zones
+#   }
+# 
+# F.OM.W2pl <- array(NA, c(42,1), dimnames = list(year = 1974:2015, age=16))
+# for (y in 1:42) {
+#   F.OM.W2pl[y] <- sum(F.OM.W2[y, 16:29])  #sum all plus group ages Fs
+# }
+# F.OM.W2new <- cbind(F.OM.W2[, 1:15], F.OM.W2pl)  #bind ages 1-15 with plus group
+# 
+# F.OM.ap2 <- matrix(NA, nrow = 42, ncol = 1)
+# for (i in 1:42) {
+#   F.OM.ap2[i, ] <- max(F.OM.W2new[i, ])  #calc apical Fs (age 16 as plus group)
+# }
 
 
 # Compare averages of the stochastic F-at-age matrices to the OM
 #East
-wd <- "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/East - 500 Sims - 1/Converged" #switch folder
+wd <- "C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged" #switch folder
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
-                 list.files(path="C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/East - 500 Sims - 1/Converged", pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
+                 list.files(path="C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged", pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
 runnums <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
 setwd(wd)
 all.F.stoch <- array(NA, c(nyr,nageE,length(runnums)), dimnames = list(year=1974:2015, age=1:nageE, run=runnums))
@@ -2969,9 +2978,9 @@ for (y in 1:nyr)
 matplot(1974:2015, F.stoch.avg, type = "l")
 
 #West
-wd <- "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/West - 500 Sims - 2/Converged" #switch folder
+wd <- "C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged" #switch folder
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
-                 list.files(path="C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/West - 500 Sims - 2/Converged", pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
+                 list.files(path="C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged", pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
 runnums <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
 setwd(wd)
 all.F.stoch <- array(NA, c(nyr,nageW,length(runnums)), dimnames = list(year=1974:2015, age=1:nageW, run=runnums))
@@ -2999,12 +3008,12 @@ matplot(1974:2015, F.stoch.avg, type = "l", ylim = c(0,0.6))
 
 # Compare apical F from stochastic runs to the OM
 #East
-wd <- "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/East - 500 Sims - 1/Converged" #switch folder
+wd <- "C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged" #switch folder
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
-                 list.files(path="C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/East - 500 Sims - 1/Converged", pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
+                 list.files(path="C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged", pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
 runnums <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
 setwd(wd)
-all.F.ap <- array(NA, c(nyr,length(runnums)), dimnames = list(year = 1974:2015, run = runnums))
+all.F.ap.E <- array(NA, c(nyr,length(runnums)), dimnames = list(year = 1974:2015, run = runnums))
 
 for (i in 1:length(runnums)) {
   
@@ -3020,35 +3029,36 @@ for (i in 1:length(runnums)) {
   
   for (j in 1:42) {
     
-    all.F.ap[j, i] <- max(F.res[j, ])
+    all.F.ap.E[j, i] <- max(F.res[j, ])
   
   }
 
 }
 
-F.ap     <- cbind(1974:2015,all.F.ap) %>% 
+F.ap.E     <- cbind(1974:2015,all.F.ap.E) %>% 
   as.data.frame()
-F.ap.OM  <- cbind(1974:2015, F.OM.ap) %>%
+F.ap.OM.E  <- cbind(1974:2015, F.OM.ap.E) %>%
   as.data.frame()
-F.ap2.OM <- cbind(1974:2015, F.OM.ap2) %>%
-  as.data.frame()
+# F.ap2.OM <- cbind(1974:2015, F.OM.ap2) %>%
+#   as.data.frame()
 
-colnames(F.ap)    <- c("years", runnums)
-colnames(F.ap.OM) <- c("years", "OM")
-colnames(F.ap2.OM) <- c("years", "OM2")
-F.ap.gg <- melt(F.ap, id.vars = "years")
+colnames(F.ap.E)    <- c("years", runnums)
+colnames(F.ap.OM.E) <- c("years", "OM")
+# colnames(F.ap2.OM) <- c("years", "OM2")
+F.ap.gg.E <- melt(F.ap.E, id.vars = "years")
 
-allLevels <- levels(factor(c(F.ap.gg$years, F.ap.OM$years, F.ap2.OM$years)))
-F.ap.gg$years  <- factor(F.ap.gg$years,levels=(allLevels))
-F.ap.OM$years  <- factor(F.ap.OM$years,levels=(allLevels))
-F.ap2.OM$years <- factor(F.ap2.OM$years,levels=(allLevels))
+allLevels <- levels(factor(c(F.ap.gg.E$years, F.ap.OM.E$years)))
+# allLevels <- levels(factor(c(F.ap.gg.E$years, F.ap.OM.E$years, F.ap2.OM$years)))
+F.ap.gg.E$years  <- factor(F.ap.gg.E$years,levels=(allLevels))
+F.ap.OM.E$years  <- factor(F.ap.OM.E$years,levels=(allLevels))
+# F.ap2.OM$years <- factor(F.ap2.OM$years,levels=(allLevels))
 
 # BOXPLOT FOR MANUSCRIPT
 E.F.plot <-
-  ggplot(data=F.ap.OM, aes(x=years, y=OM)) +
-  geom_boxplot(data=F.ap.gg,aes(x=years, y=value), color="black", fill="gray80") + 
-  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5, color="red") +
-  geom_line(data=F.ap2.OM, aes(x=years, y=OM2, group = 1), color = "blue", size = 1.5) +
+  ggplot(data=F.ap.OM.E, aes(x=years, y=OM)) +
+  geom_boxplot(data=F.ap.gg.E,aes(x=years, y=value), color="black", fill="gray80") + 
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5, color="black") +
+  # geom_line(data=F.ap2.OM, aes(x=years, y=OM2, group = 1), color = "blue", size = 1.5) +
   labs(y = "Fishing mortality rate", x = "", title = "East") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1974,2015,10)) +
@@ -3070,12 +3080,12 @@ E.F.plot <-
 
 
 #West
-wd <- "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/West - 500 Sims - 2/Converged" #switch folder
+wd <- "C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged" #switch folder
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
-                 list.files(path="C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_selftest/West - 500 Sims - 2/Converged", pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
+                 list.files(path="C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged", pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
 runnums <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
 setwd(wd)
-all.F.ap <- array(NA, c(nyr,length(runnums)), dimnames = list(year = 1974:2015, run = runnums))
+all.F.ap.W <- array(NA, c(nyr,length(runnums)), dimnames = list(year = 1974:2015, run = runnums))
 
 for (i in 1:length(runnums)) {
   
@@ -3089,34 +3099,35 @@ for (i in 1:length(runnums)) {
   
   for (j in 1:42) {
     
-    all.F.ap[j, i] <- max(F.res[j, ])
+    all.F.ap.W[j, i] <- max(F.res[j, ])
     
   }
 }
 
-F.ap     <- cbind(1974:2015,all.F.ap) %>% 
+F.ap.W     <- cbind(1974:2015,all.F.ap.W) %>% 
   as.data.frame()
-F.ap.OM  <- cbind(1974:2015, F.OM.ap) %>%
+F.ap.OM.W  <- cbind(1974:2015, F.OM.ap.W) %>%
   as.data.frame()
-F.ap2.OM <- cbind(1974:2015, F.OM.ap2) %>%
-  as.data.frame()
+# F.ap2.OM <- cbind(1974:2015, F.OM.ap2) %>%
+  # as.data.frame()
 
-colnames(F.ap)    <- c("years", runnums)
-colnames(F.ap.OM) <- c("years", "OM")
-colnames(F.ap2.OM) <- c("years", "OM2")
-F.ap.gg <- melt(F.ap, id.vars = "years")
+colnames(F.ap.W)    <- c("years", runnums)
+colnames(F.ap.OM.W) <- c("years", "OM")
+# colnames(F.ap2.OM) <- c("years", "OM2")
+F.ap.gg.W <- melt(F.ap, id.vars = "years")
 
-allLevels <- levels(factor(c(F.ap.gg$years, F.ap.OM$years, F.ap2.OM$years)))
-F.ap.gg$years  <- factor(F.ap.gg$years,levels=(allLevels))
-F.ap.OM$years  <- factor(F.ap.OM$years,levels=(allLevels))
-F.ap2.OM$years <- factor(F.ap2.OM$years,levels=(allLevels))
+allLevels <- levels(factor(c(F.ap.gg.W$years, F.ap.OM.W$years)))
+# allLevels <- levels(factor(c(F.ap.gg.W$years, F.ap.OM.W$years, F.ap2.OM$years)))
+F.ap.gg.W$years  <- factor(F.ap.gg.W$years,levels=(allLevels))
+F.ap.OM.W$years  <- factor(F.ap.OM.W$years,levels=(allLevels))
+# F.ap2.OM$years <- factor(F.ap2.OM$years,levels=(allLevels))
 
 # BOXPLOT FOR MANUSCRIPT
 W.F.plot <-
-  ggplot(data=F.ap.OM, aes(x=years, y=OM)) +
-  geom_boxplot(data=F.ap.gg,aes(x=years, y=value), color="black", fill="gray80") + 
-  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5, color="red") +
-  geom_line(data=F.ap2.OM, aes(x=years, y=OM2, group = 1), color = "blue", size = 1.5) +
+  ggplot(data=F.ap.OM.W, aes(x=years, y=OM)) +
+  geom_boxplot(data=F.ap.gg.W, aes(x=years, y=value), color="black", fill="gray80") + 
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5, color="black") +
+  # geom_line(data=F.ap2.OM, aes(x=years, y=OM2, group = 1), color = "blue", size = 1.5) +
   labs(y = "Fishing mortality rate", x = "", title = "West") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1974,2015,10)) +
@@ -3302,7 +3313,7 @@ ggplot(data=F_W_OM_ap_df, aes(x=years, y=OM)) +
 # East #
 
 # true apical Fs
-Fa.read <- as.matrix(read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/OM_Base_Output/Fa.csv", header = TRUE))
+Fa.read <- as.matrix(read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/Fa.csv", header = TRUE))
 Fa      <- array(Fa.read[, -1], c(nyr, nage, 4, 7), dimnames = list(year = 1974:2015, age = 1:nage, quarter = 1:4, zone = 1:7))
 F.OM.E  <- array(NA, c(42,10), dimnames = list(year = 1974:2015, age = 1:10))
 for (y in 1:42)
@@ -3317,7 +3328,7 @@ for (y in 1:42) {
 
 
 # estimated apical Fs
-wd <- "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/East - 500 Sims - 1/Converged" #switch folder
+wd <- "C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged" #switch folder
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
                  list.files(path = wd, pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
 runnums <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
@@ -3363,7 +3374,7 @@ for (y in 1:42) {
 
 
 # estimated apical Fs
-wd <- "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West - 500 Sims - 2/Converged" #switch folder
+wd <- "C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged" #switch folder
 setwd(wd)
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
                  list.files(path = wd, pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)

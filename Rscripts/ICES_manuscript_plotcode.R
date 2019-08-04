@@ -3765,6 +3765,7 @@ grid.arrange(E.Rec.bias, E.R.boxplot,
 
 #### Fcurrent/F0.1 ####
 
+# ** See script "Reference_points.R" for code to calculate true F0.1 and Fcurrent from OM ** #
 
 wd <- "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West - 500 Sims - 2/Converged" #switch folder
 filenums <- gsub("[A-z \\.\\(\\)]", "", 

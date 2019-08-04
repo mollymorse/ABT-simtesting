@@ -20,31 +20,33 @@ library(grid)
 library(cowplot)
 library(ggplot2)
 library(extrafont)
+library(dplyr)
 
 
 #### True F0.1s from OM ####
 
 ## Population ##
-# read numbers for calculating true population fishing mortality array
+# read in parameters for calculating true population fishing mortality array
+nage <- 29
 biolparm <- as.matrix(read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/R Code + Inputs/BFTBiolparm.csv"), header = T)
 M        <- array(biolparm[1:nage,2:3],c(nage,2),dimnames=list(age=1:nage,unit=1:2)) #annualized M
 waa      <- array(biolparm[1:nage,4:5],c(nage,2),dimnames=list(age=1:nage,unit=1:2)) #weight-at-age
 naa      <- as.matrix(read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/naa.csv"), header = T)[, -1] %>%
   array(dim = c(42, 29, 4, 7, 2), dimnames = list(year = 1974:2015, age = 1:29, quarter = 1:4, zone = 1:7, unit = 1:2))
-naa_2 <- array(NA, dim = c(42, 29, 4, 2), dimnames = list(year = 1974:2015, age = 1:29, quarter = 1:4, unit = 1:2))
+naa_2 <- array(NA, dim = c(42, 29, 2), dimnames = list(year = 1974:2015, age = 1:29, unit = 1:2))
 for (y in 1:42)
   for (a in 1:29)
-    for (q in 1:4)
-      for (u in 1:2) {
-        naa_2[y, a, q, u] <- sum(naa[y, a, q, 1:7, u])  #calculate total naa (sum over zones)
-      }  
+    for (u in 1:2) {
+      naa_2[y, a, u] <- sum(naa[y, a, 1, 1:7, u])  #calculate total naa (sum over zones)
+    }  
 
 Fa.p <- array(NA, c(41, 28, 2), dimnames = list(year = 1974:2014, age = 1:28, unit = 1:2)) 
 for (y in 1:41)
   for (a in 1:28)
     for (u in 1:2) {
-      Fa.p[y, a, u] <- log(naa_2[y, a, 3, u] / naa_2[y + 1, a + 1, 3, u]) - M[a, u] #calculate population F at year, age
+      Fa.p[y, a, u] <- log(naa_2[y, a, u] / naa_2[y + 1, a + 1, u]) - M[a, u] #calculate population F at year, age
     }
+Fa.p <- round(Fa.p, 4)  
 
 
 # calculate partial recruitment - population
@@ -170,50 +172,67 @@ for (a in 1:16)
 }
 
 
+
 ## Calculate true OM F0.1 ##
-F01 <- array(NA, c(2, 2), dimnames = list(type = c("pop", "stock"), unit = c("east", "west")))
+F01_om <- array(NA, c(2, 2), dimnames = list(type = c("pop", "stock"), unit = c("east", "west")))
 
+#east pop
 YPR <- ypr(age = seq(1, 10, 1), wgt = waa[1:10, 1], partial = P_om_fin_e, 
-    M = M[1:10, 1], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
-F01[1, 1] <- YPR$Reference_Points[1,1]
+           M = M[1:10, 1], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
+F01_om[1, 1] <- YPR$Reference_Points[1,1]
 
-YPR <- ypr(age=seq(1, 16, 1), wgt = waa[1:16, 2], partial = P_om_fin_w, 
-           M = M[1:16, 2], plus = FALSE, oldest = 16, maxF = 1.0, incrF = 0.01, graph = FALSE)
-F01[1, 2] <- YPR$Reference_Points[1,1]
+#west pop
+YPR <- ypr(age = seq(1, 16, 1), wgt = waa[1:16, 2], partial = P_om_fin_w, 
+           M = M[1:16, 2], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
+F01_om[1, 2] <- YPR$Reference_Points[1,1]
 
+#east stock
+YPR <- ypr(age = seq(1, 10, 1), wgt = waa[1:10, 1], partial = P_oms_fin_e, 
+           M = M[1:10, 1], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
+F01_om[2, 1] <- YPR$Reference_Points[1,1]
 
-
-
-
-
-
-
-
-
-
-
-
+#west stock
+YPR <- ypr(age = seq(1, 16, 1), wgt = waa[1:16, 2], partial = P_oms_fin_w, 
+           M = M[1:16, 2], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
+F01_om[2, 2] <- YPR$Reference_Points[1,1]
 
 
-# Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
-F01.vpa <- F01 * mean(P.vpa.fin[a.ref:A.ref])
+# calculate reference ages
+for (y in 39:41) {
+  
+  # Isolate ages where partial recruitment is greater than or equal to 0.8
+  ref.east   <- which(P_om_fin_e  >= 0.8)  #east population
+  ref.west   <- which(P_om_fin_w  >= 0.8)  #west population
+  ref.east_s <- which(P_oms_fin_e >= 0.8)  #east stock
+  ref.west_s <- which(P_oms_fin_w >= 0.8)  #west stock
+  
+}
+
+# adjust F0.1 for the reference ages 
+# using the average partial recruitment for the reference ages
+F01_om[1, 1] <- F01_om[1, 1] * mean(P_om_fin_e[ref.east])
+F01_om[1, 2] <- F01_om[1, 2] * mean(P_om_fin_w[ref.west])
+F01_om[2, 1] <- F01_om[2, 1] * mean(P_oms_fin_e[ref.east_s])
+F01_om[2, 2] <- F01_om[2, 2] * mean(P_oms_fin_w[ref.west_s])
+
 
 
 ## Determine stock status ##
 
 # Calculate Fcurrent
-F.cur.vpa <- mean(F.mat[(nrow(F.mat)-3):(nrow(F.mat)-1),a.ref:A.ref])
+F_cur_e   <- mean(Fa.p[39:41,  ref.east,   1])
+F_cur_w   <- mean(Fa.p[39:41,  ref.west,   2])
+F_cur_s_e <- mean(Fa.s2[39:41, ref.east_s, 1])
+F_cur_s_w <- mean(Fa.s2[39:41, ref.west_s, 2])
+
 
 # Calculate Fcurrent/F0.1
-F01.status.vpa <- F.cur.vpa/F01.vpa
+Expl_status_om <- array(NA, c(2, 2), dimnames = list(type = c("pop", "stock"), unit = c("east", "west")))
 
-FF01 <- cbind(FF01, c(F.cur.vpa, F01.vpa, F01.status.vpa))
-
-
-
-
-
-
+Expl_status_om[1, 1] <- F_cur_e/F01_om[1, 1]
+Expl_status_om[1, 2] <- F_cur_w/F01_om[1, 2]
+Expl_status_om[2, 1] <- F_cur_s_e/F01_om[2, 1]
+Expl_status_om[2, 2] <- F_cur_s_w/F01_om[2, 2]
 
 
 
@@ -226,33 +245,30 @@ FF01 <- cbind(FF01, c(F.cur.vpa, F01.vpa, F01.status.vpa))
 
 ## Define variables ##
 
-wd <- "C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West - 500 Sims - 2/Converged" #switch folder
+wd <- "C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged" #switch folder
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
-                 list.files(path="C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/West - 500 Sims - 2/Converged", pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
+                 list.files(path="C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged", pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters (make sure to switch the folder)
 runnums <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
 nyr <- 42
-stock <- 2 # switch east (1) vs. west (2)
+stock <- 1 # switch east (1) vs. west (2)
 if (stock == 1) #reference ages (from OM) and plus group age
 {
-  a.ref <- 4 #east
-  A.ref <- 5 
+  #old (from original base case) - new (low movement) use OM ref ages calculated above
+  # a.ref <- 4 #east
+  # A.ref <- 5 
+  #new - uses all ages P >= 0.8, not a range
+  a.ref <- ref.east
   nage <- 10 
   alph <- "E"
 } else { 
-  a.ref <- 8 #west
-  A.ref <-14 
+  #old (from original base case) - new (low movement) use OM ref ages calculated above
+  # a.ref <- 8 #west
+  # A.ref <- 14 
+  #new - uses all ages P >= 0.8, not a range
+  a.ref <- ref.west
   nage <- 16
   alph <- "W"
 }
-
-
-
-## Read in biological data ##
-
-biolparm <- (as.matrix(read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/R Code + Inputs/BFTBiolparm.csv"),header=T))
-M <- array(biolparm[1:nage,2:3],c(nage,2),dimnames=list(age=1:nage,unit=1:2)) 
-waa <- array(biolparm[1:nage,4:5],c(nage,2),dimnames=list(age=1:nage,unit=1:2))
-
 
 
 ## Calculations ##
@@ -263,27 +279,47 @@ FF01.bias <- matrix(NA, nrow=2, ncol=1, dimnames=list(bias=c("pop", "stock"), va
 setwd(wd)
 
 ## True F0.1 (from base case OM) ##
-if (stock == 1) {  
-  F01.OM.p <- 0.1606871 #east
-  F01.OM.s <- 0.1064634 #east
+# if (stock == 1) {  
+#   F01.OM.p <- 0.1606871 #east
+#   F01.OM.s <- 0.1064634 #east
+# } else {
+#   F01.OM.p <- 0.1141979 #west
+#   F01.OM.s <- 0.109491 #west
+# }
+
+## True F0.1 (from low movement OM) ##
+if (stock == 1) {
+  F01.OM.p <- F01_om[1, 1] #east pop
+  F01.OM.s <- F01_om[2, 1] #east stock
 } else {
-  F01.OM.p <- 0.1141979 #west
-  F01.OM.s <- 0.109491 #west
+  F01.OM.p <- F01_om[1, 2] #west pop
+  F01.OM.s <- F01_om[2, 2] #west stock
 }
 
-# True stock status (from base case OM)
+
+## True stock status (from base case OM) ##
+# F01.stat.true <- rep(NA,2)
+# if (stock == 1) {
+#   F01.stat.true[1] <- 0.119511074319948 #east pop
+#   F01.stat.true[2] <- 0.336578739314839 #east stock
+# } else {
+#   F01.stat.true[1] <- 0.293933398300163 #west pop
+#   F01.stat.true[2] <- 0.620620839  #west stock
+# }
+
+## True stock status (from low movement OM) ##
 F01.stat.true <- rep(NA,2)
 if (stock == 1) {
-  F01.stat.true[1] <- 0.119511074319948 #east pop
-  F01.stat.true[2] <- 0.336578739314839 #east stock
+  F01.stat.true[1] <- Expl_status_om[1, 1] #east pop
+  F01.stat.true[2] <- Expl_status_om[2, 1] #east stock
 } else {
-  F01.stat.true[1] <- 0.293933398300163 #west pop
-  F01.stat.true[2] <- 0.620620839  #west stock
+  F01.stat.true[1] <- Expl_status_om[1, 2] #west pop
+  F01.stat.true[2] <- Expl_status_om[2, 2]  #west stock
 }
 
-
-for (i in runnums) 
-{
+# note to self: in the low movement scenario, ypr function got stuck on east runnums 15, 202, 207 so those were skipped (runnums[-c(12, 187, 192)])
+# this will take about 15 sec
+for (i in runnums[-c(12, 187, 192)]) {
 
   ## Read in Results files ##
   result.filename <- paste("BFT", alph, "2017_", i, "_RESULTS.R", sep="")
@@ -297,7 +333,7 @@ for (i in runnums)
   F.mat <- apply(F.mat, c(1,2), as.numeric)
   
   ## Partial recruitment ##
-  P.vpa <- array(NA, c(3,nage), dimnames=list(year=1:3,age=1:nage))
+  P.vpa <- array(NA, c(3, nage), dimnames = list(year = 1:3, age = 1:nage))
   for (y in (nrow(F.mat)-3):(nrow(F.mat)-1))
   {
     Ffull.vpa <- max(F.mat[y,])
@@ -322,20 +358,21 @@ for (i in runnums)
     P.vpa.fin[a] <- P.vpa.avg[a]/Ffull.vpa2
   }
   
+  P.vpa.fin <- round(P.vpa.fin, 4)
   
   ## Calculate F0.1 ##
-  YPR <- ypr(age=seq(1,nage,1), wgt=waa[1:nage,stock], partial=P.vpa.fin, 
-             M=M[1:nage,stock], plus=TRUE, oldest=nage, maxF=1.0, incrF=0.01, graph=FALSE)
-  F01 <- YPR$Reference_Points[1,1]
+  YPR <- ypr(age = seq(1, nage, 1), wgt = waa[1:nage, stock], partial = P.vpa.fin, 
+             M = M[1:nage, stock], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE) #changed to plus = FALSE for low move scenario
+  F01 <- YPR$Reference_Points[1, 1]
 
   # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
-  F01.vpa <- F01 * mean(P.vpa.fin[a.ref:A.ref])
+  F01.vpa <- F01 * mean(P.vpa.fin[a.ref])
 
   
   ## Determine stock status ##
   
   # Calculate Fcurrent
-  F.cur.vpa <- mean(F.mat[(nrow(F.mat)-3):(nrow(F.mat)-1),a.ref:A.ref])
+  F.cur.vpa <- mean(F.mat[(nrow(F.mat)-3):(nrow(F.mat)-1),a.ref])
   
   # Calculate Fcurrent/F0.1
   F01.status.vpa <- F.cur.vpa/F01.vpa
@@ -356,16 +393,16 @@ for (i in runnums)
 
 
 ## Save F0.1 results ##
-colnames(FF01) <- c("x", runnums)
-colnames(FF01.bias) <- c("x", runnums)
+colnames(FF01) <- c("x", runnums[-c(12, 187, 192)])
+colnames(FF01.bias) <- c("x", runnums[-c(12, 187, 192)])
 write.csv(FF01[,-1], "F01_results_converge.csv")
 write.csv(FF01.bias[,-1], "F01_bias_converge.csv")
 
 
-FF01.west <- FF01[,-1]
-FF01.bias.west <- FF01.bias[,-1]
-# FF01.east <- FF01[,-1]
-# FF01.bias.east <- FF01.bias[,-1]
+# FF01.west <- FF01[,-1]
+# FF01.bias.west <- FF01.bias[,-1]
+FF01.east <- FF01[,-1]
+FF01.bias.east <- FF01.bias[,-1]
 
 
 
@@ -395,34 +432,39 @@ true.df2 <- cbind(c("east", "east", "west", "west"), c("pop", "stock", "pop", "s
 colnames(true.df2) <- c("stock", "view", "value")
 
 West <- ggplot(data=subset(F01.data,stock %in% c("West")), aes(x=stock, y=ratio)) +
-  geom_rect(fill = "palegreen2", xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 1, alpha = 0.01) +
-  geom_rect(fill = "indianred2", xmin = -Inf, xmax = Inf, ymin = 1, ymax = Inf, alpha = 0.01) +
-  geom_boxplot(data=subset(F01.data,stock %in% c("West")), color="black", fill="slategray1") +
-  geom_abline(intercept=0.293933398300163, slope=0, linetype=1, size=1) +
-  geom_abline(intercept=0.620620839, slope=0, linetype=2, size=1) +
+  # geom_rect(fill = "palegreen2", xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 1, alpha = 0.01) +
+  # geom_rect(fill = "indianred2", xmin = -Inf, xmax = Inf, ymin = 1, ymax = Inf, alpha = 0.01) +
+  geom_boxplot(data=subset(F01.data,stock %in% c("West")), color="lightblue4", fill="lightblue1") +
+  geom_abline(intercept = F01_om[1, 2], slope=0, linetype=1, size=1) + #true population
+  geom_abline(intercept = F01_om[2, 2], slope=0, linetype=2, size=1) + #true stock
   geom_abline(intercept=1, slope=0, linetype=3, size=1) +
   theme_classic() +
+  scale_y_continuous(breaks = seq(0, 4, 1), labels = scales::number_format(accuracy = 0.1)) +
   coord_cartesian(ylim = c(0,3.5)) +
   theme(plot.margin = unit(c(0,0,0,0), "cm")) +
   labs(y="Fcurrent/F0.1", x="") +
   theme(axis.title.y = element_text(family = "Times New Roman",
                                     face = "bold",
-                                    size = 15),
+                                    size = 24,
+                                    margin = margin(r = 10)),
         #axis.title.x = element_text(family = "Times New Roman",
         #                            face = "bold",
         #                            size = 15),
         axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
+                                   size = 22,
+                                   face = "bold",
+                                   color = 1),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 13))
+                                   size = 22))
 East <- ggplot(data=subset(F01.data,stock %in% c("East")), aes(x=stock, y=ratio)) +
-  geom_rect(fill = "palegreen2", xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 1, alpha = 0.01) +
-  geom_rect(fill = "indianred2", xmin = -Inf, xmax = Inf, ymin = 1, ymax = Inf, alpha = 0.01) +
-  geom_boxplot(data=subset(F01.data,stock %in% c("East")), color="black", fill="slategray1") +
-  geom_abline(intercept=0.119511074319948, slope=0, linetype=1, size=1) +
-  geom_abline(intercept=0.336578739314839, slope=0, linetype=2, size=1) +
+  # geom_rect(fill = "palegreen2", xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 1, alpha = 0.01) +
+  # geom_rect(fill = "indianred2", xmin = -Inf, xmax = Inf, ymin = 1, ymax = Inf, alpha = 0.01) +
+  geom_boxplot(data=subset(F01.data,stock %in% c("East")), color="lightblue4", fill="lightblue1") +
+  geom_abline(intercept=F01_om[1, 1], slope=0, linetype=1, size=1) + #true population
+  geom_abline(intercept=F01_om[2, 1], slope=0, linetype=2, size=1) + #true stock
   geom_abline(intercept=1, slope=0, linetype=3, size=1) +
   theme_classic() +
+  scale_y_continuous(breaks = seq(0, 4, 1), labels = scales::number_format(accuracy = 0.1)) +
   coord_cartesian(ylim = c(0,3.5)) +
   theme(plot.margin = unit(c(0,0,0,-.1), "cm")) +
   labs(y="", x="") +
@@ -431,12 +473,18 @@ East <- ggplot(data=subset(F01.data,stock %in% c("East")), aes(x=stock, y=ratio)
         #                            face = "bold",
         #                            size = 15),
         axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
+                                   size = 22,
+                                   face = "bold",
+                                   color = 1),
         axis.text.y = element_blank(),
         axis.line.y = element_blank(),
         axis.ticks.y = element_blank())
 
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Figures/FvsF01_lomov.jpeg",
+     width = 2000, height = 2000, units = "px", quality = 100, res = 300)
 plot_grid(West, East, rel_widths = c(10,9))
+dev.off()
+
 
 
 # Boxplots of bias in Fcur/F0.1 for each stock relative to both the OM population and stock views

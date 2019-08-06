@@ -15,6 +15,10 @@ library(scales)
 library(grid)
 library(cowplot)
 library(readr)
+library(plyr)
+library(abind)
+library(fields)
+
 yrs <- 1974:2015
 nyr <- 42
 # run the following 3 lines to import "Times New Roman" and other fonts if haven't done already (must have extrafont package installed)
@@ -3994,6 +3998,94 @@ dev.off()
 
 
 
+
+#### MOVEMENT MATRICES ####
+
+base_move <- as.matrix(read.csv("C:/Users/mmorse1/Documents/Simulations_2/R Code + Inputs/MoveMatrix.csv"), header = T)
+base_move <- array(base_move[1:7,2:1624],c(7,7,4,29,2),dimnames=list(zone=1:7,zone=1:7,quarter=1:4,age=1:29,unit=1:2))
+seasons = c('Quarter 1
+(Spring)', 'Quarter 2
+(Summer)', 'Quarter 3
+(Fall)', 'Quarter 4
+(Winter)')
+ex7 = expand.grid(1:7, 1:7)
+
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Figures/move_base_Wjuv.jpeg",
+     width = 2000, height = 1200, units = "px", quality = 100, res = 300)
+par(mfrow=c(2,2))
+sapply(1:4, function(x) {
+  # image.plot(1:7, 1:7, base_move[,,x,8,2], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
+  image.plot(1:7, 1:7, base_move[,,x,8,2], col = rev(pal(25)), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
+  text(ex7[,1], ex7[,2], paste0(round(t(base_move[,,x,8,2]),2)))#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
+  grid(7, 7, col = 'grey50')
+  axis(1, at = 1:7, labels=paste0(1:7), cex.axis = 1.5, font.axis = 1)
+  axis(2, at = 1:7, labels=paste0(1:7), cex.axis = 1.5, font.axis = 1)
+  # title(xlab = "end", ylab = "start", cex.lab = 1.3, font.lab = 2, family = "serif",
+        # mar = c(1, 1, 1))
+  title(paste0(seasons[x]), family = "serif", cex.main = 1.8)
+  mtext("end", side = 1, line = 2.3, family = "serif", font = 2, cex = 1.5)
+  mtext("start", side = 2, line = 2.3, family = "serif", font = 2, cex = 1.5)
+  # if (x == 1) {
+    # mtext("A", side = 3, family = "serif", font = 2, cex = 1.8, line = 3, adj = 0)
+  # }
+  box()
+  segments(3.5, y0 = 3.5, x1 = 7.5, y1 = 3.5, lwd = 2, col = 2, lty = 2)
+  segments(3.5, y0 = 3.5, x1 = 3.5, y1 = 7.5, lwd = 2, col = 2, lty = 2)
+}
+)
+dev.off()
+
+
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Figures/move_base_Wad.jpeg",
+     width = 2000, height = 1200, units = "px", quality = 100, res = 300)
+par(mfrow=c(2,2))
+sapply(1:4, function(x) {
+  # image.plot(1:7, 1:7, base_move[,,x,8,2], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
+  image.plot(1:7, 1:7, base_move[,,x,10,2], col = rev(pal(25)), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
+  text(ex7[,1], ex7[,2], paste0(round(t(base_move[,,x,10,2]),2)))#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
+  grid(7, 7, col = 'grey50')
+  axis(1, at = 1:7, labels=paste0(1:7), cex.axis = 1.5, font.axis = 1)
+  axis(2, at = 1:7, labels=paste0(1:7), cex.axis = 1.5, font.axis = 1)
+  # title(xlab = "end", ylab = "start", cex.lab = 1.3, font.lab = 2, family = "serif",
+  # mar = c(1, 1, 1))
+  title(paste0(seasons[x]), family = "serif", cex.main = 1.8)
+  mtext("end", side = 1, line = 2.3, family = "serif", font = 2, cex = 1.5)
+  mtext("start", side = 2, line = 2.3, family = "serif", font = 2, cex = 1.5)
+  # if (x == 1) {
+  # mtext("A", side = 3, family = "serif", font = 2, cex = 1.8, line = 3, adj = 0)
+  # }
+  box()
+  segments(3.5, y0 = 3.5, x1 = 7.5, y1 = 3.5, lwd = 2, col = 2, lty = 2)
+  segments(3.5, y0 = 3.5, x1 = 3.5, y1 = 7.5, lwd = 2, col = 2, lty = 2)
+}
+)
+dev.off()
+
+
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Figures/move_base_e.jpeg",
+     width = 2000, height = 12000, units = "px", quality = 100, res = 300)
+par(mfrow=c(2,2))
+sapply(1:4, function(x) {
+  # image.plot(1:7, 1:7, base_move[,,x,8,2], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
+  image.plot(1:7, 1:7, base_move[,,x,8,1], col = rev(pal(25)), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
+  text(ex7[,1], ex7[,2], paste0(round(t(base_move[,,x,8,1]),2)))#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
+  grid(7, 7, col = 'grey50')
+  axis(1, at = 1:7, labels=paste0(1:7), cex.axis = 1.5, font.axis = 1)
+  axis(2, at = 1:7, labels=paste0(1:7), cex.axis = 1.5, font.axis = 1)
+  # title(xlab = "end", ylab = "start", cex.lab = 1.3, font.lab = 2, family = "serif",
+  # mar = c(1, 1, 1))
+  title(paste0(seasons[x]), family = "serif", cex.main = 1.8)
+  mtext("end", side = 1, line = 2.3, family = "serif", font = 2, cex = 1.5)
+  mtext("start", side = 2, line = 2.3, family = "serif", font = 2, cex = 1.5)
+  # if (x == 1) {
+  # mtext("A", side = 3, family = "serif", font = 2, cex = 1.8, line = 3, adj = 0)
+  # }
+  box()
+  segments(3.5, y0 = 3.5, x1 = 7.5, y1 = 3.5, lwd = 2, col = 2, lty = 2)
+  segments(3.5, y0 = 3.5, x1 = 3.5, y1 = 7.5, lwd = 2, col = 2, lty = 2)
+}
+)
+dev.off()
 
 
 

@@ -136,8 +136,8 @@ dev.off()
 
 
 ## Population SSB by area (for stacked area charts) ##
-e_area <- read_csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/Pssb-eastarea.csv")
-w_area <- read_csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/Pssb-westarea.csv")
+e_area <- read_csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/Pssb-eastarea.csv")
+w_area <- read_csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/Pssb-westarea.csv")
 e_area <- melt(e_area, id.vars = "year")
 w_area <- melt(w_area, id.vars = "year")
 
@@ -203,7 +203,7 @@ e_area_plot <-
 setwd("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/Misc")
 ICCAT <- read.csv("ICCATresults.csv")
 
-# Read in data saved from OM #
+# Read in data saved from Base OM #
 temp <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/OM_Base_Output/T_Essb.csv", header = TRUE) #east stock Q3 base
 OM.E.SSB.S.base <- temp[,4]
 temp <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/OM_Base_Output/T_Pssb.csv", header = TRUE) #east population Q3 base
@@ -228,6 +228,21 @@ temp <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulatio
 OM.W.R.base <- temp$X1.1.1.2
 temp <- read.csv("C:/Users/mmorse1/OneDrive - UMASS Dartmouth/Research/Simulations_2/OM_Alt_Output/NAA.csv", header = TRUE) #west R alt
 OM.W.R.alt <- temp$X1.1.1.2
+
+
+# Read in data saved from Low movement OM #
+temp <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/T_Essb.csv", header = TRUE) #east stock Q3
+OM.E.SSB.S.base <- temp[,4]
+temp <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/T_Pssb.csv", header = TRUE) #east population Q3
+OM.E.SSB.P.base <- temp[,4]
+temp <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/T_Wssb.csv", header = TRUE) #west stock Q3
+OM.W.SSB.S.base <- temp[,4]
+temp <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/T_Pssb.csv", header = TRUE) #west population Q3 
+OM.W.SSB.P.base <- temp[,8]
+temp <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/R.csv", header = TRUE) #east R base
+OM.E.R.base <- temp$X1.7.1
+temp <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/R.csv", header = TRUE) #west R base
+OM.W.R.base <- temp$X1.1.2
 
 
 
@@ -422,7 +437,7 @@ W.R.OM.plot <-
 
 
 ## OM PLOT LAYOUTS ##
-jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Figures/OMplots.jpeg",
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Figures/OMplots_lomov.jpeg",
      width = 4000, height = 4200, units = "px", quality = 100, res = 300)
 # grid.arrange(W.R.OM.plot, E.R.OM.plot,
 #              W.SSB.OM.plot, E.SSB.OM.plot,

@@ -1,4 +1,5 @@
-# ABT-simtesting
+# ABT-simtesting: 
+# Performance of stock assessments for mixed-population fisheries: The illustrative case of Atlantic bluefin tuna
 We used simulation testing to evaluate the performance of the virtual population analysis models used to manage Atlantic bluefin tuna fisheries (ICCAT 2018) on fishery pseudodata generated using an operating model that incorporated movement and mixing of populations.
 <br>
 <br>

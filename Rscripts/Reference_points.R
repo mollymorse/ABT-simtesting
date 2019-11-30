@@ -735,13 +735,13 @@ dev.off()
 
 ## NEW plots (for 12/4/19 ICES submission) - VERSION 2 ##
 
-grob1 <- grid.text("E", x = unit(-0.1, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+grob1 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
 w.cross.2 <-
   ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Cross-test")), aes(x = stock, y = ratio)) +
   geom_boxplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Cross-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  geom_abline(intercept = 0.167727284245676, slope=0, linetype=1, size=1) + #true population
-  geom_abline(intercept = 0.414965843264025, slope=0, linetype=2, size=1) + #true stock
+  geom_abline(intercept=1, slope=0, linetype=3, size=1.5) +
+  geom_abline(intercept = 0.167727284245676, slope=0, linetype=1, size=1.5) + #true population
+  geom_abline(intercept = 0.414965843264025, slope=0, linetype=2, size=1.5) + #true stock
   coord_cartesian(ylim = c(0,1.5), clip = "off") +
   labs(y="Fcurrent/F0.1", x="", title = "") +
   theme_classic() +
@@ -751,22 +751,22 @@ w.cross.2 <-
                                     margin = margin(r = 10)),
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22),
+                                   size = 20),
         axis.ticks.x = element_blank(),
         plot.title = element_text(size = 24,
                                   hjust = 0.5,
                                   margin = margin(b = 10))) +
   annotation_custom(grob1)
 
-grob2 <- grid.text("F", x = unit(-0.1, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+grob2 <- grid.text("F", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
 e.cross.2 <-
   ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Cross-test")), aes(x = stock, y = ratio)) +
   geom_boxplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Cross-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  geom_abline(intercept = 0.0206818108502776, slope=0, linetype=1, size=1) + #true population
-  geom_abline(intercept = 0.115470838578193, slope=0, linetype=2, size=1) + #true stock
+  geom_abline(intercept=1, slope=0, linetype=3, size=1.5) +
+  geom_abline(intercept = 0.0206818108502776, slope=0, linetype=1, size=1.5) + #true population
+  geom_abline(intercept = 0.115470838578193, slope=0, linetype=2, size=1.5) + #true stock
   coord_cartesian(ylim = c(0,1.5), clip = "off")  +
-  labs(y="Fcurrent/F0.1", x="", title = " ") +
+  labs(y="", x="", title = " ") +
   theme_classic() +
   theme(axis.title.y = element_text(family = "Times New Roman",
                                     face = "bold",
@@ -774,18 +774,18 @@ e.cross.2 <-
                                     margin = margin(r = 10)),
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22),
+                                   size = 20),
         axis.ticks.x = element_blank(),
         plot.title = element_text(size = 24,
                                   hjust = 0.5,
                                   margin = margin(b = 10))) +
   annotation_custom(grob2)
 
-grob3 <- grid.text("E", x = unit(-0.1, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+grob3 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
 w.self.2  <- ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Self-test")), aes(x = stock, y = ratio)) +
   geom_boxplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Self-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept = 1, slope=0, linetype=3, size=1) +
-  geom_abline(intercept = 0.414283741188939, slope=0, linetype=1, size=1) + #true
+  geom_abline(intercept = 1, slope=0, linetype=3, size=1.5) +
+  geom_abline(intercept = 0.414283741188939, slope=0, linetype=1, size=1.5) + #true
   coord_cartesian(ylim = c(0,1.5), clip = "off") +
   labs(y="Fcurrent/F0.1", x="", title = " ") +
   theme_classic() +
@@ -795,20 +795,20 @@ w.self.2  <- ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in%
                                     margin = margin(r = 10)),
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22),
+                                   size = 20),
         axis.ticks.x = element_blank(),
         plot.title = element_text(size = 24,
                                   hjust = 0.5,
                                   margin = margin(b = 10))) +
   annotation_custom(grob3)
 
-grob4 <- grid.text("F", x = unit(-0.1, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
-e.self  <- ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Self-test")), aes(x = stock, y = ratio)) +
+grob4 <- grid.text("F", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+e.self.2  <- ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Self-test")), aes(x = stock, y = ratio)) +
   geom_boxplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Self-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept = 1, slope=0, linetype=3, size=1) +
-  geom_abline(intercept = 0.115735775896511, slope=0, linetype=1, size=1) + #true
+  geom_abline(intercept = 1, slope=0, linetype=3, size=1.5) +
+  geom_abline(intercept = 0.115735775896511, slope=0, linetype=1, size=1.5) + #true
   coord_cartesian(ylim = c(0,1.5), clip = "off")  +
-  labs(y="Fcurrent/F0.1", x="", title = " ") +
+  labs(y="", x="", title = " ") +
   theme_classic() +
   theme(axis.title.y = element_text(family = "Times New Roman",
                                     face = "bold",
@@ -816,19 +816,19 @@ e.self  <- ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c
                                     margin = margin(r = 10)),
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22),
+                                   size = 20),
         axis.ticks.x = element_blank(),
         plot.title = element_text(size = 24,
                                   hjust = 0.5,
                                   margin = margin(b = 10))) +
   annotation_custom(grob4)
 
-grob5 <- grid.text("E", x = unit(-0.1, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+grob5 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
 w.low.2  <- ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Low-move")), aes(x = stock, y = ratio)) +
   geom_boxplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Low-move")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  geom_abline(intercept = 0.150184015876974, slope=0, linetype=1, size=1) + #true population
-  geom_abline(intercept = 0.414965843264025, slope=0, linetype=2, size=1) + #true stock
+  geom_abline(intercept=1, slope=0, linetype=3, size=1.5) +
+  geom_abline(intercept = 0.150184015876974, slope=0, linetype=1, size=1.5) + #true population
+  geom_abline(intercept = 0.414965843264025, slope=0, linetype=2, size=1.5) + #true stock
   coord_cartesian(ylim = c(0,2), clip = "off") +
   theme_classic() +
   labs(y="Fcurrent/F0.1", x="", title = " ") +
@@ -838,29 +838,29 @@ w.low.2  <- ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in% 
                                     margin = margin(r = 10)),
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22),
+                                   size = 20),
         axis.ticks.x = element_blank(),
         plot.title = element_text(size = 24,
                                   hjust = 0.5,
                                   margin = margin(b = 10))) +
   annotation_custom(grob5)
 
-grob6 <- grid.text("F", x = unit(-0.1, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+grob6 <- grid.text("F", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
 e.low.2  <- ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Low-move")), aes(x = stock, y = ratio)) +
   geom_boxplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Low-move")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  geom_abline(intercept = 0.0145333333333333, slope=0, linetype=1, size=1) + #true population
-  geom_abline(intercept = 0.115470838578193, slope=0, linetype=2, size=1) + #true stock
+  geom_abline(intercept=1, slope=0, linetype=3, size=1.5) +
+  geom_abline(intercept = 0.0145333333333333, slope=0, linetype=1, size=1.5) + #true population
+  geom_abline(intercept = 0.115470838578193, slope=0, linetype=2, size=1.5) + #true stock
   coord_cartesian(ylim = c(0,2), clip = "off")  +
   theme_classic() +
-  labs(y="Fcurrent/F0.1", x="", title = " ") +
+  labs(y="", x="", title = " ") +
   theme(axis.title.y = element_text(family = "Times New Roman",
                                     face = "bold",
                                     size = 24,
                                     margin = margin(r = 10)),
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22),
+                                   size = 20),
         axis.ticks.x = element_blank(),
         plot.title = element_text(size = 24,
                                   hjust = 0.5,

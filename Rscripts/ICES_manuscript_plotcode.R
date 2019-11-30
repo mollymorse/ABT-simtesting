@@ -1051,8 +1051,8 @@ W.F.PRB <-
 
 #### ESTIMATION MODEL PLOTS ####
 
-e_wd   <- "C:/Users/mmorse1/Documents/Simulations_lomov/"
-e_fldr <- "East"
+e_wd   <- "C:/Users/mmorse1/Documents/Simulations_2/"
+e_fldr <- "East - 500 Sims - 1"
 
 # EAST Recruitment Cross-test #
 years <- matrix(1974:2011,nrow = 38,ncol=1)
@@ -1100,14 +1100,14 @@ grob1 <- grid.text("B", x = unit(-0.15, "npc"), y = unit(1.07, "npc"), gp = gpar
 
 E.R.plot <-
   ggplot(data=E.R.om, aes(x=factor(years), y=OM)) +
-  coord_cartesian(ylim = c(0,6000000), clip = "off") +
+  coord_cartesian(ylim = c(0,8000000), clip = "off") +
   geom_boxplot(data=E.R.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1",
                outlier.shape = NA) + 
   stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
   labs(y = "", x = "", title = "East") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1974,2011,10)) +
-  scale_y_continuous(breaks = seq(0,6000000,2000000)) +
+  scale_y_continuous(breaks = seq(0,8000000,4000000)) +
   theme(plot.title = element_text(family = "Times New Roman",
                                   face = "bold",
                                   size = 24,
@@ -1304,8 +1304,8 @@ E.F.plot <-
 
 ## WEST Recruitment ##
 
-w_wd   <- "C:/Users/mmorse1/Documents/Simulations_lomov/"
-w_fldr <- "West"
+w_wd   <- "C:/Users/mmorse1/Documents/Simulations_2/"
+w_fldr <- "West - 500 Sims - 2"
 
 years <- matrix(1974:2011,nrow = 38,ncol=1)
 W.R.data <- read.csv(paste0(w_wd, w_fldr, "/Converged/W_R_data_converge.csv"), header = TRUE)
@@ -1354,7 +1354,7 @@ grob4 <-  grid.text("A", x = unit(-0.15, "npc"), y = unit(1.07, "npc"),
 
 W.R.plot <-
   ggplot(data=W.R.om, aes(x=factor(years), y=OM)) +
-  coord_cartesian(ylim = c(0,1500000), clip = "off") +
+  coord_cartesian(ylim = c(0,2000000), clip = "off") +
   geom_boxplot(data=W.R.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1",
                outlier.shape = NA) + 
   stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
@@ -1376,7 +1376,7 @@ W.R.plot <-
         # axis.text.x = element_blank(),    
         axis.text.y = element_text(family = "Times New Roman",
                                    size = 20)) +
-  scale_y_continuous(breaks = seq(0,1500000,500000), label=scientific_format(digits = 2)) +
+  scale_y_continuous(breaks = seq(0,2000000,1000000), label=scientific_format(digits = 2)) +
   annotation_custom(grob4)
 
 
@@ -1427,7 +1427,7 @@ grob5 <- grid.text("C", x = unit(-0.15, "npc"), y = unit(1.07, "npc"),
 
 W.SSB.plot <-
   ggplot(data=W.SSB.omp, aes(x=factor(years), y=OMP)) +
-  coord_cartesian(ylim = c(0,100000), clip = "off") +
+  coord_cartesian(ylim = c(0,150000), clip = "off") +
   geom_boxplot(data=W.SSB.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1",
                outlier.shape = NA) +
   geom_line(data=W.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="longdash",size=1.5,color="black") +
@@ -1436,7 +1436,7 @@ W.SSB.plot <-
 (tonnes)", x = "", title = " ") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1974,2015,10)) +
-  scale_y_continuous(breaks = seq(0,100000,50000)) +
+  scale_y_continuous(breaks = seq(0,150000,50000), label=scientific_format(digits = 2)) +
   theme(plot.title = element_text(family = "Times New Roman",
                                   face = "bold",
                                   size = 24,
@@ -1562,11 +1562,11 @@ dev.off()
 
 
 # revised for final 12/4/19 submission (R, SSB, F/F01) #
-jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 12-4-19/EMplots_lomov_2.jpeg",
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 12-4-19/EMplots_base_2.jpeg",
      width = 4000, height = 4200, units = "px", quality = 100, res = 300)
 plot_grid(W.R.plot, E.R.plot,
           W.SSB.plot, E.SSB.plot,
-          w.low.2, e.low.2, #from Reference_points.R script
+          w.cross.2, e.cross.2, #from Reference_points.R script
           ncol = 2, nrow = 3, align = "v")
 dev.off()
 
@@ -2311,7 +2311,14 @@ plot_grid(W.selfR.plot,   E.selfR.plot,
           ncol = 2, nrow = 3, align = "v")
 dev.off()
 
-
+#w/o apical F, w/ F/F0.1
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 12-4-19/EMplots_selftest_2.jpeg",
+     width = 4000, height = 4200, units = "px", quality = 100, res = 300)
+plot_grid(W.selfR.plot,   E.selfR.plot,
+          W.selfSSB.plot, E.selfSSB.plot,
+          w.self.2, e.self.2,
+          ncol = 2, nrow = 3, align = "v")
+dev.off()
 
 
 

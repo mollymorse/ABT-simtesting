@@ -9,7 +9,7 @@ Methods and results are documented in Molly Morse's master's thesis ([Morse 2018
 Deterministic simulations are run using the "OM+VPAsims_BFT2017_deterministic_V2.R" script and stochastic simulations are run using the "OM+VPAsims_BFT2017_basecase_V5.R" script. Directories for storing estimation model input and output files must first be created locally using the first lines of code under the "RUNNING SIMULATIONS" section of either of these scripts (will need to be uncommented). Plots for the ICES JMS manuscript were generated using the "ICES_manuscript_plotcode.R" script. Note that working directories will need to be changed in order to run the simulations and plotting code. 
 <br>
 <br>
-Atlantic bluefin tuna simulation testing framework created by Molly Morse (UMass Dartmouth, UC Santa Barbara), Lisa Kerr (GMRI), and Steven Cadrin (UMass Dartmouth). Questions should be directed to Molly Morse, mollymorse@ucsb.edu.
+Atlantic bluefin tuna simulation testing framework created by Molly Morse (UMass Dartmouth, UC Santa Barbara), Lisa Kerr (GMRI), Ben Galuardi (UMass Dartmouth, NOAA), and Steven Cadrin (UMass Dartmouth). Questions should be directed to Molly Morse, mollymorse@ucsb.edu.
 <br>
 <br>
 <br>

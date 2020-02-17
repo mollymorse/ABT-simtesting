@@ -1503,59 +1503,77 @@ for (y in 1:41)
 Fa.p <- round(Fa.p, 4)  
 
 
-# calculate partial recruitment - population (years Y-3 to Y-1, where Y is 2015)
-P_om_e <- array(NA, c(3, 10), dimnames = list(year = 1:3, age = 1:10))
-P_om_w <- array(NA, c(3, 16), dimnames = list(year = 1:3, age = 1:16))
 
-#east
-for (y in (nrow(Fa.p) - 2):(nrow(Fa.p)))
-  for (u in 1) {
-    Ffull_om <- max(Fa.p[y, , u])
-    for (a in 1:10) {
-      P_om_e[y - 38, a] <- Fa.p[y, a, u]/Ffull_om
+# calculate partial recruitment - population (years Y-2 to Y)
+P_om_fin_e <- array(NA, c(39, 10), dimnames = list(iter = 1:39, age = 1:10))
+P_om_fin_w <- array(NA, c(39, 16), dimnames = list(iter = 1:39, age = 1:16))
+
+for (i in 1:39) {
+  
+  P_om_e <- array(NA, c(3, 10), dimnames = list(year = 1:3, age = 1:10))
+  P_om_w <- array(NA, c(3, 16), dimnames = list(year = 1:3, age = 1:16))
+  
+    for (u in 1) {
+      Ffull_om <- max(Fa.p[i, , u])
+      for (a in 1:10) {
+        P_om_e[1, a] <- Fa.p[i, a, u]/Ffull_om
+      }
+      Ffull_om <- max(Fa.p[(i+1), , u])
+      for (a in 1:10) {
+        P_om_e[2, a] <- Fa.p[(i+1), a, u]/Ffull_om
+      }
+      Ffull_om <- max(Fa.p[(i+2), , u])
+      for (a in 1:10) {
+        P_om_e[3, a] <- Fa.p[(i+2), a, u]/Ffull_om
+      }
     }
-  }
-
-#west
-for (y in (nrow(Fa.p) - 2):(nrow(Fa.p)))
-  for (u in 2) {
-    Ffull_om <- max(Fa.p[y, , u])
-    for (a in 1:16) {
-      P_om_w[y - 38, a] <- Fa.p[y, a, u]/Ffull_om
+    for (u in 2) {
+      Ffull_om <- max(Fa.p[i, , u])
+      for (a in 1:16) {
+        P_om_w[1, a] <- Fa.p[i, a, u]/Ffull_om
+      }
+      Ffull_om <- max(Fa.p[(i+1), , u])
+      for (a in 1:16) {
+        P_om_w[2, a] <- Fa.p[(i+1), a, u]/Ffull_om
+      }
+      Ffull_om <- max(Fa.p[(i+2), , u])
+      for (a in 1:16) {
+        P_om_w[3, a] <- Fa.p[(i+2), a, u]/Ffull_om
+      }
     }
+
+  
+  # average partial recruitment for each age over all reference years
+  P_om_avg_e <- rep(NA, 10)
+  P_om_avg_w <- rep(NA, 16)
+  
+  #east
+  for (a in 1:10) {
+    P_om_avg_e[a] <- mean(P_om_e[, a])
   }
-
-
-# average partial recruitment for each age over all reference years
-P_om_avg_e <- rep(NA, 10)
-P_om_avg_w <- rep(NA, 16)
-
-#east
-for (a in 1:10) {
-  P_om_avg_e[a] <- mean(P_om_e[, a])
+  
+  #west
+  for (a in 1:16) {
+    P_om_avg_w[a] <- mean(P_om_w[, a])
+  }
+  
+  
+  # scaled to 1 (maximum partial recruitment)
+  #east
+  for (a in 1:10)
+  {
+    P_om_fin_e[i, a] <- P_om_avg_e[a]/max(P_om_avg_e)
+  }
+  
+  #west
+  for (a in 1:16)
+  {
+    P_om_fin_w[i, a] <- P_om_avg_w[a]/max(P_om_avg_w)
+  }
+  
 }
 
-#west
-for (a in 1:16) {
-  P_om_avg_w[a] <- mean(P_om_w[, a])
-}
 
-
-# scaled to 1 (maximum partial recruitment)
-P_om_fin_e <- rep(NA, 10)
-P_om_fin_w <- rep(NA, 16)
-
-#east
-for (a in 1:10)
-{
-  P_om_fin_e[a] <- P_om_avg_e[a]/max(P_om_avg_e)
-}
-
-#west
-for (a in 1:16)
-{
-  P_om_fin_w[a] <- P_om_avg_w[a]/max(P_om_avg_w)
-}
 
 
 
@@ -1571,84 +1589,109 @@ for (y in 1:42)
   }
 
 
-# calculate partial recruitment - stock
-P_oms_e <- array(NA, c(3, 10), dimnames = list(year = 1:3, age = 1:10))
-P_oms_w <- array(NA, c(3, 16), dimnames = list(year = 1:3, age = 1:16))
+# calculate partial recruitment - stock (years Y-2 to Y)
+P_oms_fin_e <- array(NA, c(40, 10), dimnames = list(iter = 1:40, age = 1:10))
+P_oms_fin_w <- array(NA, c(40, 16), dimnames = list(iter = 1:40, age = 1:16))
 
-#east
-for (y in (nrow(Fa.s2) - 3):(nrow(Fa.s2) - 1))
+for (i in 1:40) {
+
+  P_oms_e <- array(NA, c(3, 10), dimnames = list(year = 1:3, age = 1:10))
+  P_oms_w <- array(NA, c(3, 16), dimnames = list(year = 1:3, age = 1:16))
+  
   for (s in 1) {
-    Ffull_om <- max(Fa.s2[y, , s])
+    Ffull_om <- max(Fa.s2[i, , s])
     for (a in 1:10) {
-      P_oms_e[y - 38, a] <- Fa.s2[y, a, s]/Ffull_om
+      P_oms_e[1, a] <- Fa.s2[i, a, s]/Ffull_om
+    }
+    Ffull_om <- max(Fa.s2[(i+1), , s])
+    for (a in 1:10) {
+      P_oms_e[2, a] <- Fa.s2[(i+1), a, s]/Ffull_om
+    }
+    Ffull_om <- max(Fa.s2[(i+2), , s])
+    for (a in 1:10) {
+      P_oms_e[3, a] <- Fa.s2[(i+2), a, s]/Ffull_om
     }
   }
-
-#west
-for (y in (nrow(Fa.s2) - 3):(nrow(Fa.s2) - 1))
   for (s in 2) {
-    Ffull_om <- max(Fa.s2[y, , s])
+    Ffull_om <- max(Fa.s2[i, , s])
     for (a in 1:16) {
-      P_oms_w[y - 38, a] <- Fa.s2[y, a, s]/Ffull_om
+      P_oms_w[1, a] <- Fa.s2[i, a, s]/Ffull_om
+    }
+    Ffull_om <- max(Fa.s2[(i+1), , s])
+    for (a in 1:16) {
+      P_oms_w[2, a] <- Fa.s2[(i+1), a, s]/Ffull_om
+    }
+    Ffull_om <- max(Fa.s2[(i+2), , s])
+    for (a in 1:16) {
+      P_oms_w[3, a] <- Fa.s2[(i+2), a, s]/Ffull_om
     }
   }
 
 
-# average partial recruitment for each age over all reference years - stock
-P_oms_avg_e <- rep(NA, 10)
-P_oms_avg_w <- rep(NA, 16)
+  # average partial recruitment for each age over all reference years - stock
+  P_oms_avg_e <- rep(NA, 10)
+  P_oms_avg_w <- rep(NA, 16)
+  
+  #east
+  for (a in 1:10) {
+    P_oms_avg_e[a] <- mean(P_oms_e[, a])
+  }
+  
+  #west
+  for (a in 1:16) {
+    P_oms_avg_w[a] <- mean(P_oms_w[, a])
+  }
+  
+  
+  # scaled to 1 (maximum partial recruitment) - stock
+  #east
+  for (a in 1:10)
+  {
+    P_oms_fin_e[i, a] <- P_oms_avg_e[a]/max(P_oms_avg_e)
+  }
+  
+  #west
+  for (a in 1:16)
+  {
+    P_oms_fin_w[i, a] <- P_oms_avg_w[a]/max(P_oms_avg_w)
+  }
+  
+}  
 
-#east
-for (a in 1:10) {
-  P_oms_avg_e[a] <- mean(P_oms_e[, a])
-}
-
-#west
-for (a in 1:16) {
-  P_oms_avg_w[a] <- mean(P_oms_w[, a])
-}
-
-
-# scaled to 1 (maximum partial recruitment) - stock
-P_oms_fin_e <- rep(NA, 10)
-P_oms_fin_w <- rep(NA, 16)
-
-#east
-for (a in 1:10)
-{
-  P_oms_fin_e[a] <- P_oms_avg_e[a]/max(P_oms_avg_e)
-}
-
-#west
-for (a in 1:16)
-{
-  P_oms_fin_w[a] <- P_oms_avg_w[a]/max(P_oms_avg_w)
-}
 
 
 
 ## Calculate true OM F0.1 ##
-F01_om <- array(NA, c(2, 2), dimnames = list(type = c("pop", "stock"), unit = c("east", "west")))
+F01_omp <- array(NA, c(39, 2), dimnames = list(iter = 1:39, unit = c("east", "west")))
+F01_oms <- array(NA, c(40, 2), dimnames = list(iter = 1:40, unit = c("east", "west")))
 
-#east pop
-YPR <- ypr(age = seq(1, 10, 1), wgt = waa[1:10, 1], partial = P_om_fin_e, 
-           M = M[1:10, 1], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
-F01_om[1, 1] <- YPR$Reference_Points[1,1]
+for (i in 1:39) {
+  #east pop
+  YPR <- ypr(age = seq(1, 10, 1), wgt = waa[1:10, 1], partial = P_om_fin_e[i, ], 
+             M = M[1:10, 1], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
+  F01_omp[i, 1] <- YPR$Reference_Points[1,1]
+  
+  #west pop
+  YPR <- ypr(age = seq(1, 16, 1), wgt = waa[1:16, 2], partial = P_om_fin_w[i, ], 
+             M = M[1:16, 2], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
+  F01_omp[i, 2] <- YPR$Reference_Points[1,1]
+}
 
-#west pop
-YPR <- ypr(age = seq(1, 16, 1), wgt = waa[1:16, 2], partial = P_om_fin_w, 
-           M = M[1:16, 2], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
-F01_om[1, 2] <- YPR$Reference_Points[1,1]
+for (i in 1:40) {
+  #east stock
+  YPR <- ypr(age = seq(1, 10, 1), wgt = waa[1:10, 1], partial = P_oms_fin_e[i, ], 
+             M = M[1:10, 1], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
+  F01_oms[i, 1] <- YPR$Reference_Points[1,1]
+  
+  #west stock
+  YPR <- ypr(age = seq(1, 16, 1), wgt = waa[1:16, 2], partial = P_oms_fin_w[i, ], 
+             M = M[1:16, 2], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
+  F01_oms[i, 2] <- YPR$Reference_Points[1,1]
+  
+  
+}
 
-#east stock
-YPR <- ypr(age = seq(1, 10, 1), wgt = waa[1:10, 1], partial = P_oms_fin_e, 
-           M = M[1:10, 1], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
-F01_om[2, 1] <- YPR$Reference_Points[1,1]
 
-#west stock
-YPR <- ypr(age = seq(1, 16, 1), wgt = waa[1:16, 2], partial = P_oms_fin_w, 
-           M = M[1:16, 2], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
-F01_om[2, 2] <- YPR$Reference_Points[1,1]
 
 
 # calculate reference ages

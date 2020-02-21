@@ -9,7 +9,7 @@
 # ** Contact M.Morse for questions: mollymorse@ucsb.edu
 
 
-############################################ F0.1s #############################################
+############################################ F/F01 for 2012-2014 #############################################
 
 
 
@@ -25,10 +25,10 @@ library(dplyr)
 
 ## Settings ##
 
-dir_scen  <- "Simulations_selftest" #directory name for the scenario (e.g., base, low movement, self-test)
-dir_stock <- "West"              #directory name for the stock; for estimation model calcs
+dir_scen  <- "Simulations_2" #directory name for the scenario (e.g., base, low movement, self-test)
+dir_stock <- "West - 500 Sims - 2"              #directory name for the stock; for estimation model calcs
 stock     <- 2                 #for estimation model calcs; east (1) vs. west (2) 
-dir_om    <- "OM Output"         #directory name for the OM outputs
+dir_om    <- "OM_Base_Output"         #directory name for the OM outputs
 
 
 
@@ -39,7 +39,7 @@ dir_om    <- "OM Output"         #directory name for the OM outputs
 nage     <- 29
 biolparm <- as.matrix(read.csv(paste0("C:/Users/mmorse1/Documents/", dir_scen, "/R Code + Inputs/BFTBiolparm.csv")), header = T)
 M        <- array(biolparm[1:nage,2:3],c(nage,2),dimnames=list(age=1:nage,unit=1:2)) #annualized M
-waa      <- array(biolparm[1:nage,4:5],c(nage,2),dimnames=list(age=1:nage,unit=1:2)) #weight-at-age
+waa      <- array(biolparm[1:nage,4:5],c(nage,2),dimnames=list(age=1:nage,unit=1:2)) #weight-at-age (t)
 naa      <- as.matrix(read.csv(paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/naa.csv")), header = T)[, -1] %>%
   array(dim = c(42, 29, 4, 7, 2), dimnames = list(year = 1974:2015, age = 1:29, quarter = 1:4, zone = 1:7, unit = 1:2))
 naa_2 <- array(NA, dim = c(42, 29, 2), dimnames = list(year = 1974:2015, age = 1:29, unit = 1:2))
@@ -56,15 +56,6 @@ for (y in 1:41)
     for (u in 1:2) {
       Fa.p[y, a, u] <- log(naa_2[y, a, u] / naa_2[y + 1, a + 1, u]) - M[a, u] #calculate population F at year, age
     }
-Fa.p[which(Fa.p < 0)] <- 0  #Because age-1 was an assumed input (from ICCAT 2017 stock assessment), 
-                            #some of the Z (=F+M) (=ln(N/N+1)) don't match up perfectly and 
-                            #in some cases Z-M results in a negative F. 
-                            #This is mostly only an issue for ages 1, 2, and 3, 
-                            #for which the Fs are small (<0.1 in recent couple of decades) anyway.
-                            #This makes it impossible to calculate a valid partial recruitment and YPR.
-                            #So, here I assumed that when F comes out as <0, then F=0.
-
-Fa.p <- round(Fa.p, 4)  
 
 
 # calculate partial recruitment - population (years Y-3 to Y-1, where Y is 2015)
@@ -1500,8 +1491,6 @@ for (y in 1:41)
       Fa.p[y, a, u] <- log(naa_2[y, a, u] / naa_2[y + 1, a + 1, u]) - M[a, u] #calculate population F at year, age
     }
 
-Fa.p <- round(Fa.p, 4)  
-
 
 
 # calculate partial recruitment - population (years Y-2 to Y)
@@ -1693,62 +1682,67 @@ for (i in 1:40) {
 
 
 
+# Use reference ages calculated for manuscript, years 2012-2014 (calculated above, copied here)
 
-# calculate reference ages
-for (y in 39:41) {
-  
-  # Isolate ages where partial recruitment is greater than or equal to 0.8
-  ref.east   <- which(P_om_fin_e  >= 0.8)  #east population
-  ref.west   <- which(P_om_fin_w  >= 0.8)  #west population
-  ref.east_s <- which(P_oms_fin_e >= 0.8)  #east stock
-  ref.west_s <- which(P_oms_fin_w >= 0.8)  #west stock
-  
-}
+ref.east   <- c(4,5)                   #east population
+ref.west   <- c(9,10,11,12,13,14)      #west population
+ref.east_s <- c(4,5)                   #east stock
+ref.west_s <- c(10,11,12,13,14,15,16)  #west stock
+
 
 # adjust F0.1 for the reference ages 
 # using the average partial recruitment for the reference ages
-F01_om[1, 1] <- F01_om[1, 1] * mean(P_om_fin_e[ref.east])
-F01_om[1, 2] <- F01_om[1, 2] * mean(P_om_fin_w[ref.west])
-F01_om[2, 1] <- F01_om[2, 1] * mean(P_oms_fin_e[ref.east_s])
-F01_om[2, 2] <- F01_om[2, 2] * mean(P_oms_fin_w[ref.west_s])
+for (i in 1:39) {
+  F01_omp[i, 1] <- F01_omp[i, 1] * mean(P_om_fin_e[i, ref.east])
+  F01_omp[i, 2] <- F01_omp[i, 2] * mean(P_om_fin_w[i, ref.west])
+}
+
+for (i in 1:40) {
+  F01_oms[i, 1] <- F01_oms[i, 1] * mean(P_oms_fin_e[i, ref.east_s])
+  F01_oms[i, 2] <- F01_oms[i, 2] * mean(P_oms_fin_w[i, ref.west_s])
+}
+
 
 
 
 ## Determine stock status ##
 
-# Calculate F for each year
-F_p <- array(NA, c(41, 2), dimnames = list(year = 1974:2014, unit = 1:2)) 
-F_s <- array(NA, c(42, 2), dimnames = list(year = 1974:2015, unit = 1:2))
-for (y in 1:41) {
-  F_p[y, 1] <- mean(Fa.p[y, ref.east, 1]) #east population
-  F_p[y, 2] <- mean(Fa.p[y, ref.west, 2]) #west population
+# Calculate Fy (average over reference ages) for each year
+F_p <- array(NA, c(39, 2), dimnames = list(year = 1976:2014, unit = c("east", "west"))) 
+F_s <- array(NA, c(40, 2), dimnames = list(year = 1976:2015, unit = c("east", "west")))
+for (y in 1:39) {
+  F_p[y, 1] <- mean(Fa.p[(y+2), ref.east, 1]) #east population
+  F_p[y, 2] <- mean(Fa.p[(y+2), ref.west, 2]) #west population
   }
-for (y in 1:42) {
-  F_s[y, 1] <- mean(Fa.s2[y, ref.east_s, 1]) #east stock
-  F_s[y, 2] <- mean(Fa.s2[y, ref.west_s, 2]) #west stock
+for (y in 1:40) {
+  F_s[y, 1] <- mean(Fa.s2[(y+2), ref.east_s, 1]) #east stock
+  F_s[y, 2] <- mean(Fa.s2[(y+2), ref.west_s, 2]) #west stock
 }
+
 
 
 # Calculate Fy/F0.1
-Expl_status_om_p <- array(NA, c(41, 2), dimnames = list(year = 1974:2014, unit = c("east", "west")))
-Expl_status_om_s <- array(NA, c(42, 2), dimnames = list(year = 1974:2015, unit = c("east", "west")))
+Expl_status_om_p <- array(NA, c(39, 2), dimnames = list(year = 1976:2014, unit = c("east", "west")))
+Expl_status_om_s <- array(NA, c(40, 2), dimnames = list(year = 1976:2015, unit = c("east", "west")))
 
-for (y in 1:41) {
-  Expl_status_om_p[y, 1] <- F_p[y, 1] / F01_om[1, 1] #east population
-  Expl_status_om_p[y, 2] <- F_p[y, 2] / F01_om[1, 2] #west population
+for (i in 1:39) {
+  Expl_status_om_p[i, 1] <- F_p[i, 1] / F01_omp[i, 1] #east population
+  Expl_status_om_p[i, 2] <- F_p[i, 2] / F01_omp[i, 2] #west population
 }
-for (y in 1:42) {
-  Expl_status_om_s[y, 1] <- F_s[y, 1] / F01_om[2, 1] #east stock
-  Expl_status_om_s[y, 2] <- F_s[y, 2] / F01_om[2, 2] #east stock
+for (i in 1:40) {
+  Expl_status_om_s[i, 1] <- F_s[i, 1] / F01_oms[i, 1] #east stock
+  Expl_status_om_s[i, 2] <- F_s[i, 2] / F01_oms[i, 2] #west stock
 }
 
 
-# Save true OM values (F, F0.1, F/F0.1)
+# Save true OM values (Fy, F0.1, Fy/F0.1)
 write.csv(F_p, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F_p_om.csv"))
 write.csv(F_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F_s_om.csv"))
-write.csv(F01_om, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_om.csv"))
+write.csv(F01_omp, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_omp.csv"))
+write.csv(F01_oms, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_oms.csv"))
 write.csv(Expl_status_om_p, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F_F01_p_om.csv"))
 write.csv(Expl_status_om_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F_F01_s_om.csv"))
+
 
 
 
@@ -1923,7 +1917,7 @@ quantile(FF01.east[3,], 0.975)
 
 
 
-#### Plots ####
+#### >> Plots ####
 
 ## Plot F0.1 results ##
 
@@ -2109,7 +2103,7 @@ e.low.2  <- ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% 
 
 
 
-
+#### ///// ####
 
 #### END #####
 

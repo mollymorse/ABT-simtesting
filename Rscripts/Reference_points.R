@@ -1461,8 +1461,6 @@ plot_grid(WestF01, EastF01, WestF30, EastF30, WestF40, EastF40,
 ## Settings ##
 
 dir_scen  <- "Simulations_2"        #directory name for the scenario (e.g., base, low movement, self-test)
-dir_stock <- "West - 500 Sims - 2"                 #directory name for the stock; for estimation model calcs
-stock     <- 2                      #for estimation model calcs; east (1) vs. west (2) 
 dir_om    <- "OM_Base_Output"            #directory name for the OM outputs
 
 
@@ -1676,36 +1674,44 @@ for (i in 1:40) {
   YPR <- ypr(age = seq(1, 16, 1), wgt = waa[1:16, 2], partial = P_oms_fin_w[i, ], 
              M = M[1:16, 2], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
   F01_oms[i, 2] <- YPR$Reference_Points[1,1]
-  
-  
 }
 
 
 ## Derive reference ages (where partial R is > or = 0.8) ##
-ref.pop <- array(NA, c(39, 2), dimnames = list(iter = 1:39, population = c("east", "west")))
-ref.stk <- array(NA, c(40, 2), dimnames = list(iter = 1:40, stock      = c("east", "west")))
+
+# ref.pop <- array(NA, c(39, 2), dimnames = list(iter = 1:39, population = c("east", "west")))
+# ref.stk <- array(NA, c(40, 2), dimnames = list(iter = 1:40, stock      = c("east", "west")))
+ref.east <- vector(mode = "list")
+ref.west <- vector(mode = "list")
+ref.east.s <- vector(mode = "list")
+ref.west.s <- vector(mode = "list")
 
 for (i in 1:39) {
-  ref.pop[i, 1] <- which(P_om_fin_e[i]  >= 0.8)  #east population
-  ref.pop[i, 2] <- which(P_om_fin_w[i]  >= 0.8)  #west population
+  # ref.pop[i, 1] <- which(P_om_fin_e[i, ]  >= 0.8)  #east population
+  # ref.pop[i, 2] <- which(P_om_fin_w[i, ]  >= 0.8)  #west population
+  ref.east[[i]] <- which(P_om_fin_e[i, ]  >= 0.8)  #east population
+  ref.west[[i]] <- which(P_om_fin_w[i, ]  >= 0.8)  #east population
+
 }
 
 for (i in 1:40) {
-  ref.stk[i, 1] <- which(P_oms_fin_e[i] >= 0.8)  #east stock
-  ref.stk[i, 2] <- which(P_oms_fin_w[i] >= 0.8)  #west stock
+  # ref.stk[i, 1] <- which(P_oms_fin_e[i, ] >= 0.8)  #east stock
+  # ref.stk[i, 2] <- which(P_oms_fin_w[i, ] >= 0.8)  #west stock
+  ref.east.s[[i]] <- which(P_oms_fin_e[i, ]  >= 0.8)  #east stock
+  ref.west.s[[i]] <- which(P_oms_fin_w[i, ]  >= 0.8)  #east stock
 }
 
 
 ## Adjust F0.1 for the reference ages ##
 # using the average partial recruitment for the reference ages
 for (i in 1:39) {
-  F01_omp[i, 1] <- F01_omp[i, 1] * mean(P_om_fin_e[i, ref.pop[i, 1]])
-  F01_omp[i, 2] <- F01_omp[i, 2] * mean(P_om_fin_w[i, ref.pop[i, 2]])
+  F01_omp[i, 1] <- F01_omp[i, 1] * mean(P_om_fin_e[i, ref.east[[i]]])
+  F01_omp[i, 2] <- F01_omp[i, 2] * mean(P_om_fin_w[i, ref.west[[i]]])
 }
 
 for (i in 1:40) {
-  F01_oms[i, 1] <- F01_oms[i, 1] * mean(P_oms_fin_e[i, ref.stk[i, 1]])
-  F01_oms[i, 2] <- F01_oms[i, 2] * mean(P_oms_fin_w[i, ref.stk[i, 2]])
+  F01_oms[i, 1] <- F01_oms[i, 1] * mean(P_oms_fin_e[i, ref.east.s[[i]]])
+  F01_oms[i, 2] <- F01_oms[i, 2] * mean(P_oms_fin_w[i, ref.west.s[[i]]])
 }
 
 
@@ -1717,12 +1723,12 @@ for (i in 1:40) {
 F_p <- array(NA, c(39, 2), dimnames = list(year = 1976:2014, unit = c("east", "west"))) 
 F_s <- array(NA, c(40, 2), dimnames = list(year = 1976:2015, unit = c("east", "west")))
 for (y in 1:39) {
-  F_p[y, 1] <- mean(Fa.p[(y+2), ref.pop[i, 1], 1]) #east population
-  F_p[y, 2] <- mean(Fa.p[(y+2), ref.pop[i, 2], 2]) #west population
+  F_p[y, 1] <- mean(Fa.p[(y+2), ref.east[[i]], 1]) #east population
+  F_p[y, 2] <- mean(Fa.p[(y+2), ref.west[[i]], 2]) #west population
   }
 for (y in 1:40) {
-  F_s[y, 1] <- mean(Fa.s2[(y+2), ref.stk[i, 1], 1]) #east stock
-  F_s[y, 2] <- mean(Fa.s2[(y+2), ref.stk[i, 2], 2]) #west stock
+  F_s[y, 1] <- mean(Fa.s2[(y+2), ref.east.s[[i]], 1]) #east stock
+  F_s[y, 2] <- mean(Fa.s2[(y+2), ref.west.s[[i]], 2]) #west stock
 }
 
 
@@ -1759,6 +1765,8 @@ write.csv(Expl_status_om_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/",
 
 
 ## Define variables ##
+dir_stock <- "West - 500 Sims - 2"  #directory name for the stock; for estimation model calcs only
+stock     <- 2                      #for estimation model calcs only; east (1) vs. west (2) 
 wd <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
 setwd(wd)
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
@@ -1768,11 +1776,11 @@ nyr <- 42
 
 if (stock == 1) #reference ages (from OM) and plus group age
 {
-  a.ref <- ref.pop[, 1]
+  a.ref <- ref.east
   nage <- 10 
   alph <- "E"
 } else { 
-  a.ref <- ref.pop[, 2]
+  a.ref <- ref.west
   nage <- 16
   alph <- "W"
 }
@@ -1847,11 +1855,11 @@ for (i in runnums) {
     
     # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
     if (y <= 39) {
-      F01.vpa[y] <- F01 * mean(P.vpa.fin[a.ref[y]]) # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
-      F.cur.vpa[y] <- mean(F.mat[(y+2), a.ref[y]])  # Calculate Fcurrent (using reference ages from 2014, the last year calculated for the true population)
+      F01.vpa[y] <- F01 * mean(P.vpa.fin[a.ref[[y]]]) # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
+      F.cur.vpa[y] <- mean(F.mat[(y+2), a.ref[[y]]])  # Calculate Fcurrent (using reference ages from 2014, the last year calculated for the true population)
     } else {
-      F01.vpa[y] <- F01 * mean(P.vpa.fin[a.ref[y-1]]) # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
-      F.cur.vpa[y] <- mean(F.mat[(y+2), a.ref[y-1]])  # Calculate Fcurrent (using reference ages from 2014, the last year calculated for the true population)
+      F01.vpa[y] <- F01 * mean(P.vpa.fin[a.ref[[y-1]]]) # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
+      F.cur.vpa[y] <- mean(F.mat[(y+2), a.ref[[y-1]]])  # Calculate Fcurrent (using reference ages from 2014, the last year calculated for the true population)
       }
   
     

@@ -1651,8 +1651,8 @@ for (i in 1:40) {
 
 
 ## Calculate true OM F0.1 ##
-F01_omp <- array(NA, c(39, 2), dimnames = list(iter = 1:39, unit = c("east", "west")))
-F01_oms <- array(NA, c(40, 2), dimnames = list(iter = 1:40, unit = c("east", "west")))
+F01_omp <- array(NA, c(39, 2), dimnames = list(iter = 1:39, population = c("east", "west")))
+F01_oms <- array(NA, c(40, 2), dimnames = list(iter = 1:40, stock = c("east", "west")))
 
 for (i in 1:39) {
   #east pop
@@ -1681,25 +1681,31 @@ for (i in 1:40) {
 }
 
 
+## Derive reference ages (where partial R is > or = 0.8) ##
+ref.pop <- array(NA, c(39, 2), dimnames = list(iter = 1:39, population = c("east", "west")))
+ref.stk <- array(NA, c(40, 2), dimnames = list(iter = 1:40, stock      = c("east", "west")))
 
-# Use reference ages calculated for manuscript, years 2012-2014 (calculated above, copied here)
-
-ref.east   <- c(4,5)                   #east population
-ref.west   <- c(9,10,11,12,13,14)      #west population
-ref.east_s <- c(4,5)                   #east stock
-ref.west_s <- c(10,11,12,13,14,15,16)  #west stock
-
-
-# adjust F0.1 for the reference ages 
-# using the average partial recruitment for the reference ages
 for (i in 1:39) {
-  F01_omp[i, 1] <- F01_omp[i, 1] * mean(P_om_fin_e[i, ref.east])
-  F01_omp[i, 2] <- F01_omp[i, 2] * mean(P_om_fin_w[i, ref.west])
+  ref.pop[i, 1] <- which(P_om_fin_e[i]  >= 0.8)  #east population
+  ref.pop[i, 2] <- which(P_om_fin_w[i]  >= 0.8)  #west population
 }
 
 for (i in 1:40) {
-  F01_oms[i, 1] <- F01_oms[i, 1] * mean(P_oms_fin_e[i, ref.east_s])
-  F01_oms[i, 2] <- F01_oms[i, 2] * mean(P_oms_fin_w[i, ref.west_s])
+  ref.stk[i, 1] <- which(P_oms_fin_e[i] >= 0.8)  #east stock
+  ref.stk[i, 2] <- which(P_oms_fin_w[i] >= 0.8)  #west stock
+}
+
+
+## Adjust F0.1 for the reference ages ##
+# using the average partial recruitment for the reference ages
+for (i in 1:39) {
+  F01_omp[i, 1] <- F01_omp[i, 1] * mean(P_om_fin_e[i, ref.pop[i, 1]])
+  F01_omp[i, 2] <- F01_omp[i, 2] * mean(P_om_fin_w[i, ref.pop[i, 2]])
+}
+
+for (i in 1:40) {
+  F01_oms[i, 1] <- F01_oms[i, 1] * mean(P_oms_fin_e[i, ref.stk[i, 1]])
+  F01_oms[i, 2] <- F01_oms[i, 2] * mean(P_oms_fin_w[i, ref.stk[i, 2]])
 }
 
 
@@ -1711,12 +1717,12 @@ for (i in 1:40) {
 F_p <- array(NA, c(39, 2), dimnames = list(year = 1976:2014, unit = c("east", "west"))) 
 F_s <- array(NA, c(40, 2), dimnames = list(year = 1976:2015, unit = c("east", "west")))
 for (y in 1:39) {
-  F_p[y, 1] <- mean(Fa.p[(y+2), ref.east, 1]) #east population
-  F_p[y, 2] <- mean(Fa.p[(y+2), ref.west, 2]) #west population
+  F_p[y, 1] <- mean(Fa.p[(y+2), ref.pop[i, 1], 1]) #east population
+  F_p[y, 2] <- mean(Fa.p[(y+2), ref.pop[i, 2], 2]) #west population
   }
 for (y in 1:40) {
-  F_s[y, 1] <- mean(Fa.s2[(y+2), ref.east_s, 1]) #east stock
-  F_s[y, 2] <- mean(Fa.s2[(y+2), ref.west_s, 2]) #west stock
+  F_s[y, 1] <- mean(Fa.s2[(y+2), ref.stk[i, 1], 1]) #east stock
+  F_s[y, 2] <- mean(Fa.s2[(y+2), ref.stk[i, 2], 2]) #west stock
 }
 
 
@@ -1751,28 +1757,22 @@ write.csv(Expl_status_om_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/",
 
 #### >> Estimated F0.1s from VPA ####
 
-## Define variables ##
 
+## Define variables ##
 wd <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
+setwd(wd)
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
                  list.files(path = paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged"), pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters
 runnums <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
 nyr <- 42
+
 if (stock == 1) #reference ages (from OM) and plus group age
 {
-  #old (from original base case) - new (low movement) use OM ref ages calculated above
-  # a.ref <- 4 #east
-  # A.ref <- 5 
-  #new - uses all ages P >= 0.8, not a range
-  a.ref <- ref.east
+  a.ref <- ref.pop[, 1]
   nage <- 10 
   alph <- "E"
 } else { 
-  #old (from original base case) - new (low movement) use OM ref ages calculated above
-  # a.ref <- 8 #west
-  # A.ref <- 14 
-  #new - uses all ages P >= 0.8, not a range
-  a.ref <- ref.west
+  a.ref <- ref.pop[, 2]
   nage <- 16
   alph <- "W"
 }
@@ -1780,32 +1780,10 @@ if (stock == 1) #reference ages (from OM) and plus group age
 
 ## Calculations ##
 
-FF01 <- matrix(NA, nrow=3, ncol=1, dimnames=list(reference=c("Fcur", "F01", "Fcur/F01"), value=1))
-FF01.bias <- matrix(NA, nrow=2, ncol=1, dimnames=list(bias=c("pop", "stock"), value=1))
+FF01 <- array(NA, c(length(runnums), 40, 3), dimnames=list(realization = runnums, year = 1976:2015, reference = c("Fcur", "F01", "Fcur/F01")))
 
-setwd(wd)
-
-## True F0.1 ##
-if (stock == 1) {
-  F01.OM.p <- F01_om[1, 1] #east pop
-  F01.OM.s <- F01_om[2, 1] #east stock
-} else {
-  F01.OM.p <- F01_om[1, 2] #west pop
-  F01.OM.s <- F01_om[2, 2] #west stock
-}
-
-## True stock status (from low movement OM) ##
-F01.stat.true <- rep(NA,2)
-if (stock == 1) {
-  F01.stat.true[1] <- Expl_status_om[1, 1] #east pop
-  F01.stat.true[2] <- Expl_status_om[2, 1] #east stock
-} else {
-  F01.stat.true[1] <- Expl_status_om[1, 2] #west pop
-  F01.stat.true[2] <- Expl_status_om[2, 2]  #west stock
-}
 
 # NOTE: in the low movement scenario, ypr function got stuck on east runnums 15, 202, 207 so those were skipped. (runnums[-c(12, 187, 192)])
-# This will take about 15 sec
 for (i in runnums) {
   # for (i in runnums[-c(12, 187, 192)]) { #low move
   
@@ -1820,89 +1798,80 @@ for (i in runnums) {
   F.mat <- as.matrix(result.file[32:73, 2:(nage+1)], nrow=nyr, ncol=nage) #save F-at-age matrix
   F.mat <- apply(F.mat, c(1,2), as.numeric)
   
-  ## Partial recruitment ##
-  P.vpa <- array(NA, c(3, nage), dimnames = list(year = 1:3, age = 1:nage))
-  for (y in (nrow(F.mat)-3):(nrow(F.mat)-1))
-  {
-    Ffull.vpa <- max(F.mat[y,])
-    for (a in 1:nage)
-    {
-      P.vpa[y-38,a] <- F.mat[y,a]/Ffull.vpa
+  ## Partial recruitment for each set of 3 years ##
+  
+  P.vpa.fin <- array(NA, c(40, nage), dimnames = list(iter = 1:40, age = 1:nage))
+  F01.vpa <- rep(NA, 40)
+  F.cur.vpa <- rep(NA, 40)
+  F01.status.vpa <- rep(NA, 40)
+  
+  for (y in 1:40) {
+    
+    P.vpa <- array(NA, c(3, nage), dimnames = list(year = 1:3, age = 1:nage))
+    
+    Ffull.vpa <- max(F.mat[y, ])
+    for (a in 1:nage) {
+      P.vpa[1, a] <- F.mat[y, a]/Ffull.vpa
+    } 
+    
+    Ffull.vpa <- max(F.mat[(y+1), ])
+    for (a in 1:nage) {
+      P.vpa[2, a] <- F.mat[(y+1), a]/Ffull.vpa
+    }   
+    
+    Ffull.vpa <- max(F.mat[(y+2), ])
+    for (a in 1:nage) {
+      P.vpa[3, a] <- F.mat[(y+2), a]/Ffull.vpa
     }
+    
+    
+    # Average partial recruitment for each age over the 3 years
+    P.vpa.avg <- rep(NA, nage)
+    for (a in 1:nage) {
+      P.vpa.avg[a] <- mean(P.vpa[, a])
+    }
+    
+    
+    # Rescaled to 1
+    P.vpa.fin <- rep(NA, nage)
+    Ffull.vpa2 <- max(P.vpa.avg)
+    for (a in 1:nage) {
+      P.vpa.fin[a] <- P.vpa.avg[a]/Ffull.vpa2
+    }
+    
+    
+    ## Calculate F0.1 ##
+    YPR <- ypr(age = seq(1, nage, 1), wgt = waa[1:nage, stock], partial = P.vpa.fin, 
+               M = M[1:nage, stock], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE) #changed to plus = FALSE for low move scenario
+    F01 <- YPR$Reference_Points[1, 1]
+    
+    # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
+    if (y <= 39) {
+      F01.vpa[y] <- F01 * mean(P.vpa.fin[a.ref[y]]) # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
+      F.cur.vpa[y] <- mean(F.mat[(y+2), a.ref[y]])  # Calculate Fcurrent (using reference ages from 2014, the last year calculated for the true population)
+    } else {
+      F01.vpa[y] <- F01 * mean(P.vpa.fin[a.ref[y-1]]) # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
+      F.cur.vpa[y] <- mean(F.mat[(y+2), a.ref[y-1]])  # Calculate Fcurrent (using reference ages from 2014, the last year calculated for the true population)
+      }
+  
+    
+    ## Determine stock status ##
+    
+    # Calculate Fcurrent/F01
+    F01.status.vpa[y] <- F.cur.vpa[y] / F01.vpa[y]
+    
+    FF01[i, y, 1] <- F.cur.vpa[y]
+    FF01[i, y, 2] <- F01.vpa[y]
+    FF01[i, y, 3] <- F01.status.vpa[y]
+
   }
-  
-  # Average partial recruitment for each age over all reference years
-  P.vpa.avg <- rep(NA,nage)
-  for (a in 1:nage)
-  {
-    P.vpa.avg[a] <- mean(P.vpa[,a])
-  }
-  
-  # Rescaled to 1
-  P.vpa.fin <- rep(NA,nage)
-  Ffull.vpa2 <- max(P.vpa.avg)
-  for (a in 1:nage)
-  {
-    P.vpa.fin[a] <- P.vpa.avg[a]/Ffull.vpa2
-  }
-  
-  P.vpa.fin <- round(P.vpa.fin, 4)
-  
-  ## Calculate F0.1 ##
-  YPR <- ypr(age = seq(1, nage, 1), wgt = waa[1:nage, stock], partial = P.vpa.fin, 
-             M = M[1:nage, stock], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE) #changed to plus = FALSE for low move scenario
-  F01 <- YPR$Reference_Points[1, 1]
-  
-  # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
-  F01.vpa <- F01 * mean(P.vpa.fin[a.ref])
-  
-  
-  ## Determine stock status ##
-  
-  # Calculate Fcurrent
-  F.cur.vpa <- mean(F.mat[(nrow(F.mat)-3):(nrow(F.mat)-1),a.ref])
-  
-  # Calculate Fcurrent/F0.1
-  F01.status.vpa <- F.cur.vpa/F01.vpa
-  
-  FF01 <- cbind(FF01, c(F.cur.vpa, F01.vpa, F01.status.vpa))
-  
-  
-  ## Calculate bias ##
-  
-  # Calculate bias in Fcurrent/F0.1 relative to "true" ratio from operating model
-  # F01.rel.bias.p <- (F01.status.vpa - as.numeric(F01.stat.true[1])) / as.numeric(F01.stat.true[1]) #from OM-P
-  # F01.rel.bias.s <- (F01.status.vpa - as.numeric(F01.stat.true[2])) / as.numeric(F01.stat.true[2]) #from OM-S
-  
-  # FF01.bias <- cbind(FF01.bias, c(F01.rel.bias.p, F01.rel.bias.s))
-  
+
 }
 
 
 
 ## Save F0.1 results ##
-# colnames(FF01) <- c("x", runnums[-c(12, 187, 192)]) #low move 
-# colnames(FF01.bias) <- c("x", runnums[-c(12, 187, 192)]) #low move east
-colnames(FF01) <- c("x", runnums)
-colnames(FF01.bias) <- c("x", runnums)
-write.csv(FF01[,-1], "F01_results_converge_v2.csv")
-write.csv(FF01.bias[,-1], "F01_bias_converge_v2.csv")
-
-
-FF01.west <- FF01[,-1]
-FF01.bias.west <- FF01.bias[,-1]
-# FF01.east <- FF01[,-1]
-# FF01.bias.east <- FF01.bias[,-1]
-
-
-
-## Explore F0.1 results ##
-sum(FF01.west[3,] < 1) / ncol(FF01.west)
-sum(FF01.east[3,] < 1) / ncol(FF01.east)
-summary(FF01.west[1,])
-quantile(FF01.west[2,], 0.975)
-summary(FF01.east[1,])
-quantile(FF01.east[3,], 0.975)
+write.csv(FF01, "F01_results_allyrs.csv")
 
 
 
@@ -1922,15 +1891,17 @@ quantile(FF01.east[3,], 0.975)
 ## Plot F0.1 results ##
 
 # Read in existing Fcur/F01 results
-FF01.west.base <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_results_converge.csv")
-FF01.east.base <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_results_converge.csv")
-FF01.west.low  <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged/F01_results_converge.csv")
-FF01.east.low  <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged/F01_results_converge.csv")
-FF01.west.self <- read.csv("C:/Users/mmorse1/Documents/Simulations_selftest/West/Converged/F01_results_converge.csv")
-FF01.east.self <- read.csv("C:/Users/mmorse1/Documents/Simulations_selftest/East/Converged/F01_results_converge.csv")
+FF01.w  <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_results_allyrs.csv", header = T)
+FF01.w1 <- array(FF01.west, c(405, 40, 3), dimnames = list(realization = 1:405, year = 1976:2015, reference = c("Fcur", "F01", "Fcur/F01")))
+FF01.e  <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_results_allyrs.csv", header = T)
+FF01.e1 <- array(FF01.east, c(XXX, 40, 3), dimnames = list(realization = 1:XXX, year = 1976:2015, reference = c("Fcur", "F01", "Fcur/F01")))
+
 
 
 # Boxplots of Fcur/F0.1 for each stock
+FF01.w2 <- as.data.frame(FF01.w1[, , 3])
+
+
 F01.data.w.base <- as.data.frame(FF01.west.base[3, -1])
 F01.data.w.base <- t(rbind(rep("West", ncol(F01.data.w.base)), rep("Cross-test", ncol(F01.data.w.base)), F01.data.w.base))
 colnames(F01.data.w.base) <- c("stock", "scenario", "ratio")
@@ -1938,22 +1909,6 @@ colnames(F01.data.w.base) <- c("stock", "scenario", "ratio")
 F01.data.e.base <- as.data.frame(FF01.east.base[3, -1])
 F01.data.e.base <- t(rbind(rep("East", ncol(F01.data.e.base)), rep("Cross-test", ncol(F01.data.e.base)), F01.data.e.base))
 colnames(F01.data.e.base) <- c("stock", "scenario", "ratio")
-
-F01.data.w.low <- as.data.frame(FF01.west.low[3, -1])
-F01.data.w.low <- t(rbind(rep("West", ncol(F01.data.w.low)), rep("Low-move", ncol(F01.data.w.low)), F01.data.w.low))
-colnames(F01.data.w.low) <- c("stock", "scenario", "ratio")
-
-F01.data.e.low <- as.data.frame(FF01.east.low[3, -1])
-F01.data.e.low <- t(rbind(rep("East", ncol(F01.data.e.low)), rep("Low-move", ncol(F01.data.e.low)), F01.data.e.low))
-colnames(F01.data.e.low) <- c("stock", "scenario", "ratio")
-
-F01.data.w.self <- as.data.frame(FF01.west.self[3, -1])
-F01.data.w.self <- t(rbind(rep("West", ncol(F01.data.w.self)), rep("Self-test", ncol(F01.data.w.self)), F01.data.w.self))
-colnames(F01.data.w.self) <- c("stock", "scenario", "ratio")
-
-F01.data.e.self <- as.data.frame(FF01.east.self[3, -1])
-F01.data.e.self <- t(rbind(rep("East", ncol(F01.data.e.self)), rep("Self-test", ncol(F01.data.e.self)), F01.data.e.self))
-colnames(F01.data.e.self) <- c("stock", "scenario", "ratio")
 
 F01.data <- rbind(F01.data.w.base, F01.data.e.base,
                   F01.data.w.low,  F01.data.e.low,

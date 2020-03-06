@@ -1722,13 +1722,15 @@ for (i in 1:40) {
 # Calculate Fy (average over reference ages) for each year
 F_p <- array(NA, c(39, 2), dimnames = list(year = 1976:2014, unit = c("east", "west"))) 
 F_s <- array(NA, c(40, 2), dimnames = list(year = 1976:2015, unit = c("east", "west")))
-for (y in 1:39) {
-  F_p[y, 1] <- mean(Fa.p[(y+2), ref.east[[i]], 1]) #east population
-  F_p[y, 2] <- mean(Fa.p[(y+2), ref.west[[i]], 2]) #west population
+
+for (i in 1:39) {
+  F_p[i, 1] <- mean(Fa.p[(i+2), ref.east[[i]], 1]) #east population
+  F_p[i, 2] <- mean(Fa.p[(i+2), ref.west[[i]], 2]) #west population
   }
-for (y in 1:40) {
-  F_s[y, 1] <- mean(Fa.s2[(y+2), ref.east.s[[i]], 1]) #east stock
-  F_s[y, 2] <- mean(Fa.s2[(y+2), ref.west.s[[i]], 2]) #west stock
+
+for (i in 1:40) {
+  F_s[i, 1] <- mean(Fa.s2[(i+2), ref.east.s[[i]], 1]) #east stock
+  F_s[i, 2] <- mean(Fa.s2[(i+2), ref.west.s[[i]], 2]) #west stock
 }
 
 
@@ -1765,14 +1767,14 @@ write.csv(Expl_status_om_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/",
 
 
 ## Define variables ##
-dir_stock <- "West - 500 Sims - 2"  #directory name for the stock; for estimation model calcs only
-stock     <- 2                      #for estimation model calcs only; east (1) vs. west (2) 
-wd <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
+dir_stock <- "East - 500 Sims - 1"  #directory name for the stock; for estimation model calcs only
+stock     <- 1                      #for estimation model calcs only; east (1) vs. west (2) 
+wd        <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
 setwd(wd)
-filenums <- gsub("[A-z \\.\\(\\)]", "", 
-                 list.files(path = paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged"), pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters
-runnums <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
-nyr <- 42
+filenums  <- gsub("[A-z \\.\\(\\)]", "", 
+                  list.files(path = paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged"), pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters
+runnums   <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
+nyr       <- 42
 
 if (stock == 1) #reference ages (from OM) and plus group age
 {
@@ -1793,6 +1795,7 @@ FF01 <- array(NA, c(length(runnums), 40, 3), dimnames=list(realization = runnums
 
 # NOTE: in the low movement scenario, ypr function got stuck on east runnums 15, 202, 207 so those were skipped. (runnums[-c(12, 187, 192)])
 for (i in runnums) {
+# for (i in runnums[-c(207, 261)]) { #base move
   # for (i in runnums[-c(12, 187, 192)]) { #low move
   
   ## Read in Results files ##
@@ -1848,6 +1851,13 @@ for (i in runnums) {
     }
     
     
+    # for (a in 1:nage) {
+    #   if (P.vpa.fin[a] == 0) {
+    #     P.vpa.fin[a] <- 0.00001
+    #   }
+    # }
+    
+    
     ## Calculate F0.1 ##
     YPR <- ypr(age = seq(1, nage, 1), wgt = waa[1:nage, stock], partial = P.vpa.fin, 
                M = M[1:nage, stock], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE) #changed to plus = FALSE for low move scenario
@@ -1856,9 +1866,9 @@ for (i in runnums) {
     # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
     if (y <= 39) {
       F01.vpa[y] <- F01 * mean(P.vpa.fin[a.ref[[y]]]) # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
-      F.cur.vpa[y] <- mean(F.mat[(y+2), a.ref[[y]]])  # Calculate Fcurrent (using reference ages from 2014, the last year calculated for the true population)
+      F.cur.vpa[y] <- mean(F.mat[(y+2), a.ref[[y]]])  # Calculate Fcurrent 
     } else {
-      F01.vpa[y] <- F01 * mean(P.vpa.fin[a.ref[[y-1]]]) # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
+      F01.vpa[y] <- F01 * mean(P.vpa.fin[a.ref[[y-1]]]) # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages (using reference ages from 2014, the last year calculated for the true population)
       F.cur.vpa[y] <- mean(F.mat[(y+2), a.ref[[y-1]]])  # Calculate Fcurrent (using reference ages from 2014, the last year calculated for the true population)
       }
   
@@ -1868,9 +1878,9 @@ for (i in runnums) {
     # Calculate Fcurrent/F01
     F01.status.vpa[y] <- F.cur.vpa[y] / F01.vpa[y]
     
-    FF01[i, y, 1] <- F.cur.vpa[y]
-    FF01[i, y, 2] <- F01.vpa[y]
-    FF01[i, y, 3] <- F01.status.vpa[y]
+    FF01[which(runnums==i), y, 1] <- F.cur.vpa[y]
+    FF01[which(runnums==i), y, 2] <- F01.vpa[y]
+    FF01[which(runnums==i), y, 3] <- F01.status.vpa[y]
 
   }
 
@@ -1879,7 +1889,8 @@ for (i in runnums) {
 
 
 ## Save F0.1 results ##
-write.csv(FF01, "F01_results_allyrs.csv")
+save(FF01, file = "F01_results_allyrs.rdata")
+write.csv(FF01, "F01_results_allyrs.csv") #large file takes a while to save
 
 
 
@@ -1896,169 +1907,107 @@ write.csv(FF01, "F01_results_allyrs.csv")
 
 #### >> Plots ####
 
-## Plot F0.1 results ##
-
-# Read in existing Fcur/F01 results
+## Read in F/F01 results @@
+FF01.w  <- load("C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_results_allyrs.rdata")
 FF01.w  <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_results_allyrs.csv", header = T)
 FF01.w1 <- array(FF01.west, c(405, 40, 3), dimnames = list(realization = 1:405, year = 1976:2015, reference = c("Fcur", "F01", "Fcur/F01")))
+
+FF01.e  <- load("C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_results_allyrs.rdata")
 FF01.e  <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_results_allyrs.csv", header = T)
 FF01.e1 <- array(FF01.east, c(XXX, 40, 3), dimnames = list(realization = 1:XXX, year = 1976:2015, reference = c("Fcur", "F01", "Fcur/F01")))
 
-
-
-# Boxplots of Fcur/F0.1 for each stock
-FF01.w2 <- as.data.frame(FF01.w1[, , 3])
-
-
-F01.data.w.base <- as.data.frame(FF01.west.base[3, -1])
-F01.data.w.base <- t(rbind(rep("West", ncol(F01.data.w.base)), rep("Cross-test", ncol(F01.data.w.base)), F01.data.w.base))
-colnames(F01.data.w.base) <- c("stock", "scenario", "ratio")
-
-F01.data.e.base <- as.data.frame(FF01.east.base[3, -1])
-F01.data.e.base <- t(rbind(rep("East", ncol(F01.data.e.base)), rep("Cross-test", ncol(F01.data.e.base)), F01.data.e.base))
-colnames(F01.data.e.base) <- c("stock", "scenario", "ratio")
-
-F01.data <- rbind(F01.data.w.base, F01.data.e.base,
-                  F01.data.w.low,  F01.data.e.low,
-                  F01.data.w.self, F01.data.e.self) %>%
-  as.data.frame()
-F01.data$ratio <- as.numeric(as.character(F01.data$ratio))
+FF01.pop <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_p_om.csv", header = T)
+FF01.stk <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_s_om.csv", header = T)
 
 
 
+## West boxplots ##
+FF01.w2 <- as.data.frame(t(FF01.w1[, , 3]))     #take only F/F01 values, transpose, and convert to data frame
+years   <- matrix(1974:2015, nrow = 42, ncol=1) #create column of year values
+FF01.w2[, 1] <- years
+FF01.w2.1 <- melt(FF01.w2, id.vars = "years")
+
+FF01.omp <- as.data.frame(FF01.pop[, 2]) #create data frame of operating model data
+colnames(FF01.omp) <- c("years", "OMP")
+
+FF01.oms <- as.data.frame(FF01.stk[, 2]) #create data frame of operating model data
+colnames(FF01.oms) <- c("years", "OMS")
+
+allLevels <- levels(factor(c(FF01.w2.1$years, FF01.omp$years, FF01.oms$years)))  #change the x vars to factors
+FF01.w2.1$years <- factor(FF01.w2.1$years,levels=(allLevels))
+FF01.omp$years  <- factor(FF01.omp$years,levels=(allLevels))
+FF01.oms$years  <- factor(FF01.oms$years,levels=(allLevels))
 
 
 grob1 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
-w.cross.2 <-
-  ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Cross-test")), aes(x = stock, y = ratio)) +
-  geom_boxplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Cross-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1.5) +
-  geom_abline(intercept = 0.167727284245676, slope=0, linetype=1, size=1.5) + #true population
-  geom_abline(intercept = 0.414965843264025, slope=0, linetype=2, size=1.5) + #true stock
-  coord_cartesian(ylim = c(0,1.5), clip = "off") +
-  labs(y="Fcurrent/F0.1", x="", title = "") +
+w.all <-
+  ggplot(data = FF01.omp, aes(x=factor(years), y=OMP)) +
+  geom_boxplot(data = FF01.w2.1, aes(x=years, y=value), color="lightblue4", fill="lightblue1", outlier.shape = NA) +
+  geom_line(data = FF01.oms, aes(x=factor(years), y=OMS, group=1), linetype="dashed", size=1.5, color="black") +
+  stat_summary(fun.y=mean, geom="line", aes(group=1), size=1.5, color="black") +
+  coord_cartesian(ylim = c(0, 1.5), clip = "off") +
+  labs(y="",x="", title = " ") +
   theme_classic() +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 24,
-                                    margin = margin(r = 10)),
-        axis.text.x = element_blank(),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20),
-        axis.ticks.x = element_blank(),
-        plot.title = element_text(size = 24,
+  scale_x_discrete(breaks = seq(1974,2015,10)) +
+  theme(plot.title = element_text(family = "Times New Roman",
+                                  face = "bold",
+                                  size = 24,
                                   hjust = 0.5,
-                                  margin = margin(b = 10))) +
+                                  margin = margin(b = 10)),
+        #axis.title.y = element_text(family = "Times New Roman",
+        #                               face = "bold",
+        #                              size = 14),
+        axis.text.x = element_text(family = "Times New Roman",
+                                   size = 20),
+        # axis.text.x = element_blank(),
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 20)) +
   annotation_custom(grob1)
 
+
+
+
+## East boxplots ##
+FF01.e2 <- as.data.frame(t(FF01.e1[, , 3]))     #take only F/F01 values, transpose, and convert to data frame
+years   <- matrix(1974:2015, nrow = 42, ncol=1) #create column of year values
+FF01.e2[, 1] <- years
+FF01.e2.1 <- melt(FF01.e2, id.vars = "years")
+
+FF01.omp <- as.data.frame(FF01.pop[, 1]) #create data frame of operating model data
+colnames(FF01.omp) <- c("years", "OMP")
+
+FF01.oms <- as.data.frame(FF01.stk[, 1]) #create data frame of operating model data
+colnames(FF01.oms) <- c("years", "OMS")
+
+allLevels <- levels(factor(c(FF01.e2.1$years, FF01.omp$years, FF01.oms$years)))  #change the x vars to factors
+FF01.e2.1$years <- factor(FF01.e2.1$years,levels=(allLevels))
+FF01.omp$years  <- factor(FF01.omp$years,levels=(allLevels))
+FF01.oms$years  <- factor(FF01.oms$years,levels=(allLevels))
+
 grob2 <- grid.text("F", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
-e.cross.2 <-
-  ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Cross-test")), aes(x = stock, y = ratio)) +
-  geom_boxplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Cross-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1.5) +
-  geom_abline(intercept = 0.0206818108502776, slope=0, linetype=1, size=1.5) + #true population
-  geom_abline(intercept = 0.115470838578193, slope=0, linetype=2, size=1.5) + #true stock
-  coord_cartesian(ylim = c(0,1.5), clip = "off")  +
-  labs(y="", x="", title = " ") +
+e.all <-
+  ggplot(data = FF01.omp, aes(x=factor(years), y=OMP)) +
+  geom_boxplot(data = FF01.e2.1, aes(x=years, y=value), color="lightblue4", fill="lightblue1", outlier.shape = NA) +
+  geom_line(data = FF01.oms, aes(x=factor(years), y=OMS, group=1), linetype="dashed", size=1.5, color="black") +
+  stat_summary(fun.y=mean, geom="line", aes(group=1), size=1.5, color="black") +
+  coord_cartesian(ylim = c(0, 1.5), clip = "off") +
+  labs(y="",x="", title = " ") +
   theme_classic() +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 24,
-                                    margin = margin(r = 10)),
-        axis.text.x = element_blank(),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20),
-        axis.ticks.x = element_blank(),
-        plot.title = element_text(size = 24,
+  scale_x_discrete(breaks = seq(1974,2015,10)) +
+  theme(plot.title = element_text(family = "Times New Roman",
+                                  face = "bold",
+                                  size = 24,
                                   hjust = 0.5,
-                                  margin = margin(b = 10))) +
+                                  margin = margin(b = 10)),
+        #axis.title.y = element_text(family = "Times New Roman",
+        #                               face = "bold",
+        #                              size = 14),
+        axis.text.x = element_text(family = "Times New Roman",
+                                   size = 20),
+        # axis.text.x = element_blank(),
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 20)) +
   annotation_custom(grob2)
-
-grob3 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
-w.self.2  <- ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Self-test")), aes(x = stock, y = ratio)) +
-  geom_boxplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Self-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept = 1, slope=0, linetype=3, size=1.5) +
-  geom_abline(intercept = 0.414283741188939, slope=0, linetype=1, size=1.5) + #true
-  coord_cartesian(ylim = c(0,1.5), clip = "off") +
-  labs(y="Fcurrent/F0.1", x="", title = " ") +
-  theme_classic() +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 24,
-                                    margin = margin(r = 10)),
-        axis.text.x = element_blank(),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20),
-        axis.ticks.x = element_blank(),
-        plot.title = element_text(size = 24,
-                                  hjust = 0.5,
-                                  margin = margin(b = 10))) +
-  annotation_custom(grob3)
-
-grob4 <- grid.text("F", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
-e.self.2  <- ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Self-test")), aes(x = stock, y = ratio)) +
-  geom_boxplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Self-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept = 1, slope=0, linetype=3, size=1.5) +
-  geom_abline(intercept = 0.115735775896511, slope=0, linetype=1, size=1.5) + #true
-  coord_cartesian(ylim = c(0,1.5), clip = "off")  +
-  labs(y="", x="", title = " ") +
-  theme_classic() +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 24,
-                                    margin = margin(r = 10)),
-        axis.text.x = element_blank(),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20),
-        axis.ticks.x = element_blank(),
-        plot.title = element_text(size = 24,
-                                  hjust = 0.5,
-                                  margin = margin(b = 10))) +
-  annotation_custom(grob4)
-
-grob5 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
-w.low.2  <- ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Low-move")), aes(x = stock, y = ratio)) +
-  geom_boxplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Low-move")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1.5) +
-  geom_abline(intercept = 0.150184015876974, slope=0, linetype=1, size=1.5) + #true population
-  geom_abline(intercept = 0.414965843264025, slope=0, linetype=2, size=1.5) + #true stock
-  coord_cartesian(ylim = c(0,2), clip = "off") +
-  theme_classic() +
-  labs(y="Fcurrent/F0.1", x="", title = " ") +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 24,
-                                    margin = margin(r = 10)),
-        axis.text.x = element_blank(),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20),
-        axis.ticks.x = element_blank(),
-        plot.title = element_text(size = 24,
-                                  hjust = 0.5,
-                                  margin = margin(b = 10))) +
-  annotation_custom(grob5)
-
-grob6 <- grid.text("F", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
-e.low.2  <- ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Low-move")), aes(x = stock, y = ratio)) +
-  geom_boxplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Low-move")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1.5) +
-  geom_abline(intercept = 0.0145333333333333, slope=0, linetype=1, size=1.5) + #true population
-  geom_abline(intercept = 0.115470838578193, slope=0, linetype=2, size=1.5) + #true stock
-  coord_cartesian(ylim = c(0,2), clip = "off")  +
-  theme_classic() +
-  labs(y="", x="", title = " ") +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 24,
-                                    margin = margin(r = 10)),
-        axis.text.x = element_blank(),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20),
-        axis.ticks.x = element_blank(),
-        plot.title = element_text(size = 24,
-                                  hjust = 0.5,
-                                  margin = margin(b = 10))) +
-  annotation_custom(grob6)
 
 
 

@@ -199,6 +199,47 @@ e_area_plot <-
   annotation_custom(grob2, xmin = 1963, xmax = 1963, ymin = 1100000, ymax = 1100000)
 
 
+## Indices ##
+
+dir_scen  <- "Simulations_2" #directory name for the scenario (e.g., base, low movement, self-test)
+dir_stock <- "West - 500 Sims - 2"  #directory name for the stock; for estimation model calcs 
+alph      <- "W"
+dir_om    <- "OM_Base_Output"     
+
+wd        <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
+filenums  <- gsub("[A-z \\.\\(\\)]", "", 
+                 list.files(path = paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged"), pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters
+runnums   <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
+if (alph == "W") {
+  ind     <- array(NA, c(length(runnums), 261, 3)) 
+} else {
+  ind     <- array(NA, c(length(runnums), 420, 3))  
+}
+
+for (i in runnums) {
+
+  ## Read in Data files ##
+  dat.filename <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Run", i, "/BFT", alph, "2017_", i, ".d1")
+  
+  dat.file <- as.data.frame(read.table(file = dat.filename,
+                                          fill = T, col.names = 1:max(count.fields(
+                                            dat.filename
+                                          ))))
+  
+  if (alph == "W") {
+    d.mat <- as.matrix(dat.file[68:781, 1:3], nrow=714, ncol=5) #western indices
+  } else {
+    d.mat <- as.matrix(dat.file[68:781,1:3], nrow=nyr, ncol=nage) #eastern indices
+  }
+  
+  d.mat <- d.mat[d.mat[, 3] != "-999.000", ]
+  
+  ind[which(runnums == i), , ] <- apply(d.mat, c(1,2), as.numeric)
+
+}
+
+# plots of each index (subset by col 1 of each array slice which is the index #)
+
 
 
 

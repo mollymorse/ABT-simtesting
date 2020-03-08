@@ -238,8 +238,10 @@ for (i in runnums) {
 
 }
 
-num.ind <- unique(ind[1, , 1])
+# West #
 
+num.ind <- unique(ind[1, , 1])
+myplots <- list()
 
 # plots of each index (subset by col 1 of each array slice which is the index #)
 for (j in num.ind) {
@@ -258,20 +260,41 @@ for (j in num.ind) {
   colnames(tmp4) <- c("years", runnums)
   tmp5 <- melt(tmp4, id.vars = "years")
   
-  ggplot(data = tmp5[-(1:length(which(ind[1, , 1] == j))), ], aes(x = factor(years), y = value)) +
-    geom_boxplot(data = tmp5[-(1:length(which(ind[1, , 1] == j))), ], aes(x = factor(years), y = value))
-
+  years <- as.numeric(rownames(tmp4))
+  
+  p1 <- ggplot(data = tmp5[-(1:length(which(ind[1, , 1] == j))), ], aes(x = factor(years), y = value)) +
+    geom_boxplot(data = tmp5[-(1:length(which(ind[1, , 1] == j))), ], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1",
+                 outlier.shape = NA) +
+    labs(y = "", x = "", title = "") +
+    theme_classic() +
+    coord_cartesian(ylim = c(0, max(tmp5$value)*.6)) +
+    if (tail(years,1)-head(years,1) <= 10) {
+      scale_x_discrete(breaks = seq(head(years,1), tail(years,1), 2))
+    } else {
+      scale_x_discrete(breaks = seq(head(years,1), tail(years,1), 5))
+    }
   
   
+  
+    # 
+    # 
+    # if (max(tmp5$value) <= 2) {
+    #   coord_cartesian(ylim = c(0, 2), clip = "off") +
+    #     scale_y_continuous(breaks = seq(0, 2, .5))
+    # } else {
+    #   coord_cartesian(ylim = c(0, round(max(tmp5$value)*.75)), clip = "off") +
+    #     scale_y_continuous(breaks = seq(0, round(max(tmp5$value)*.75), 2))
+    # }
+  
+  
+  
+  
+  
+  
+   myplots[[which(num.ind == j)]] <- p1
+    
 }
 
-
-  
-  
-  
-  
-  
-}
 
 
 

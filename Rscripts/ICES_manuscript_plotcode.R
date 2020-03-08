@@ -238,8 +238,40 @@ for (i in runnums) {
 
 }
 
-# plots of each index (subset by col 1 of each array slice which is the index #)
+num.ind <- unique(ind[1, , 1])
 
+
+# plots of each index (subset by col 1 of each array slice which is the index #)
+for (j in num.ind) {
+  
+  tmp2 <- array(NA, c(length(runnums), length(which(ind[1, , 1] == j))), dimnames = list(realization = runnums, year = ind[1, (which(ind[1, , 1] == j)), 2]))
+  
+  for (i in 1:length(runnums)) {
+    
+    tmp <- as.data.frame(ind[i, , ]) #take out one realization
+    tmp2[i, ] <- tmp[which(tmp$V1 == j), 3] #save that realization's values for this index# to the tmp2 array
+    
+  }
+  
+  tmp3 <- t(tmp2)
+  tmp4 <- as.data.frame(cbind(as.numeric(rownames(tmp3)), tmp3))
+  colnames(tmp4) <- c("years", runnums)
+  tmp5 <- melt(tmp4, id.vars = "years")
+  
+  ggplot(data = tmp5[-(1:length(which(ind[1, , 1] == j))), ], aes(x = factor(years), y = value)) +
+    geom_boxplot(data = tmp5[-(1:length(which(ind[1, , 1] == j))), ], aes(x = factor(years), y = value))
+
+  
+  
+}
+
+
+  
+  
+  
+  
+  
+}
 
 
 

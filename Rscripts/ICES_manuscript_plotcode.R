@@ -202,8 +202,8 @@ e_area_plot <-
 ## Indices ##
 
 dir_scen  <- "Simulations_2" #directory name for the scenario (e.g., base, low movement, self-test)
-dir_stock <- "West - 500 Sims - 2"  #directory name for the stock; for estimation model calcs 
-alph      <- "W"
+dir_stock <- "East - 500 Sims - 1"  #directory name for the stock; for estimation model calcs 
+alph      <- "E"
 dir_om    <- "OM_Base_Output"     
 
 wd        <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
@@ -211,9 +211,9 @@ filenums  <- gsub("[A-z \\.\\(\\)]", "",
                  list.files(path = paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged"), pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters
 runnums   <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
 if (alph == "W") {
-  ind     <- array(NA, c(length(runnums), 261, 3)) 
+  ind     <- array(NA, c(length(runnums), 261, 3)) #dim 2 is length of all indices data for a given run (#row in dat file)
 } else {
-  ind     <- array(NA, c(length(runnums), 420, 3))  
+  ind     <- array(NA, c(length(runnums), 156, 3)) #dim 2 is length of all indices data for a given run (#row in dat file)
 }
 
 for (i in runnums) {
@@ -227,21 +227,22 @@ for (i in runnums) {
                                           ))))
   
   if (alph == "W") {
-    d.mat <- as.matrix(dat.file[68:781, 1:3], nrow=714, ncol=5) #western indices
+    d.mat <- as.matrix(dat.file[68:781, 1:3], nrow=714, ncol=3) #western indices
+    d.mat <- d.mat[d.mat[, 3] != "-999.000", ]  #remove rows without values (placeholder used for VPA-2BOX is -999)
   } else {
-    d.mat <- as.matrix(dat.file[68:781,1:3], nrow=nyr, ncol=nage) #eastern indices
+    d.mat <- as.matrix(dat.file[61:216,1:3],  nrow=156, ncol=3) #eastern indices
   }
-  
-  d.mat <- d.mat[d.mat[, 3] != "-999.000", ]
   
   ind[which(runnums == i), , ] <- apply(d.mat, c(1,2), as.numeric)
 
 }
 
-# West #
+
+# East #
 
 num.ind <- unique(ind[1, , 1])
-myplots <- list()
+years   <- list()
+tmp5    <- list()
 
 # plots of each index (subset by col 1 of each array slice which is the index #)
 for (j in num.ind) {
@@ -255,49 +256,343 @@ for (j in num.ind) {
     
   }
   
-  tmp3 <- t(tmp2)
-  tmp4 <- as.data.frame(cbind(as.numeric(rownames(tmp3)), tmp3))
-  colnames(tmp4) <- c("years", runnums)
-  tmp5 <- melt(tmp4, id.vars = "years")
+  tmp3 <- t(tmp2) #transpost (switch rows and cols)
+  tmp4 <- as.data.frame(cbind(as.numeric(rownames(tmp3)), tmp3))  #convert to numeric data frame
+  colnames(tmp4) <- c("years", runnums)  #rename columns
+  tmp5[[which(num.ind == j)]] <- melt(tmp4, id.vars = "years") #save melted data frame into tmp5 list
+  years[[which(num.ind == j)]] <- as.numeric(rownames(tmp4)) #save years vector into list
   
-  years <- as.numeric(rownames(tmp4))
+}
+
+grob1 <- grid.text("A", x = unit(-.25, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p1 <- ggplot(data = tmp5[[1]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[1]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 4500), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 4500, 1000)) +
+  scale_x_discrete(breaks = seq(years[[1]][1], tail(years[[1]], 1), 10)) +
+  labs(y = "Value", x = "", title = "") +
+  theme(axis.text.x  = element_text(family = "Times New Roman", size = 20),
+        axis.text.y  = element_text(family = "Times New Roman", size = 20),
+        axis.title.y = element_text(family = "Times New Roman",
+                                    size = 24,
+                                    face = "bold",
+                                    margin = margin(r = 10))) +
+  annotation_custom(grob1)
+
+grob2 <- grid.text("B", x = unit(-.25, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p2 <- ggplot(data = tmp5[[2]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[2]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 250), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 250, 50)) +
+  scale_x_discrete(breaks = seq(years[[2]][1], tail(years[[2]], 1), 1)) +
+  labs(y = "", x = "", title = "") +
+  theme(axis.text.x  = element_text(family = "Times New Roman", size = 20),
+        axis.text.y  = element_text(family = "Times New Roman", size = 20)) +
+  annotation_custom(grob2)
+
+grob3 <- grid.text("C", x = unit(-.25, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p3 <- ggplot(data = tmp5[[3]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[3]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 7), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 7, 2)) +
+  scale_x_discrete(breaks = seq(years[[3]][1], tail(years[[3]], 1), 10)) +
+  labs(y = "Value", x = "", title = "") +
+  theme(axis.text.x  = element_text(family = "Times New Roman", size = 20),
+        axis.text.y  = element_text(family = "Times New Roman", size = 20),
+        axis.title.y = element_text(family = "Times New Roman",
+                                    size = 24,
+                                    face = "bold",
+                                    margin = margin(r = 10))) +
+  annotation_custom(grob3)
+
+grob4 <- grid.text("D", x = unit(-.25, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p4 <- ggplot(data = tmp5[[4]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[4]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 4.5), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 4.5, 2)) +
+  scale_x_discrete(breaks = seq(years[[4]][1], tail(years[[4]], 1), 5)) +
+  labs(y = "", x = "", title = "") +
+  theme(axis.text.x  = element_text(family = "Times New Roman", size = 20),
+        axis.text.y  = element_text(family = "Times New Roman", size = 20)) +
+  annotation_custom(grob4)
+
+grob5 <- grid.text("E", x = unit(-.25, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p5 <- ggplot(data = tmp5[[5]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[5]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 17), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 17, 5)) +
+  scale_x_discrete(breaks = seq(years[[5]][1], tail(years[[5]], 1), 2)) +
+  labs(y = "Value", x = "", title = "") +
+  theme(axis.text.x  = element_text(family = "Times New Roman", size = 20),
+        axis.text.y  = element_text(family = "Times New Roman", size = 20),
+        axis.title.y = element_text(family = "Times New Roman",
+                                    size = 24,
+                                    face = "bold",
+                                    margin = margin(r = 10))) +
+  annotation_custom(grob5)
+
+grob6 <- grid.text("F", x = unit(-.25, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p6 <- ggplot(data = tmp5[[6]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[6]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 4000), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 4000, 1000)) +
+  scale_x_discrete(breaks = seq(years[[6]][1], tail(years[[6]], 1), 10)) +
+  labs(y = "", x = "", title = "") +
+  theme(axis.text.x  = element_text(family = "Times New Roman", size = 20),
+        axis.text.y  = element_text(family = "Times New Roman", size = 20)) +
+  annotation_custom(grob6)
+
+grob7 <- grid.text("G", x = unit(-.25, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p7 <- ggplot(data = tmp5[[7]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[7]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 6000), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 6000, 2000)) +
+  scale_x_discrete(breaks = seq(years[[7]][1], tail(years[[7]], 1), 2)) +
+  labs(y = "Value", x = "", title = "") +
+  theme(axis.text.x  = element_text(family = "Times New Roman", size = 20),
+        axis.text.y  = element_text(family = "Times New Roman", size = 20),
+        axis.title.y = element_text(family = "Times New Roman",
+                                    size = 24,
+                                    face = "bold",
+                                    margin = margin(r = 10))) +
+  annotation_custom(grob7)
+
+grob8 <- grid.text("H", x = unit(-.25, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p8 <- ggplot(data = tmp5[[8]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[8]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 0.04), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 0.04, 0.02)) +
+  scale_x_discrete(breaks = seq(years[[8]][1], tail(years[[8]], 1), 1)) +
+  labs(y = "", x = "", title = "") +
+  theme(axis.text.x  = element_text(family = "Times New Roman", size = 20),
+        axis.text.y  = element_text(family = "Times New Roman", size = 20)) +
+  annotation_custom(grob8)
+
+grob9 <- grid.text("I", x = unit(-.25, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p9 <- ggplot(data = tmp5[[9]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[9]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, .4), clip = "off") +
+  scale_y_continuous(breaks = seq(0, .4, .2)) +
+  scale_x_discrete(breaks = seq(years[[9]][1], tail(years[[9]], 1), 1)) +
+  labs(y = "Value", x = "", title = "") +
+  theme(axis.text.x  = element_text(family = "Times New Roman", size = 20, angle = 45, hjust = 1),
+        axis.text.y  = element_text(family = "Times New Roman", size = 20),
+        axis.title.y = element_text(family = "Times New Roman",
+                                    size = 24,
+                                    face = "bold",
+                                    margin = margin(r = 10))) +
+  annotation_custom(grob9)
+
+grob10 <- grid.text("J", x = unit(-.25, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p10 <- ggplot(data = tmp5[[10]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[10]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 100), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 100, 50)) +
+  scale_x_discrete(breaks = seq(years[[10]][1], tail(years[[10]], 1), 1)) +
+  labs(y = "", x = "", title = "") +
+  theme(axis.text.x  = element_text(family = "Times New Roman", size = 20, angle = 45, hjust = 1),
+        axis.text.y  = element_text(family = "Times New Roman", size = 20)) +
+  annotation_custom(grob10)
+
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 4-6-20/OM_east_index_plots.jpeg",
+     width = 2750, height = 4500, units = "px", quality = 100, res = 300)
+plot_grid(p1, p2, 
+          p3, p4, 
+          p5, p6, 
+          p7, p8, 
+          p9, p10,
+          ncol = 2, nrow = 5, align = "v")
+dev.off()
+
+
+
+
+# West #
+
+num.ind <- unique(ind[1, , 1])
+years   <- list()
+tmp5    <- list()
+
+# plots of each index (subset by col 1 of each array slice which is the index #)
+for (j in num.ind) {
   
-  p1 <- ggplot(data = tmp5[-(1:length(which(ind[1, , 1] == j))), ], aes(x = factor(years), y = value)) +
-    geom_boxplot(data = tmp5[-(1:length(which(ind[1, , 1] == j))), ], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1",
-                 outlier.shape = NA) +
-    labs(y = "", x = "", title = "") +
-    theme_classic() +
-    coord_cartesian(ylim = c(0, max(tmp5$value)*.6)) +
-    if (tail(years,1)-head(years,1) <= 10) {
-      scale_x_discrete(breaks = seq(head(years,1), tail(years,1), 2))
-    } else {
-      scale_x_discrete(breaks = seq(head(years,1), tail(years,1), 5))
-    }
+  tmp2 <- array(NA, c(length(runnums), length(which(ind[1, , 1] == j))), dimnames = list(realization = runnums, year = ind[1, (which(ind[1, , 1] == j)), 2]))
   
+  for (i in 1:length(runnums)) {
+    
+    tmp <- as.data.frame(ind[i, , ]) #take out one realization
+    tmp2[i, ] <- tmp[which(tmp$V1 == j), 3] #save that realization's values for this index# to the tmp2 array
+    
+  }
   
-  
-    # 
-    # 
-    # if (max(tmp5$value) <= 2) {
-    #   coord_cartesian(ylim = c(0, 2), clip = "off") +
-    #     scale_y_continuous(breaks = seq(0, 2, .5))
-    # } else {
-    #   coord_cartesian(ylim = c(0, round(max(tmp5$value)*.75)), clip = "off") +
-    #     scale_y_continuous(breaks = seq(0, round(max(tmp5$value)*.75), 2))
-    # }
-  
-  
-  
-  
-  
-  
-   myplots[[which(num.ind == j)]] <- p1
+  tmp3 <- t(tmp2) #transpost (switch rows and cols)
+  tmp4 <- as.data.frame(cbind(as.numeric(rownames(tmp3)), tmp3))  #convert to numeric data frame
+  colnames(tmp4) <- c("years", runnums)  #rename columns
+  tmp5[[which(num.ind == j)]] <- melt(tmp4, id.vars = "years") #save melted data frame into tmp5 list
+  years[[which(num.ind == j)]] <- as.numeric(rownames(tmp4)) #save years vector into list
     
 }
 
+p1 <- ggplot(data = tmp5[[1]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[1]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  scale_x_discrete(breaks = seq(years[[1]][1], tail(years[[1]], 1), 10)) +
+  labs(y = "Value", x = "", title = "") +
+  theme(axis.text.x = element_text(family = "Times New Roman", size = 20),
+        axis.text.y = element_text(family = "Times New Roman", size = 20))
+
+grob2 <- grid.text("B", x = unit(-.13, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p2 <- ggplot(data = tmp5[[2]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[2]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 0.6), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 0.6, 0.2)) +
+  scale_x_discrete(breaks = seq(years[[2]][1], tail(years[[2]], 1), 5)) +
+  labs(y = "", x = "", title = "") +
+  theme(axis.text.x  = element_text(family = "Times New Roman", size = 20),
+        axis.text.y  = element_text(family = "Times New Roman", size = 20)) +
+  annotation_custom(grob2)
+
+grob3 <- grid.text("C", x = unit(-0.13, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p3 <- ggplot(data = tmp5[[3]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[3]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 4), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 4, 1)) +
+  scale_x_discrete(breaks = seq(years[[3]][1], tail(years[[3]], 1), 5)) +
+  labs(y = "", x = "", title = "") +
+  theme(axis.text.x = element_text(family = "Times New Roman", size = 20),
+        axis.text.y = element_text(family = "Times New Roman", size = 20)) +
+  annotation_custom(grob3)
+
+grob4 <- grid.text("C", x = unit(-0.17, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p4 <- ggplot(data = tmp5[[4]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[4]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 8), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 8, 2)) +
+  scale_x_discrete(breaks = seq(years[[4]][1], tail(years[[4]], 1), 5)) +
+  labs(y = "Value", x = "", title = "") +
+  theme(axis.text.x = element_text(family = "Times New Roman", size = 20),
+        axis.text.y = element_text(family = "Times New Roman", size = 20),
+        axis.title.y = element_text(family = "Times New Roman",
+                                    size = 24,
+                                    face = "bold",
+                                    margin = margin(r = 10))) +
+  annotation_custom(grob4)
+
+grob5 <- grid.text("D", x = unit(-0.13, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p5 <- ggplot(data = tmp5[[5]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[5]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 8), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 8, 2)) +
+  scale_x_discrete(breaks = seq(years[[5]][1], tail(years[[5]], 1), 5)) +
+  labs(y = "", x = "", title = "") +
+  theme(axis.text.x = element_text(family = "Times New Roman", size = 20),
+        axis.text.y = element_text(family = "Times New Roman", size = 20)) +
+  annotation_custom(grob5)
+
+grob6 <- grid.text("E", x = unit(-0.17, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+p6 <- ggplot(data = tmp5[[6]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[6]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 13), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 13, 5)) +
+  scale_x_discrete(breaks = seq(years[[6]][1], tail(years[[6]], 1), 2)) +
+  labs(y = "Value", x = "", title = "") +
+  theme(axis.text.x = element_text(family = "Times New Roman", size = 20),
+        axis.text.y = element_text(family = "Times New Roman", size = 20),
+        axis.title.y = element_text(family = "Times New Roman",
+                                    size = 24,
+                                    face = "bold",
+                                    margin = margin(r = 10))) +
+  annotation_custom(grob6)
+
+p7 <- ggplot(data = tmp5[[7]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[7]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  scale_x_discrete(breaks = seq(years[[7]][1], tail(years[[7]], 1), 10)) +
+  labs(y = "", x = "", title = "") +
+  theme(axis.text.x = element_text(family = "Times New Roman", size = 20),
+        axis.text.y = element_text(family = "Times New Roman", size = 20))
+
+grob8 <- grid.text("F", x = unit(-0.13, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))  
+p8 <- ggplot(data = tmp5[[8]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[8]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 11), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 11, 5)) +
+  scale_x_discrete(breaks = seq(years[[8]][1], tail(years[[8]], 1), 10)) +
+  labs(y = "", x = "", title = "") +
+  theme(axis.text.x = element_text(family = "Times New Roman", size = 20),
+        axis.text.y = element_text(family = "Times New Roman", size = 20)) +
+  annotation_custom(grob8)
+
+grob9 <- grid.text("G", x = unit(-0.17, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))  
+p9 <- ggplot(data = tmp5[[9]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[9]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 12), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 12, 5)) +
+  scale_x_discrete(breaks = seq(years[[9]][1], tail(years[[9]], 1), 10)) +
+  labs(y = "Value", x = "", title = "") +
+  theme(axis.text.x = element_text(family = "Times New Roman", size = 20),
+        axis.text.y = element_text(family = "Times New Roman", size = 20),
+        axis.title.y = element_text(family = "Times New Roman",
+                                    size = 24,
+                                    face = "bold",
+                                    margin = margin(r = 10))) +
+  annotation_custom(grob9)
+
+grob10 <- grid.text("H", x = unit(-0.14, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))  
+p10 <- ggplot(data = tmp5[[10]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[10]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 15), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 15, 5)) +
+  scale_x_discrete(breaks = seq(years[[10]][1], tail(years[[10]], 1), 10)) +
+  labs(y = "", x = "", title = "") +
+  theme(axis.text.x = element_text(family = "Times New Roman", size = 20),
+        axis.text.y = element_text(family = "Times New Roman", size = 20)) +
+  annotation_custom(grob10)
+
+grob11 <- grid.text("I", x = unit(-0.15, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))  
+p11 <- ggplot(data = tmp5[[11]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[11]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 6), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 6, 2)) +
+  scale_x_discrete(breaks = seq(years[[11]][1], tail(years[[11]], 1), 2)) +
+  labs(y = "Value", x = "", title = "") +
+  theme(axis.text.x = element_text(family = "Times New Roman", size = 20),
+        axis.text.y = element_text(family = "Times New Roman", size = 20),
+        axis.title.y = element_text(family = "Times New Roman",
+                                    size = 24,
+                                    face = "bold",
+                                    margin = margin(r = 10))) +
+  annotation_custom(grob11)
+
+p12 <- ggplot(data = tmp5[[12]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[12]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  scale_x_discrete(breaks = seq(years[[12]][1], tail(years[[12]], 1), 10)) +
+  labs(y = "", x = "", title = "") +
+  theme(axis.text.x = element_text(family = "Times New Roman", size = 20),
+        axis.text.y = element_text(family = "Times New Roman", size = 20))
+
+grob13 <- grid.text("J", x = unit(-0.14, "npc"), y = unit(.96, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))  
+p13 <- ggplot(data = tmp5[[13]], aes(x = years, y = value)) +
+  geom_boxplot(data = tmp5[[13]], aes(x = factor(years), y = value), color="lightblue4",fill="lightblue1", outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 15), clip = "off") +
+  scale_y_continuous(breaks = seq(0, 15, 5)) +
+  scale_x_discrete(breaks = seq(years[[13]][1], tail(years[[13]], 1), 2)) +
+  labs(y = "", x = "", title = "") +
+  theme(axis.text.x = element_text(family = "Times New Roman", size = 20),
+        axis.text.y = element_text(family = "Times New Roman", size = 20)) +
+  annotation_custom(grob13)
+
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 4-6-20/OM_west_index_plots.jpeg",
+     width = 2750, height = 4500, units = "px", quality = 100, res = 300)
+plot_grid(p2, p3, 
+          p4, p5, 
+          p6, p8, 
+          p9, p10, 
+          p11,p13,
+          ncol = 2, nrow = 5, align = "v")
+dev.off()
 
 
 
+  
 
 #### COMPARING OM to ICCAT ####
 

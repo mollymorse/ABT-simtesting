@@ -195,11 +195,11 @@ F01_om <- array(NA, c(2, 2), dimnames = list(type = c("pop", "stock"), unit = c(
 ypr_fun <- function(par, Fvar, ages, stk) {
 
   if (stk == "E") {
-    mort <- M[, 1]   #east natural mortality
-    wt   <- waa[, 1] #east weight-at-age
+    mort <- M[1:ages, 1]   #east natural mortality
+    wt   <- waa[1:ages, 1] #east weight-at-age
   } else {
-    mort <- M[, 2]   #west natural mortality
-    wt   <- waa[, 2] #west weight-at-age
+    mort <- M[1:ages, 2]   #west natural mortality
+    wt   <- waa[1:ages, 2] #west weight-at-age
   }
   
   NAA <- rep(NA, ages)
@@ -226,29 +226,70 @@ ypr_fun <- function(par, Fvar, ages, stk) {
   
 }
 
-#east pop
+# Create F01 function
+#ypr_par = vector of YPR values
+#F_par   = vector of range of F values
+F01_fun <- function(ypr_par, F_par) {
+  
+  slope <- rep(NA, (length(F_par) - 1))
+  diffs <- rep(NA, length(slope) - 1)
+  
+  for (i in 1:(length(F_par) - 1)) {
+    slope[i] <- (ypr_par[i+1] - ypr_par[i]) / (F_par[i+1] - F_par[i]) #calculate slopes for a range of Fs (YPRs)
+  }
+  
+  for (i in 2:length(slope)) {
+    diffs[i - 1] <- (slope[1] * 0.1) - slope[i] #calculate the difference between 1/10 the slope at the origin and all the other slopes
+  }
+  
+  tmp <- min(abs(diffs[diffs<=0]), diffs[diffs>=0]) #calculate the smallest difference (i.e., closest to 1/10 slope at the origin)
+  return(F_par[which(abs(diffs) == tmp)]) #identify and return the F01
+  
+}
+
+
+# East pop
 YPR_vec <- vector()
 F_seq   <- seq(0, 1.0, 0.01)
 for (i in F_seq) {
   Fs <- i
-  append(YPR_vec, ypr_fun(P_oms_fin_w, Fs, 10, "E"))
+  YPR_vec <- append(YPR_vec, ypr_fun(P_om_fin_e, Fs, 10, "E")) #calculate YPRs for a range of Fs
 }
 
-slope <- rep(NA, (length(F_seq) - 1))
-for (i in 1:(length(F_seq) - 1)) {
-  slope[i] <- (YPR_vec[i+1] - YPR_vec[i]) / (F_seq[i+1] - F_seq[i])
+F01_fun(YPR_vec, F_seq)
+
+
+# West pop
+YPR_vec <- vector()
+F_seq   <- seq(0, 1.0, 0.01)
+for (i in F_seq) {
+  Fs <- i
+  YPR_vec <- append(YPR_vec, ypr_fun(P_om_fin_w, Fs, 16, "W")) #calculate YPRs for a range of Fs
 }
 
-slope[1] * 0.1
+F01_fun(YPR_vec, F_seq)
 
 
-#west pop
+# East stock
+YPR_vec <- vector()
+F_seq   <- seq(0, 1.0, 0.01)
+for (i in F_seq) {
+  Fs <- i
+  YPR_vec <- append(YPR_vec, ypr_fun(P_oms_fin_e, Fs, 10, "E")) #calculate YPRs for a range of Fs
+}
+
+F01_fun(YPR_vec, F_seq)
 
 
-#east stock
+# West stock
+YPR_vec <- vector()
+F_seq   <- seq(0, 1.0, 0.01)
+for (i in F_seq) {
+  Fs <- i
+  YPR_vec <- append(YPR_vec, ypr_fun(P_oms_fin_w, Fs, 16, "W")) #calculate YPRs for a range of Fs
+}
 
-
-#west stock
+F01_fun(YPR_vec, F_seq)
 
 
 

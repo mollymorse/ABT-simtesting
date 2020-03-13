@@ -27,8 +27,8 @@ library(dplyr)
 ## Settings ##
 
 dir_scen  <- "Simulations_2" #directory name for the scenario (e.g., base, low movement, self-test)
-dir_stock <- "West - 500 Sims - 2"              #directory name for the stock; for estimation model calcs
-stock     <- 2                 #for estimation model calcs; east (1) vs. west (2) 
+dir_stock <- "East - 500 Sims - 1"              #directory name for the stock; for estimation model calcs
+stock     <- 1                 #for estimation model calcs; east (1) vs. west (2) 
 dir_om    <- "OM_Base_Output"         #directory name for the OM outputs
 
 
@@ -256,7 +256,7 @@ for (i in F_seq) {
   YPR_vec <- append(YPR_vec, ypr_fun(P_om_fin_e, Fs, 10, "E")) #calculate YPRs for a range of Fs
 }
 
-F01_fun(YPR_vec, F_seq)
+F01_om[1, 1] <- F01_fun(YPR_vec, F_seq)
 
 
 # West pop
@@ -267,7 +267,7 @@ for (i in F_seq) {
   YPR_vec <- append(YPR_vec, ypr_fun(P_om_fin_w, Fs, 16, "W")) #calculate YPRs for a range of Fs
 }
 
-F01_fun(YPR_vec, F_seq)
+F01_om[1, 2] <- F01_fun(YPR_vec, F_seq)
 
 
 # East stock
@@ -278,7 +278,7 @@ for (i in F_seq) {
   YPR_vec <- append(YPR_vec, ypr_fun(P_oms_fin_e, Fs, 10, "E")) #calculate YPRs for a range of Fs
 }
 
-F01_fun(YPR_vec, F_seq)
+F01_om[2, 1] <- F01_fun(YPR_vec, F_seq)
 
 
 # West stock
@@ -289,7 +289,7 @@ for (i in F_seq) {
   YPR_vec <- append(YPR_vec, ypr_fun(P_oms_fin_w, Fs, 16, "W")) #calculate YPRs for a range of Fs
 }
 
-F01_fun(YPR_vec, F_seq)
+F01_om[2, 2] <- F01_fun(YPR_vec, F_seq)
 
 
 
@@ -339,131 +339,9 @@ write.csv((matrix(c(F_cur_e, F_cur_w, F_cur_s_e, F_cur_s_w,
        byrow = TRUE,
        dimnames = list(metric = c("Fcur", "F01", "Fcur/F01"),
                        group  = c("e-pop", "w-pop", "e-stock", "w-stock")))),
-       paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_results_om.csv"))
+       paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_results_om_v3.csv"))
 
 
-
-
-
-
-
-#### >> True F0.1s from OM - Self-test ####
-
-# read in parameters
-nage     <- 29
-biolparm <- as.matrix(read.csv(paste0("C:/Users/mmorse1/Documents/", dir_scen, "/R Code + Inputs/BFTBiolparm.csv")), header = T)
-M        <- array(biolparm[1:nage,2:3],c(nage,2),dimnames=list(age=1:nage,unit=1:2)) #annualized M
-waa      <- array(biolparm[1:nage,4:5],c(nage,2),dimnames=list(age=1:nage,unit=1:2)) #weight-at-age
-Fa       <- as.matrix(read.csv(paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/Fa.csv")))
-Fa       <- array(Fa[, -1], c(42, 29, 2), dimnames = list(year = 1974:2015, age = 1:29, unit = 1:2))
-
-
-# calculate partial recruitment - stock
-P_om_e_self <- array(NA, c(3, 10), dimnames = list(year = 1:3, age = 1:10))
-P_om_w_self <- array(NA, c(3, 16), dimnames = list(year = 1:3, age = 1:16))
-
-#east
-for (y in (nrow(Fa) - 3):(nrow(Fa) - 1))
-  for (s in 1) {
-    Ffull_om <- max(Fa[y, , s])
-    for (a in 1:10) {
-      P_om_e_self[y - 38, a] <- Fa[y, a, s]/Ffull_om
-    }
-  }
-
-#west
-for (y in (nrow(Fa) - 3):(nrow(Fa) - 1))
-  for (s in 2) {
-    Ffull_om <- max(Fa[y, , s])
-    for (a in 1:16) {
-      P_om_w_self[y - 38, a] <- Fa[y, a, s]/Ffull_om
-    }
-  }
-
-
-# average partial recruitment for each age over all reference years - stock
-P_om_avg_e_self <- rep(NA, 10)
-P_om_avg_w_self <- rep(NA, 16)
-
-#east
-for (a in 1:10) {
-  P_om_avg_e_self[a] <- mean(P_om_e_self[, a])
-}
-
-#west
-for (a in 1:16) {
-  P_om_avg_w_self[a] <- mean(P_om_w_self[, a])
-}
-
-
-# scaled to 1 (maximum partial recruitment) - stock
-P_om_fin_e_self <- rep(NA, 10)
-P_om_fin_w_self <- rep(NA, 16)
-
-#east
-for (a in 1:10)
-{
-  P_om_fin_e_self[a] <- P_om_avg_e_self[a]/max(P_om_avg_e_self)
-}
-
-#west
-for (a in 1:16)
-{
-  P_om_fin_w_self[a] <- P_om_avg_w_self[a]/max(P_om_avg_w_self)
-}
-
-
-## Calculate true OM F0.1 ##
-F01_om <- array(NA, c(1, 2), dimnames = list(type = c("value"), unit = c("east", "west")))
-
-#east
-YPR <- ypr(age = seq(1, 10, 1), wgt = waa[1:10, 1], partial = P_om_fin_e_self, 
-           M = M[1:10, 1], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
-F01_om[1, 1] <- YPR$Reference_Points[1,1]
-
-#west
-YPR <- ypr(age = seq(1, 16, 1), wgt = waa[1:16, 2], partial = P_om_fin_w_self, 
-           M = M[1:16, 2], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
-F01_om[1, 2] <- YPR$Reference_Points[1,1]
-
-# calculate reference ages
-for (y in 39:41) {
-  
-  # Isolate ages where partial recruitment is greater than or equal to 0.8
-  ref.east <- which(P_om_fin_e_self >= 0.8)  #east
-  ref.west <- which(P_om_fin_w_self >= 0.8)  #west
-  
-}
-
-# adjust F0.1 for the reference ages 
-# using the average partial recruitment for the reference ages
-F01_om[1, 1] <- F01_om[1, 1] * mean(P_om_fin_e_self[ref.east])
-F01_om[1, 2] <- F01_om[1, 2] * mean(P_om_fin_w_self[ref.west])
-
-
-## Determine stock status ##
-
-# Calculate Fcurrent
-F_cur_e   <- mean(Fa[39:41, ref.east, 1])
-F_cur_w   <- mean(Fa[39:41, ref.west, 2])
-
-# Calculate Fcurrent/F0.1
-Expl_status_om <- array(NA, c(1, 2), dimnames = list(type = c("value"), unit = c("east", "west")))
-
-Expl_status_om[1, 1] <- F_cur_e/F01_om[1, 1]
-Expl_status_om[1, 2] <- F_cur_w/F01_om[1, 2]
-
-
-# Save true OM values (Fcur, F0.1, Fcur/F0.1)
-write.csv((matrix(c(F_cur_e, F_cur_w,
-                    F01_om[1, 1], F01_om[1, 2],
-                    Expl_status_om[1, 1], Expl_status_om[1, 2]),
-                  nrow = 3,
-                  ncol = 2,
-                  byrow = TRUE,
-                  dimnames = list(metric = c("Fcur", "F01", "Fcur/F01"),
-                                  group  = c("e-pop", "w-pop")))),
-          paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_results_om.csv"))
 
 
 
@@ -483,18 +361,10 @@ runnums <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the
 nyr <- 42
 if (stock == 1) #reference ages (from OM) and plus group age
 {
-  #old (from original base case) - new (low movement) use OM ref ages calculated above
-  # a.ref <- 4 #east
-  # A.ref <- 5 
-  #new - uses all ages P >= 0.8, not a range
   a.ref <- ref.east
   nage <- 10 
   alph <- "E"
 } else { 
-  #old (from original base case) - new (low movement) use OM ref ages calculated above
-  # a.ref <- 8 #west
-  # A.ref <- 14 
-  #new - uses all ages P >= 0.8, not a range
   a.ref <- ref.west
   nage <- 16
   alph <- "W"
@@ -504,7 +374,6 @@ if (stock == 1) #reference ages (from OM) and plus group age
 ## Calculations ##
 
 FF01 <- matrix(NA, nrow=3, ncol=1, dimnames=list(reference=c("Fcur", "F01", "Fcur/F01"), value=1))
-FF01.bias <- matrix(NA, nrow=2, ncol=1, dimnames=list(bias=c("pop", "stock"), value=1))
 
 setwd(wd)
 
@@ -527,10 +396,9 @@ if (stock == 1) {
   F01.stat.true[2] <- Expl_status_om[2, 2]  #west stock
 }
 
-# NOTE: in the low movement scenario, ypr function got stuck on east runnums 15, 202, 207 so those were skipped. (runnums[-c(12, 187, 192)])
+
 # This will take about 15 sec
 for (i in runnums) {
-# for (i in runnums[-c(12, 187, 192)]) { #low move
 
   ## Read in Results files ##
   result.filename <- paste("BFT", alph, "2017_", i, "_RESULTS.R", sep="")
@@ -572,10 +440,16 @@ for (i in runnums) {
   P.vpa.fin <- round(P.vpa.fin, 4)
   
   ## Calculate F0.1 ##
-  YPR <- ypr(age = seq(1, nage, 1), wgt = waa[1:nage, stock], partial = P.vpa.fin, 
-             M = M[1:nage, stock], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE) #changed to plus = FALSE for low move scenario
-  F01 <- YPR$Reference_Points[1, 1]
+  YPR_vec <- vector()
+  F_seq   <- seq(0, 1.0, 0.01)
+  for (i in F_seq) {
+    Fs <- i
+    YPR_vec <- append(YPR_vec, ypr_fun(P.vpa.fin, Fs, nage, alph)) #calculate YPRs for a range of Fs
+  }
 
+  F01 <- F01_fun(YPR_vec, F_seq)
+  
+  
   # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
   F01.vpa <- F01 * mean(P.vpa.fin[a.ref])
 
@@ -590,42 +464,14 @@ for (i in runnums) {
 
   FF01 <- cbind(FF01, c(F.cur.vpa, F01.vpa, F01.status.vpa))
   
-  
-  ## Calculate bias ##
-  
-  # Calculate bias in Fcurrent/F0.1 relative to "true" ratio from operating model
-  # F01.rel.bias.p <- (F01.status.vpa - as.numeric(F01.stat.true[1])) / as.numeric(F01.stat.true[1]) #from OM-P
-  # F01.rel.bias.s <- (F01.status.vpa - as.numeric(F01.stat.true[2])) / as.numeric(F01.stat.true[2]) #from OM-S
-  
-  # FF01.bias <- cbind(FF01.bias, c(F01.rel.bias.p, F01.rel.bias.s))
-  
 }
 
 
 
 ## Save F0.1 results ##
-# colnames(FF01) <- c("x", runnums[-c(12, 187, 192)]) #low move 
-# colnames(FF01.bias) <- c("x", runnums[-c(12, 187, 192)]) #low move east
 colnames(FF01) <- c("x", runnums)
-colnames(FF01.bias) <- c("x", runnums)
-write.csv(FF01[,-1], "F01_results_converge.csv")
-write.csv(FF01.bias[,-1], "F01_bias_converge.csv")
+write.csv(FF01[,-1], "F01_results_converge_v2.csv")
 
-
-FF01.west <- FF01[,-1]
-FF01.bias.west <- FF01.bias[,-1]
-# FF01.east <- FF01[,-1]
-# FF01.bias.east <- FF01.bias[,-1]
-
-
-
-## Explore F0.1 results ##
-sum(FF01.west[3,] < 1) / ncol(FF01.west)
-sum(FF01.east[3,] < 1) / ncol(FF01.east)
-summary(FF01.west[1,])
-quantile(FF01.west[2,], 0.975)
-summary(FF01.east[1,])
-quantile(FF01.east[3,], 0.975)
 
 
 

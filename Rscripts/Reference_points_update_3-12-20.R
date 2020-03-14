@@ -1700,12 +1700,12 @@ for (i in 1:40) {
 
 
 # Save true OM values (Fy, F0.1, Fy/F0.1)
-write.csv(F_p, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F_p_om.csv"))
-write.csv(F_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F_s_om.csv"))
-write.csv(F01_omp, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_omp.csv"))
-write.csv(F01_oms, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_oms.csv"))
-write.csv(Expl_status_om_p, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F_F01_p_om.csv"))
-write.csv(Expl_status_om_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F_F01_s_om.csv"))
+write.csv(F_p, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F_p_om_v2.csv"))
+write.csv(F_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F_s_om_v2.csv"))
+write.csv(F01_omp, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_omp_v2.csv"))
+write.csv(F01_oms, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_oms_v2.csv"))
+write.csv(Expl_status_om_p, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F_F01_p_om_v2.csv"))
+write.csv(Expl_status_om_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F_F01_s_om_v2.csv"))
 
 
 
@@ -1717,8 +1717,8 @@ write.csv(Expl_status_om_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/",
 
 
 ## Define variables ##
-dir_stock <- "East - 500 Sims - 1"  #directory name for the stock; for estimation model calcs only
-stock     <- 1                      #for estimation model calcs only; east (1) vs. west (2) 
+dir_stock <- "West - 500 Sims - 2"  #directory name for the stock; for estimation model calcs only
+stock     <- 2                      #for estimation model calcs only; east (1) vs. west (2) 
 wd        <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
 setwd(wd)
 filenums  <- gsub("[A-z \\.\\(\\)]", "", 
@@ -1742,8 +1742,6 @@ if (stock == 1) #reference ages (from OM) and plus group age
 
 FF01 <- array(NA, c(length(runnums), 40, 3), dimnames=list(realization = runnums, year = 1976:2015, reference = c("Fcur", "F01", "Fcur/F01")))
 
-
-# NOTE: in the low movement scenario, ypr function got stuck on east runnums 15, 202, 207 so those were skipped. (runnums[-c(12, 187, 192)])
 for (i in runnums) {
   
   ## Read in Results files ##
@@ -1834,10 +1832,7 @@ for (i in runnums) {
 
 
 ## Save F0.1 results ##
-save(FF01, file = "F01_results_allyrs.rdata")
-write.csv(FF01, "F01_results_allyrs.csv") #large file takes a while to save
-
-
+saveRDS(FF01, file = "F01_allyrs_v2.rds")
 
 
 
@@ -1853,16 +1848,12 @@ write.csv(FF01, "F01_results_allyrs.csv") #large file takes a while to save
 #### >> Plots ####
 
 ## Read in F/F01 results @@
-FF01.w  <- load("C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_results_allyrs.rdata")
-FF01.w  <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_results_allyrs.csv", header = T)
-FF01.w1 <- array(FF01.west, c(405, 40, 3), dimnames = list(realization = 1:405, year = 1976:2015, reference = c("Fcur", "F01", "Fcur/F01")))
+FF01.w <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_allyrs_v2.rds") #load rds object
 
-FF01.e  <- load("C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_results_allyrs.rdata")
-FF01.e  <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_results_allyrs.csv", header = T)
-FF01.e1 <- array(FF01.east, c(XXX, 40, 3), dimnames = list(realization = 1:XXX, year = 1976:2015, reference = c("Fcur", "F01", "Fcur/F01")))
+FF01.e  <- load("C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_results_allyrs_v2.rdata") #load rdata object
 
-FF01.pop <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_p_om.csv", header = T)
-FF01.stk <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_s_om.csv", header = T)
+FF01.pop <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_p_om_v2.csv", header = T)
+FF01.stk <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_s_om_v2.csv", header = T)
 
 
 

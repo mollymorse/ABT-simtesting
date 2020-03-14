@@ -24,12 +24,77 @@ library(extrafont)
 library(dplyr)
 
 
+## Build functions ##
+
+# YPR function
+#par  = partial recruitment at age vector
+#Fvar = F for which to calculate the YPR
+#ages = number of age classes
+#stk  = stock ("E" or "W")
+ypr_fun <- function(par, Fvar, ages, stk) {
+  
+  if (stk == "E") {
+    mort <- M[1:ages, 1]   #east natural mortality
+    wt   <- waa[1:ages, 1] #east weight-at-age
+  } else {
+    mort <- M[1:ages, 2]   #west natural mortality
+    wt   <- waa[1:ages, 2] #west weight-at-age
+  }
+  
+  NAA <- rep(NA, ages)
+  CAT <- rep(NA, ages)
+  NAA[1] <- 1000
+  
+  for (a in 2:ages) {
+    
+    NAA[a] <- NAA[a - 1] * exp(-((Fvar * par[a - 1]) + mort[a - 1]))
+    
+  }
+  
+  for (a in 1:ages) {
+    
+    CAT[a] <- NAA[a] * (1 - exp(-((Fvar * par[a]) + mort[a]))) * ((Fvar * par[a]) / ((Fvar * par[a]) + mort[a]))
+    
+  }  
+  
+  YLD <- sum(CAT * wt)
+  
+  YPR <- YLD / NAA[1]
+  
+  return(YPR)
+  
+}
+
+# F01 function
+#ypr_par = vector of YPR values
+#F_par   = vector of range of F values
+F01_fun <- function(ypr_par, F_par) {
+  
+  slope <- rep(NA, (length(F_par) - 1))
+  diffs <- rep(NA, length(slope) - 1)
+  
+  for (i in 1:(length(F_par) - 1)) {
+    slope[i] <- (ypr_par[i+1] - ypr_par[i]) / (F_par[i+1] - F_par[i]) #calculate slopes for a range of Fs (YPRs)
+  }
+  
+  for (i in 2:length(slope)) {
+    diffs[i - 1] <- (slope[1] * 0.1) - slope[i] #calculate the difference between 1/10 the slope at the origin and all the other slopes
+  }
+  
+  tmp <- min(abs(diffs[diffs<=0]), diffs[diffs>=0]) #calculate the smallest difference (i.e., closest to 1/10 slope at the origin)
+  return(F_par[which(abs(diffs) == tmp)]) #identify and return the F01
+  
+}
+
+
 ## Settings ##
 
 dir_scen  <- "Simulations_2" #directory name for the scenario (e.g., base, low movement, self-test)
 dir_stock <- "East - 500 Sims - 1"              #directory name for the stock; for estimation model calcs
 stock     <- 1                 #for estimation model calcs; east (1) vs. west (2) 
 dir_om    <- "OM_Base_Output"         #directory name for the OM outputs
+
+
 
 
 
@@ -186,66 +251,6 @@ for (a in 1:16)
 
 ## Calculate true OM F0.1 ##
 F01_om <- array(NA, c(2, 2), dimnames = list(type = c("pop", "stock"), unit = c("east", "west")))
-
-# Create YPR function
-#par  = partial recruitment at age vector
-#Fvar = F for which to calculate the YPR
-#ages = number of age classes
-#stk  = stock ("E" or "W")
-ypr_fun <- function(par, Fvar, ages, stk) {
-
-  if (stk == "E") {
-    mort <- M[1:ages, 1]   #east natural mortality
-    wt   <- waa[1:ages, 1] #east weight-at-age
-  } else {
-    mort <- M[1:ages, 2]   #west natural mortality
-    wt   <- waa[1:ages, 2] #west weight-at-age
-  }
-  
-  NAA <- rep(NA, ages)
-  CAT <- rep(NA, ages)
-  NAA[1] <- 1000
-  
-  for (a in 2:ages) {
-    
-    NAA[a] <- NAA[a - 1] * exp(-((Fvar * par[a - 1]) + mort[a - 1]))
-    
-  }
-  
-  for (a in 1:ages) {
-    
-    CAT[a] <- NAA[a] * (1 - exp(-((Fvar * par[a]) + mort[a]))) * ((Fvar * par[a]) / ((Fvar * par[a]) + mort[a]))
-    
-  }  
-  
-  YLD <- sum(CAT * wt)
-  
-  YPR <- YLD / NAA[1]
-  
-  return(YPR)
-  
-}
-
-# Create F01 function
-#ypr_par = vector of YPR values
-#F_par   = vector of range of F values
-F01_fun <- function(ypr_par, F_par) {
-  
-  slope <- rep(NA, (length(F_par) - 1))
-  diffs <- rep(NA, length(slope) - 1)
-  
-  for (i in 1:(length(F_par) - 1)) {
-    slope[i] <- (ypr_par[i+1] - ypr_par[i]) / (F_par[i+1] - F_par[i]) #calculate slopes for a range of Fs (YPRs)
-  }
-  
-  for (i in 2:length(slope)) {
-    diffs[i - 1] <- (slope[1] * 0.1) - slope[i] #calculate the difference between 1/10 the slope at the origin and all the other slopes
-  }
-  
-  tmp <- min(abs(diffs[diffs<=0]), diffs[diffs>=0]) #calculate the smallest difference (i.e., closest to 1/10 slope at the origin)
-  return(F_par[which(abs(diffs) == tmp)]) #identify and return the F01
-  
-}
 
 
 # East pop
@@ -1584,50 +1589,64 @@ F01_omp <- array(NA, c(39, 2), dimnames = list(iter = 1:39, population = c("east
 F01_oms <- array(NA, c(40, 2), dimnames = list(iter = 1:40, stock = c("east", "west")))
 
 for (i in 1:39) {
-  #east pop
-  YPR <- ypr(age = seq(1, 10, 1), wgt = waa[1:10, 1], partial = P_om_fin_e[i, ], 
-             M = M[1:10, 1], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
-  F01_omp[i, 1] <- YPR$Reference_Points[1,1]
+  # East pop
+  YPR_vec <- vector()
+  F_seq   <- seq(0, 1.0, 0.01)
+  for (j in F_seq) {
+    Fs <- j
+    YPR_vec <- append(YPR_vec, ypr_fun(P_om_fin_e[i, ], Fs, 10, "E")) #calculate YPRs for a range of Fs
+  }
+  F01_omp[i, 1] <- F01_fun(YPR_vec, F_seq)
   
-  #west pop
-  YPR <- ypr(age = seq(1, 16, 1), wgt = waa[1:16, 2], partial = P_om_fin_w[i, ], 
-             M = M[1:16, 2], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
-  F01_omp[i, 2] <- YPR$Reference_Points[1,1]
+  # West pop
+  YPR_vec <- vector()
+  F_seq   <- seq(0, 1.0, 0.01)
+  for (j in F_seq) {
+    Fs <- j
+    YPR_vec <- append(YPR_vec, ypr_fun(P_om_fin_w[i, ], Fs, 16, "W")) #calculate YPRs for a range of Fs
+  }
+  F01_omp[i, 2] <- F01_fun(YPR_vec, F_seq)
 }
 
 for (i in 1:40) {
-  #east stock
-  YPR <- ypr(age = seq(1, 10, 1), wgt = waa[1:10, 1], partial = P_oms_fin_e[i, ], 
-             M = M[1:10, 1], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
-  F01_oms[i, 1] <- YPR$Reference_Points[1,1]
+  # East stock
+  YPR_vec <- vector()
+  F_seq   <- seq(0, 1.0, 0.01)
+  for (j in F_seq) {
+    Fs <- j
+    YPR_vec <- append(YPR_vec, ypr_fun(P_oms_fin_e[i, ], Fs, 10, "E")) #calculate YPRs for a range of Fs
+  }
+  F01_oms[i, 1] <- F01_fun(YPR_vec, F_seq)
   
-  #west stock
-  YPR <- ypr(age = seq(1, 16, 1), wgt = waa[1:16, 2], partial = P_oms_fin_w[i, ], 
-             M = M[1:16, 2], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE)
-  F01_oms[i, 2] <- YPR$Reference_Points[1,1]
+  # West stock
+  YPR_vec <- vector()
+  F_seq   <- seq(0, 1.0, 0.01)
+  for (j in F_seq) {
+    Fs <- j
+    YPR_vec <- append(YPR_vec, ypr_fun(P_oms_fin_w[i, ], Fs, 16, "W")) #calculate YPRs for a range of Fs
+  }
+  F01_oms[i, 2] <- F01_fun(YPR_vec, F_seq)
+
 }
+
+
+
 
 
 ## Derive reference ages (where partial R is > or = 0.8) ##
 
-# ref.pop <- array(NA, c(39, 2), dimnames = list(iter = 1:39, population = c("east", "west")))
-# ref.stk <- array(NA, c(40, 2), dimnames = list(iter = 1:40, stock      = c("east", "west")))
 ref.east <- vector(mode = "list")
 ref.west <- vector(mode = "list")
 ref.east.s <- vector(mode = "list")
 ref.west.s <- vector(mode = "list")
 
 for (i in 1:39) {
-  # ref.pop[i, 1] <- which(P_om_fin_e[i, ]  >= 0.8)  #east population
-  # ref.pop[i, 2] <- which(P_om_fin_w[i, ]  >= 0.8)  #west population
   ref.east[[i]] <- which(P_om_fin_e[i, ]  >= 0.8)  #east population
   ref.west[[i]] <- which(P_om_fin_w[i, ]  >= 0.8)  #east population
 
 }
 
 for (i in 1:40) {
-  # ref.stk[i, 1] <- which(P_oms_fin_e[i, ] >= 0.8)  #east stock
-  # ref.stk[i, 2] <- which(P_oms_fin_w[i, ] >= 0.8)  #west stock
   ref.east.s[[i]] <- which(P_oms_fin_e[i, ]  >= 0.8)  #east stock
   ref.west.s[[i]] <- which(P_oms_fin_w[i, ]  >= 0.8)  #east stock
 }
@@ -1726,8 +1745,6 @@ FF01 <- array(NA, c(length(runnums), 40, 3), dimnames=list(realization = runnums
 
 # NOTE: in the low movement scenario, ypr function got stuck on east runnums 15, 202, 207 so those were skipped. (runnums[-c(12, 187, 192)])
 for (i in runnums) {
-# for (i in runnums[-c(207, 261)]) { #base move
-  # for (i in runnums[-c(12, 187, 192)]) { #low move
   
   ## Read in Results files ##
   result.filename <- paste("BFT", alph, "2017_", i, "_RESULTS.R", sep="")
@@ -1780,19 +1797,16 @@ for (i in runnums) {
     for (a in 1:nage) {
       P.vpa.fin[a] <- P.vpa.avg[a]/Ffull.vpa2
     }
-    
-    
-    # for (a in 1:nage) {
-    #   if (P.vpa.fin[a] == 0) {
-    #     P.vpa.fin[a] <- 0.00001
-    #   }
-    # }
-    
+
     
     ## Calculate F0.1 ##
-    YPR <- ypr(age = seq(1, nage, 1), wgt = waa[1:nage, stock], partial = P.vpa.fin, 
-               M = M[1:nage, stock], plus = FALSE, maxF = 1.0, incrF = 0.01, graph = FALSE) #changed to plus = FALSE for low move scenario
-    F01 <- YPR$Reference_Points[1, 1]
+    YPR_vec <- vector()
+    F_seq   <- seq(0, 1.0, 0.01)
+    for (j in F_seq) {
+      Fs <- j
+      YPR_vec <- append(YPR_vec, ypr_fun(P.vpa.fin, Fs, nage, alph)) #calculate YPRs for a range of Fs
+    }
+    F01 <- F01_fun(YPR_vec, F_seq)
     
     # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages
     if (y <= 39) {
@@ -1801,7 +1815,7 @@ for (i in runnums) {
     } else {
       F01.vpa[y] <- F01 * mean(P.vpa.fin[a.ref[[y-1]]]) # Calculate F0.1 adjusted for the reference ages using the average partial recruitment for the reference ages (using reference ages from 2014, the last year calculated for the true population)
       F.cur.vpa[y] <- mean(F.mat[(y+2), a.ref[[y-1]]])  # Calculate Fcurrent (using reference ages from 2014, the last year calculated for the true population)
-      }
+    }
   
     
     ## Determine stock status ##

@@ -1953,11 +1953,11 @@ dev.off()
 
 
 # revised for final 12/4/19 submission (R, SSB, F/F01) #
-jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 12-4-19/EMplots_base_2.jpeg",
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 4-6-20/EMplots_base.jpeg",
      width = 4000, height = 4200, units = "px", quality = 100, res = 300)
 plot_grid(W.R.plot, E.R.plot,
           W.SSB.plot, E.SSB.plot,
-          w.cross.2, e.cross.2, #from Reference_points.R script
+          w.all, e.all, #from Reference_points.R script
           ncol = 2, nrow = 3, align = "v")
 dev.off()
 

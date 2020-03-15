@@ -22,7 +22,7 @@ library(cowplot)
 library(ggplot2)
 library(extrafont)
 library(dplyr)
-
+library(reshape2)
 
 ## Build functions ##
 
@@ -90,8 +90,6 @@ F01_fun <- function(ypr_par, F_par) {
 ## Settings ##
 
 dir_scen  <- "Simulations_2" #directory name for the scenario (e.g., base, low movement, self-test)
-dir_stock <- "East - 500 Sims - 1"              #directory name for the stock; for estimation model calcs
-stock     <- 1                 #for estimation model calcs; east (1) vs. west (2) 
 dir_om    <- "OM_Base_Output"         #directory name for the OM outputs
 
 
@@ -353,12 +351,156 @@ write.csv((matrix(c(F_cur_e, F_cur_w, F_cur_s_e, F_cur_s_w,
 
 
 
+#### >> True F0.1s from OM - Self-test ####
+
+# read in parameters
+nage     <- 29
+biolparm <- as.matrix(read.csv(paste0("C:/Users/mmorse1/Documents/", dir_scen, "/R Code + Inputs/BFTBiolparm.csv")), header = T)
+M        <- array(biolparm[1:nage,2:3],c(nage,2),dimnames=list(age=1:nage,unit=1:2)) #annualized M
+waa      <- array(biolparm[1:nage,4:5],c(nage,2),dimnames=list(age=1:nage,unit=1:2)) #weight-at-age
+Fa       <- as.matrix(read.csv(paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/Fa.csv")))
+Fa       <- array(Fa[, -1], c(42, 29, 2), dimnames = list(year = 1974:2015, age = 1:29, unit = 1:2))
+
+
+# calculate partial recruitment - stock
+P_om_e_self <- array(NA, c(3, 10), dimnames = list(year = 1:3, age = 1:10))
+P_om_w_self <- array(NA, c(3, 16), dimnames = list(year = 1:3, age = 1:16))
+
+#east
+for (y in (nrow(Fa) - 3):(nrow(Fa) - 1))
+  for (s in 1) {
+    Ffull_om <- max(Fa[y, , s])
+    for (a in 1:10) {
+      P_om_e_self[y - 38, a] <- Fa[y, a, s]/Ffull_om
+    }
+  }
+
+#west
+for (y in (nrow(Fa) - 3):(nrow(Fa) - 1))
+  for (s in 2) {
+    Ffull_om <- max(Fa[y, , s])
+    for (a in 1:16) {
+      P_om_w_self[y - 38, a] <- Fa[y, a, s]/Ffull_om
+    }
+  }
+
+
+# average partial recruitment for each age over all reference years - stock
+P_om_avg_e_self <- rep(NA, 10)
+P_om_avg_w_self <- rep(NA, 16)
+
+#east
+for (a in 1:10) {
+  P_om_avg_e_self[a] <- mean(P_om_e_self[, a])
+}
+
+#west
+for (a in 1:16) {
+  P_om_avg_w_self[a] <- mean(P_om_w_self[, a])
+}
+
+
+# scaled to 1 (maximum partial recruitment) - stock
+P_om_fin_e_self <- rep(NA, 10)
+P_om_fin_w_self <- rep(NA, 16)
+
+#east
+for (a in 1:10)
+{
+  P_om_fin_e_self[a] <- P_om_avg_e_self[a]/max(P_om_avg_e_self)
+}
+
+#west
+for (a in 1:16)
+{
+  P_om_fin_w_self[a] <- P_om_avg_w_self[a]/max(P_om_avg_w_self)
+}
+
+
+## Calculate true OM F0.1 ##
+F01_om <- array(NA, c(1, 2), dimnames = list(type = c("value"), unit = c("east", "west")))
+
+# East stock
+YPR_vec <- vector()
+F_seq   <- seq(0, 1.0, 0.01)
+for (i in F_seq) {
+  Fs <- i
+  YPR_vec <- append(YPR_vec, ypr_fun(P_om_fin_e_self, Fs, 10, "E")) #calculate YPRs for a range of Fs
+}
+
+F01_om[1, 1] <- F01_fun(YPR_vec, F_seq)
+
+
+# West stock
+YPR_vec <- vector()
+F_seq   <- seq(0, 1.0, 0.01)
+for (i in F_seq) {
+  Fs <- i
+  YPR_vec <- append(YPR_vec, ypr_fun(P_om_fin_w_self, Fs, 16, "W")) #calculate YPRs for a range of Fs
+}
+
+F01_om[1, 2] <- F01_fun(YPR_vec, F_seq)
+
+
+
+# calculate reference ages
+for (y in 39:41) {
+  
+  # Isolate ages where partial recruitment is greater than or equal to 0.8
+  ref.east <- which(P_om_fin_e_self >= 0.8)  #east
+  ref.west <- which(P_om_fin_w_self >= 0.8)  #west
+  
+}
+
+# adjust F0.1 for the reference ages 
+# using the average partial recruitment for the reference ages
+F01_om[1, 1] <- F01_om[1, 1] * mean(P_om_fin_e_self[ref.east])
+F01_om[1, 2] <- F01_om[1, 2] * mean(P_om_fin_w_self[ref.west])
+
+
+## Determine stock status ##
+
+# Calculate Fcurrent
+F_cur_e   <- mean(Fa[39:41, ref.east, 1])
+F_cur_w   <- mean(Fa[39:41, ref.west, 2])
+
+# Calculate Fcurrent/F0.1
+Expl_status_om <- array(NA, c(1, 2), dimnames = list(type = c("value"), unit = c("east", "west")))
+
+Expl_status_om[1, 1] <- F_cur_e/F01_om[1, 1]
+Expl_status_om[1, 2] <- F_cur_w/F01_om[1, 2]
+
+
+# Save true OM values (Fcur, F0.1, Fcur/F0.1)
+write.csv((matrix(c(F_cur_e, F_cur_w,
+                    F01_om[1, 1], F01_om[1, 2],
+                    Expl_status_om[1, 1], Expl_status_om[1, 2]),
+                  nrow = 3,
+                  ncol = 2,
+                  byrow = TRUE,
+                  dimnames = list(metric = c("Fcur", "F01", "Fcur/F01"),
+                                  group  = c("e-pop", "w-pop")))),
+          paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_results_om.csv"))
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #### >> Estimated F0.1s from VPA ####
 
 ## Define variables ##
 
+dir_stock <- "West - 500 Sims - 2"  #directory name for the stock; for estimation model calcs
+stock     <- 2                      #for estimation model calcs; east (1) vs. west (2) 
 wd <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
                  list.files(path = paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged"), pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters
@@ -480,13 +622,14 @@ write.csv(FF01[,-1], "F01_results_converge_v2.csv")
 
 
 
+
 #### >> Plots ####
 
 ## Plot F0.1 results ##
 
 # Read in existing Fcur/F01 results
-FF01.west.base <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_results_converge.csv")
-FF01.east.base <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_results_converge.csv")
+FF01.west.base <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_results_converge_v2.csv")
+FF01.east.base <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_results_converge_v2.csv")
 FF01.west.low  <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged/F01_results_converge.csv")
 FF01.east.low  <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged/F01_results_converge.csv")
 FF01.west.self <- read.csv("C:/Users/mmorse1/Documents/Simulations_selftest/West/Converged/F01_results_converge.csv")
@@ -533,142 +676,18 @@ ggplot(data = F01.data, aes(x = factor(scenario), y = ratio)) +
   geom_abline(intercept=1, slope=0, linetype=3, size=1) 
 
 
-## New plots (for 12/4/19 ICES submission) - VERSION 1 ##
-
-w.cross <- ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Cross-test")), aes(x = stock, y = ratio)) +
-  geom_boxplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Cross-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  geom_abline(intercept = 0.167727284245676, slope=0, linetype=1, size=1) + #true population
-  geom_abline(intercept = 0.414965843264025, slope=0, linetype=2, size=1) + #true stock
-  coord_cartesian(ylim = c(0,1.5)) +
-  labs(y="Fcurrent/F0.1", x="") +
-  theme(plot.margin = unit(c(0,0,0,.2), "cm")) +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 24,
-                                    margin = margin(r = 10)),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 22,
-                                   face = "bold",
-                                   color = 1),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22))
-
-e.cross <- ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Cross-test")), aes(x = stock, y = ratio)) +
-  geom_boxplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Cross-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  geom_abline(intercept = 0.0206818108502776, slope=0, linetype=1, size=1) + #true population
-  geom_abline(intercept = 0.115470838578193, slope=0, linetype=2, size=1) + #true stock
-  coord_cartesian(ylim = c(0,1.5))  +
-  labs(y="", x="") +
-  theme(plot.margin = unit(c(0,.2,0,-.1), "cm")) +
-  theme(axis.title.y = element_blank(),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 22,
-                                   face = "bold",
-                                   color = 1),
-        axis.text.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.ticks.y = element_blank())
-
-w.self  <- ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Self-test")), aes(x = stock, y = ratio)) +
-  geom_boxplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Self-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept = 1, slope=0, linetype=3, size=1) +
-  geom_abline(intercept = 0.414283741188939, slope=0, linetype=1, size=1) + #true
-  coord_cartesian(ylim = c(0,1.5)) +
-  labs(y="Fcurrent/F0.1", x="") +
-  theme(plot.margin = unit(c(0,0,0,.2), "cm")) +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 24,
-                                    margin = margin(r = 10)),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 22,
-                                   face = "bold",
-                                   color = 1),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22))
-
-e.self  <- ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Self-test")), aes(x = stock, y = ratio)) +
-  geom_boxplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Self-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept = 1, slope=0, linetype=3, size=1) +
-  geom_abline(intercept = 0.115735775896511, slope=0, linetype=1, size=1) + #true
-  coord_cartesian(ylim = c(0,1.5))  +
-  labs(y="", x="") +
-  theme(plot.margin = unit(c(0,.2,0,-.1), "cm")) +
-  theme(axis.title.y = element_blank(),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 22,
-                                   face = "bold",
-                                   color = 1),
-        axis.text.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.ticks.y = element_blank())
-
-p1 <- plot_grid(w.cross, e.cross,
-          ncol = 2, nrow = 1, rel_widths = c(10, 8))
-p2 <- plot_grid(w.self, e.self,
-                ncol = 2, nrow = 1, rel_widths = c(10, 8))
-
-jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 12-4-19/FcurF01.jpeg",
-     width = 4000, height = 1750, units = "px", quality = 100, res = 300)
-plot_grid(p1, p2,
-          ncol = 2, nrow = 1, 
-          labels = "AUTO", label_fontfamily = "Times New Roman", label_size = 22)
-dev.off()
 
 
-w.low  <- ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Low-move")), aes(x = stock, y = ratio)) +
-  geom_boxplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Low-move")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  geom_abline(intercept = 0.150184015876974, slope=0, linetype=1, size=1) + #true population
-  geom_abline(intercept = 0.414965843264025, slope=0, linetype=2, size=1) + #true stock
-  coord_cartesian(ylim = c(0,2)) +
-  labs(y="Fcurrent/F0.1", x="") +
-  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 24,
-                                    margin = margin(r = 10)),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 22,
-                                   face = "bold",
-                                   color = 1),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22))
 
-e.low  <- ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Low-move")), aes(x = stock, y = ratio)) +
-  geom_boxplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Low-move")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  geom_abline(intercept = 0.0145333333333333, slope=0, linetype=1, size=1) + #true population
-  geom_abline(intercept = 0.115470838578193, slope=0, linetype=2, size=1) + #true stock
-  coord_cartesian(ylim = c(0,2))  +
-  labs(y="", x="") +
-  theme(plot.margin = unit(c(0,0,0,-.1), "cm")) +
-  theme(axis.title.y = element_blank(),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 22,
-                                   face = "bold",
-                                   color = 1),
-        axis.text.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.ticks.y = element_blank())
-
-jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 12-4-19/FcurF01_lowmov.jpeg",
-     width = 2000, height = 2000, units = "px", quality = 100, res = 300)
-plot_grid(w.low, e.low, rel_widths = c(10,8))
-dev.off()
-
-
-## NEW plots (for 12/4/19 ICES submission) - VERSION 2 ##
+## NEW plots (for 4/6/20 ICES submission) ##
 
 grob1 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
 w.cross.2 <-
   ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Cross-test")), aes(x = stock, y = ratio)) +
   geom_boxplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Cross-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
   geom_abline(intercept=1, slope=0, linetype=3, size=1.5) +
-  geom_abline(intercept = 0.167727284245676, slope=0, linetype=1, size=1.5) + #true population
-  geom_abline(intercept = 0.414965843264025, slope=0, linetype=2, size=1.5) + #true stock
+  geom_abline(intercept = Expl_status_om[1, 2], slope=0, linetype=1, size=1.5) + #true population
+  geom_abline(intercept = Expl_status_om[2, 2], slope=0, linetype=2, size=1.5) + #true stock
   coord_cartesian(ylim = c(0,1.5), clip = "off") +
   labs(y="Fcurrent/F0.1", x="", title = "") +
   theme_classic() +
@@ -690,8 +709,8 @@ e.cross.2 <-
   ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Cross-test")), aes(x = stock, y = ratio)) +
   geom_boxplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Cross-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
   geom_abline(intercept=1, slope=0, linetype=3, size=1.5) +
-  geom_abline(intercept = 0.0206818108502776, slope=0, linetype=1, size=1.5) + #true population
-  geom_abline(intercept = 0.115470838578193, slope=0, linetype=2, size=1.5) + #true stock
+  geom_abline(intercept = Expl_status_om[1, 1], slope=0, linetype=1, size=1.5) + #true population
+  geom_abline(intercept = Expl_status_om[2, 1], slope=0, linetype=2, size=1.5) + #true stock
   coord_cartesian(ylim = c(0,1.5), clip = "off")  +
   labs(y="", x="", title = " ") +
   theme_classic() +
@@ -800,579 +819,29 @@ e.low.2  <- ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% 
 
 
 
-## See old plots below ##
 
-# F01.data.w <- as.data.frame(FF01.west[3,])
-# F01.data.w <- cbind(rep("West", nrow(F01.data.w)), F01.data.w)
-# colnames(F01.data.w) <- c("stock", "ratio")
-# F01.data.e <- as.data.frame(FF01.east[3,])
-# F01.data.e <- cbind(rep("East", nrow(F01.data.e)), F01.data.e)
-# colnames(F01.data.e) <- c("stock", "ratio")
-# F01.data <- rbind(F01.data.w, F01.data.e)
-# true.df <- data.frame(c(0.119511074319948, 0.336578739314839, 0.293933398300163, 0.620620839)) #east pop, stock; west pop, stock
-# true.df2 <- cbind(c("east", "east", "west", "west"), c("pop", "stock", "pop", "stock"), true.df)
-# colnames(true.df2) <- c("stock", "view", "value")
+#### >> Calculate Bias ####
 
-West.base <- ggplot(data=subset(F01.data.base, stock %in% c("West")), aes(x=stock, y=ratio)) +
-  # geom_rect(fill = "palegreen2", xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 1, alpha = 0.01) +
-  # geom_rect(fill = "indianred2", xmin = -Inf, xmax = Inf, ymin = 1, ymax = Inf, alpha = 0.01) +
-  geom_boxplot(data=subset(F01.data.base, stock %in% c("West")), color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept = Expl_status_om[1, 2], slope=0, linetype=1, size=1) + #true population
-  geom_abline(intercept = Expl_status_om[2, 2], slope=0, linetype=2, size=1) + #true stock
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  scale_y_discrete(breaks = seq(0, 4, 1), labels = scales::number_format(accuracy = 0.1)) +
-  coord_cartesian(ylim = c(0,3.5)) +
-  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
-  labs(y="Fcurrent/F0.1", x="") +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 24,
-                                    margin = margin(r = 10)),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 22,
-                                   face = "bold",
-                                   color = 1),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22))
+## West
+w.bias.1 <- array(NA, c(2, 2), dimnames = list(unit = c("population", "stock"), type = c("absolute", "relative")))
 
-East.base <- ggplot(data=subset(F01.data.base, stock %in% c("East")), aes(x=stock, y=ratio)) +
-  # geom_rect(fill = "palegreen2", xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 1, alpha = 0.01) +
-  # geom_rect(fill = "indianred2", xmin = -Inf, xmax = Inf, ymin = 1, ymax = Inf, alpha = 0.01) +
-  geom_boxplot(data=subset(F01.data.base, stock %in% c("East")), color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept = Expl_status_om[1, 1], slope=0, linetype=1, size=1) + #true population
-  geom_abline(intercept = Expl_status_om[2, 1], slope=0, linetype=2, size=1) + #true stock
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  scale_y_continuous(breaks = seq(0, 4, 1), labels = scales::number_format(accuracy = 0.1)) +
-  coord_cartesian(ylim = c(0,3.5)) +
-  theme(plot.margin = unit(c(0,0,0,-.1), "cm")) +
-  labs(y="", x="") +
-  theme(axis.title.y = element_blank(),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 22,
-                                   face = "bold",
-                                   color = 1),
-        axis.text.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.ticks.y = element_blank())
+med <- median(as.numeric(FF01.west.base[3, -1])) #median of all realizations
 
-West.low <- ggplot(data=subset(F01.data.low, stock %in% c("West")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(F01.data.low, stock %in% c("West")), color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept = Expl_status_om[1, 2], slope=0, linetype=1, size=1) + #true population
-  geom_abline(intercept = Expl_status_om[2, 2], slope=0, linetype=2, size=1) + #true stock
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  scale_y_continuous(breaks = seq(0, 4, 1), labels = scales::number_format(accuracy = 0.1)) +
-  coord_cartesian(ylim = c(0,3.5)) +
-  theme(plot.margin = unit(c(0,0,0,-.1), "cm")) +
-  labs(y="", x="") +
-  theme(axis.title.y = element_blank(),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 22,
-                                   face = "bold",
-                                   color = 1),
-        axis.text.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.ticks.y = element_blank())
+w.bias.1[1, 1] <- med - Expl_status_om[1, 2]                  #absolute bias with true population values
+w.bias.1[1, 2] <- w.bias.1[1, 1] / Expl_status_om[1, 2] * 100 #relative bias with true population values
+w.bias.1[2, 1] <- med - Expl_status_om[2, 2]                  #absolute bias with true stock values
+w.bias.1[2, 2] <- w.bias.1[2, 1] / Expl_status_om[2, 2] * 100 #relative bias with true stock values
 
-East.low <- ggplot(data=subset(F01.data.low, stock %in% c("East")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(F01.data.low, stock %in% c("East")), color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept = Expl_status_om[1, 1], slope=0, linetype=1, size=1) + #true population
-  geom_abline(intercept = Expl_status_om[2, 1], slope=0, linetype=2, size=1) + #true stock
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  scale_y_continuous(breaks = seq(0, 4, 1), labels = scales::number_format(accuracy = 0.1)) +
-  coord_cartesian(ylim = c(0,3.5)) +
-  theme(plot.margin = unit(c(0,0,0,-.1), "cm")) +
-  labs(y="", x="") +
-  theme(axis.title.y = element_blank(),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 22,
-                                   face = "bold",
-                                   color = 1),
-        axis.text.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.ticks.y = element_blank())
 
-West.self <- ggplot(data=subset(F01.data.self, stock %in% c("West")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(F01.data.self, stock %in% c("West")), color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept = Expl_status_om[1, 2], slope=0, linetype=1, size=1) + #true population
-  geom_abline(intercept = Expl_status_om[2, 2], slope=0, linetype=2, size=1) + #true stock
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  scale_y_continuous(breaks = seq(0, 4, 1), labels = scales::number_format(accuracy = 0.1)) +
-  coord_cartesian(ylim = c(0,3.5)) +
-  theme(plot.margin = unit(c(0,0,0,-.1), "cm")) +
-  labs(y="", x="") +
-  theme(axis.title.y = element_blank(),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 22,
-                                   face = "bold",
-                                   color = 1),
-        axis.text.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.ticks.y = element_blank())
+## East
+e.bias.1 <- array(NA, c(2, 2), dimnames = list(unit = c("population", "stock"), type = c("absolute", "relative")))
 
-East.self <- ggplot(data=subset(F01.data.self, stock %in% c("East")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(F01.data.self, stock %in% c("East")), color="lightblue4", fill="lightblue1") +
-  geom_abline(intercept = Expl_status_om[1, 1], slope=0, linetype=1, size=1) + #true population
-  geom_abline(intercept = Expl_status_om[2, 1], slope=0, linetype=2, size=1) + #true stock
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  scale_y_continuous(breaks = seq(0, 4, 1), labels = scales::number_format(accuracy = 0.1)) +
-  coord_cartesian(ylim = c(0,3.5)) +
-  theme(plot.margin = unit(c(0,0,0,-.1), "cm")) +
-  labs(y="", x="") +
-  theme(axis.title.y = element_blank(),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 22,
-                                   face = "bold",
-                                   color = 1),
-        axis.text.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.ticks.y = element_blank())
+med <- median(as.numeric(FF01.east.base[3, -1])) #median of all realizations
 
-jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 12-4-19.jpeg",
-     width = 2000, height = 1000, units = "px", quality = 100, res = 300)
-# plot_grid(West.base, East.base, West.low, East.low, West.self, East.self, rel_widths = c(10,9,9,9,9,9))
-plot_grid(West.base, East.base, West.low, East.low, rel_widths = c(10,9,9,9))
-dev.off()
-
-
-
-# Boxplots of bias in Fcur/F0.1 for each stock relative to both the OM population and stock views
-
-temp <- cbind(c("population", "stock"), FF01.bias.east)
-temp2 <- melt(temp, id.vars="V1") 
-temp2 <- cbind(rep("east",nrow(temp2)), temp2)
-colnames(temp2) <- c("Stock", "View", "Run", "Value")
-temp3 <- cbind(c("population", "stock"), FF01.bias.west)
-temp4 <- melt(temp3, id.vars="V1")
-temp4 <- cbind(rep("west",nrow(temp4)), temp4)
-colnames(temp4) <- c("Stock", "View", "Run", "Value")
-temp5 <- rbind(temp2[-2:-1,], temp4[-2:-1,])
-
-temp6 <- temp5[temp5$Stock=="east",]
-temp6[,4] <- as.numeric(levels(temp6[,4]))[temp6[,4]]
-temp7 <- temp5[temp5$Stock=="west",]
-temp7[,4] <- as.numeric(levels(temp7[,4]))[temp7[,4]]
-
-# east
-ggplot(data=temp6, aes(x=View, y=Value)) +
-  geom_boxplot(data=temp6, color="black", fill="gray80") +
-  theme_classic() +
-  labs(y="Relative bias in Fcurrent/F0.1", title = "East") +
-  theme(plot.title = element_text(family = "Times New Roman",
-                                  face = "bold",
-                                  size = 17),
-        axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 15),
-        axis.title.x = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 13))
-
-# west
-ggplot(data=temp7, aes(x=View, y=Value)) +
-  geom_boxplot(data=temp7, color="black", fill="gray80") +
-  theme_classic() +
-  labs(y="Relative bias in Fcurrent/F0.1", title="West") +
-  theme(plot.title = element_text(family = "Times New Roman",
-                                  face = "bold",
-                                  size = 17),
-        axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 15),
-        axis.title.x = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 13))
-
-
-
-## Plot F01 results ##
-
-F01.data.e <- read.csv("C:/Users/mmorse1/Documents/BFT-MSE/East/E_F01_results.csv", header = TRUE)
-F01.data.e <- t(F01.data.e[-2,-1])
-F01.data.e <- cbind(rep("East", nrow(F01.data.e)), F01.data.e)
-F01.data.e <- data.frame(F01.data.e, stringsAsFactors = TRUE)
-colnames(F01.data.e) <- c("stock", "ratio")
-F01.data.e$ratio <- as.numeric(levels(F01.data.e$ratio))[F01.data.e$ratio]
-
-F01.data.w <- read.csv("C:/Users/mmorse1/Documents/BFT-MSE/West/W_F01_results.csv", header = TRUE)
-F01.data.w <- t(F01.data.w[-2,-1])
-F01.data.w <- cbind(rep("West", nrow(F01.data.w)), F01.data.w)
-F01.data.w <- data.frame(F01.data.w, stringsAsFactors = TRUE)
-colnames(F01.data.w) <- c("stock", "ratio")
-F01.data.w$ratio <- as.numeric(levels(F01.data.w$ratio))[F01.data.w$ratio]
-F01.data <- rbind(F01.data.w, F01.data.e)
-
-WestF01 <- ggplot(data=subset(F01.data, stock %in% c("West")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(F01.data, stock %in% c("West")), color="black", fill="gray80") +
-  geom_abline(intercept=0.293933398, slope=0, linetype=1, size=1) +
-  geom_abline(intercept=0.620620839, slope=0, linetype=2, size=1) +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  coord_cartesian(ylim = c(0,3.5)) +
-  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
-  labs(y="Fcurrent/F0.1", x="") +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 15),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 13))
-
-EastF01 <- ggplot(data=subset(F01.data,stock %in% c("East")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(F01.data,stock %in% c("East")), color="black", fill="gray80") +
-  geom_abline(intercept=0.119511074, slope=0, linetype=1, size=1) +
-  geom_abline(intercept=0.336578739, slope=0, linetype=2, size=1) +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  coord_cartesian(ylim = c(0,3.5)) +
-  theme(plot.margin = unit(c(0,0,0,-.1), "cm")) +
-  labs(y="", x="") +
-  theme(axis.title.y = element_blank(),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
-        axis.text.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.ticks.y = element_blank())
-
-
-## Plot F30% results ##
-
-F30.data.e <- read.csv("C:/Users/mmorse1/Documents/BFT-MSE/East/E_F30_results.csv", header = TRUE)
-F30.data.e <- t(F30.data.e[-2,-1])
-F30.data.e <- cbind(rep("East", nrow(F30.data.e)), F30.data.e)
-F30.data.e <- data.frame(F30.data.e, stringsAsFactors = TRUE)
-colnames(F30.data.e) <- c("stock", "ratio")
-F30.data.e$ratio <- as.numeric(levels(F30.data.e$ratio))[F30.data.e$ratio]
-
-F30.data.w <- read.csv("C:/Users/mmorse1/Documents/BFT-MSE/West/W_F30_results.csv", header = TRUE)
-F30.data.w <- t(F30.data.w[-2,-1])
-F30.data.w <- cbind(rep("West", nrow(F30.data.w)), F30.data.w)
-F30.data.w <- data.frame(F30.data.w, stringsAsFactors = TRUE)
-colnames(F30.data.w) <- c("stock", "ratio")
-F30.data.w$ratio <- as.numeric(levels(F30.data.w$ratio))[F30.data.w$ratio]
-F30.data <- rbind(F30.data.w, F30.data.e)
-
-WestF30 <- ggplot(data=subset(F30.data, stock %in% c("West")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(F30.data, stock %in% c("West")), color="black", fill="gray80") +
-  geom_abline(intercept=0.286858491, slope=0, linetype=1, size=1) +
-  geom_abline(intercept=0.580671883, slope=0, linetype=2, size=1) +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  coord_cartesian(ylim = c(0,3.5)) +
-  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
-  labs(y="Fcurrent/F30%", x="") +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 15),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 13))
-
-EastF30 <- ggplot(data=subset(F30.data,stock %in% c("East")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(F30.data,stock %in% c("East")), color="black", fill="gray80") +
-  geom_abline(intercept=0.093669266, slope=0, linetype=1, size=1) +
-  geom_abline(intercept=0.234599375, slope=0, linetype=2, size=1) +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  coord_cartesian(ylim = c(0,3.5)) +
-  theme(plot.margin = unit(c(0,0,0,-.1), "cm")) +
-  labs(y="", x="") +
-  theme(axis.title.y = element_blank(),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
-        axis.text.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.ticks.y = element_blank())
-
-plot_grid(West, East, rel_widths = c(10,9))
-
-
-## Plot F40% results ##
-
-F40.data.e <- read.csv("C:/Users/mmorse1/Documents/BFT-MSE/East/E_F40_results.csv", header = TRUE)
-F40.data.e <- t(F40.data.e[-2,-1])
-F40.data.e <- cbind(rep("East", nrow(F40.data.e)), F40.data.e)
-F40.data.e <- data.frame(F40.data.e, stringsAsFactors = TRUE)
-colnames(F40.data.e) <- c("stock", "ratio")
-F40.data.e$ratio <- as.numeric(levels(F40.data.e$ratio))[F40.data.e$ratio]
-
-F40.data.w <- read.csv("C:/Users/mmorse1/Documents/BFT-MSE/West/W_F40_results.csv", header = TRUE)
-F40.data.w <- t(F40.data.w[-2,-1])
-F40.data.w <- cbind(rep("West", nrow(F40.data.w)), F40.data.w)
-F40.data.w <- data.frame(F40.data.w, stringsAsFactors = TRUE)
-colnames(F40.data.w) <- c("stock", "ratio")
-F40.data.w$ratio <- as.numeric(levels(F40.data.w$ratio))[F40.data.w$ratio]
-F40.data <- rbind(F40.data.w, F40.data.e)
-
-WestF40 <- ggplot(data=subset(F40.data, stock %in% c("West")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(F40.data, stock %in% c("West")), color="black", fill="gray80") +
-  geom_abline(intercept=0.385412298, slope=0, linetype=1, size=1) +
-  geom_abline(intercept=0.787508873, slope=0, linetype=2, size=1) +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  coord_cartesian(ylim = c(0,3.5)) +
-  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
-  labs(y="Fcurrent/F40%", x="") +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 15),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 13))
-
-EastF40 <- ggplot(data=subset(F40.data,stock %in% c("East")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(F40.data,stock %in% c("East")), color="black", fill="gray80") +
-  geom_abline(intercept=0.127702643, slope=0, linetype=1, size=1) +
-  geom_abline(intercept=0.327783599, slope=0, linetype=2, size=1) +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  coord_cartesian(ylim = c(0,3.5)) +
-  theme(plot.margin = unit(c(0,0,0,-.1), "cm")) +
-  labs(y="", x="") +
-  theme(axis.title.y = element_blank(),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
-        axis.text.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.ticks.y = element_blank())
-
-## Plot Fmax results ##
-
-Fmax.data.e <- read.csv("C:/Users/mmorse1/Documents/BFT-MSE/East/E_Fmax_results.csv", header = TRUE)
-Fmax.data.e <- t(Fmax.data.e[-2,-1])
-Fmax.data.e <- cbind(rep("East", nrow(Fmax.data.e)), Fmax.data.e)
-Fmax.data.e <- data.frame(Fmax.data.e, stringsAsFactors = TRUE)
-colnames(Fmax.data.e) <- c("stock", "ratio")
-Fmax.data.e$ratio <- as.numeric(levels(Fmax.data.e$ratio))[Fmax.data.e$ratio]
-
-Fmax.data.w <- read.csv("C:/Users/mmorse1/Documents/BFT-MSE/West/W_Fmax_results.csv", header = TRUE)
-Fmax.data.w <- t(Fmax.data.w[-2,-1])
-Fmax.data.w <- cbind(rep("West", nrow(Fmax.data.w)), Fmax.data.w)
-Fmax.data.w <- data.frame(Fmax.data.w, stringsAsFactors = TRUE)
-colnames(Fmax.data.w) <- c("stock", "ratio")
-Fmax.data.w$ratio <- as.numeric(levels(Fmax.data.w$ratio))[Fmax.data.w$ratio]
-Fmax.data <- rbind(Fmax.data.w, Fmax.data.e)
-
-WestFmax <- ggplot(data=subset(Fmax.data, stock %in% c("West")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(Fmax.data, stock %in% c("West")), color="black", fill="gray80") +
-  geom_abline(intercept=0.195764236, slope=0, linetype=1, size=1) +
-  geom_abline(intercept=0.385463724, slope=0, linetype=2, size=1) +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  coord_cartesian(ylim = c(0,3.5)) +
-  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
-  labs(y="Fcurrent/Fmax", x="") +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 15),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 13))
-
-EastFmax <- ggplot(data=subset(Fmax.data,stock %in% c("East")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(Fmax.data,stock %in% c("East")), color="black", fill="gray80") +
-  geom_abline(intercept=0.079596243, slope=0, linetype=1, size=1) +
-  geom_abline(intercept=0.220222417, slope=0, linetype=2, size=1) +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  coord_cartesian(ylim = c(0,3.5)) +
-  theme(plot.margin = unit(c(0,0,0,-.1), "cm")) +
-  labs(y="", x="") +
-  theme(axis.title.y = element_blank(),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
-        axis.text.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.ticks.y = element_blank())
-
-## Plot SSB01 results ##
-
-SSB01.data.e <- read.csv("C:/Users/mmorse1/Documents/BFT-MSE/East/E_SSB01_results.csv", header = TRUE)
-SSB01.data.e <- t(SSB01.data.e[-2,-1])
-SSB01.data.e <- cbind(rep("East", nrow(SSB01.data.e)), SSB01.data.e)
-SSB01.data.e <- data.frame(SSB01.data.e, stringsAsFactors = TRUE)
-colnames(SSB01.data.e) <- c("stock", "ratio")
-SSB01.data.e$ratio <- as.numeric(levels(SSB01.data.e$ratio))[SSB01.data.e$ratio]
-
-SSB01.data.w <- read.csv("C:/Users/mmorse1/Documents/BFT-MSE/West/W_SSB01_results.csv", header = TRUE)
-SSB01.data.w <- t(SSB01.data.w[-2,-1])
-SSB01.data.w <- cbind(rep("West", nrow(SSB01.data.w)), SSB01.data.w)
-SSB01.data.w <- data.frame(SSB01.data.w, stringsAsFactors = TRUE)
-colnames(SSB01.data.w) <- c("stock", "ratio")
-SSB01.data.w$ratio <- as.numeric(levels(SSB01.data.w$ratio))[SSB01.data.w$ratio]
-SSB01.data <- rbind(SSB01.data.w, SSB01.data.e)
-
-WestSSB01 <- ggplot(data=subset(SSB01.data, stock %in% c("West")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(SSB01.data, stock %in% c("West")), color="black", fill="gray80") +
-  geom_abline(intercept=1.439817273, slope=0, linetype=1, size=1) +
-  geom_abline(intercept=5.157401233, slope=0, linetype=2, size=1) +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  coord_cartesian(ylim = c(0,10)) +
-  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
-  labs(y="SSBcurrent/SSB0.1", x="") +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 15),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 13))
-
-EastSSB01 <- ggplot(data=subset(SSB01.data,stock %in% c("East")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(SSB01.data,stock %in% c("East")), color="black", fill="gray80") +
-  geom_abline(intercept=2.032496893, slope=0, linetype=1, size=1) +
-  geom_abline(intercept=1.751787589, slope=0, linetype=2, size=1) +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  coord_cartesian(ylim = c(0,10)) +
-  theme(plot.margin = unit(c(0,0,0,-.1), "cm")) +
-  labs(y="", x="") +
-  theme(axis.title.y = element_blank(),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
-        axis.text.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.ticks.y = element_blank())
-
-## Plot SSBfmax results ##
-
-SSBfmax.data.e <- read.csv("C:/Users/mmorse1/Documents/BFT-MSE/East/E_SSBfmax_results.csv", header = TRUE)
-SSBfmax.data.e <- t(SSBfmax.data.e[-2,-1])
-SSBfmax.data.e <- cbind(rep("East", nrow(SSBfmax.data.e)), SSBfmax.data.e)
-SSBfmax.data.e <- data.frame(SSBfmax.data.e, stringsAsFactors = TRUE)
-colnames(SSBfmax.data.e) <- c("stock", "ratio")
-SSBfmax.data.e$ratio <- as.numeric(levels(SSBfmax.data.e$ratio))[SSBfmax.data.e$ratio]
-
-SSBfmax.data.w <- read.csv("C:/Users/mmorse1/Documents/BFT-MSE/West/W_SSBfmax_results.csv", header = TRUE)
-SSBfmax.data.w <- t(SSBfmax.data.w[-2,-1])
-SSBfmax.data.w <- cbind(rep("West", nrow(SSBfmax.data.w)), SSBfmax.data.w)
-SSBfmax.data.w <- data.frame(SSBfmax.data.w, stringsAsFactors = TRUE)
-colnames(SSBfmax.data.w) <- c("stock", "ratio")
-SSBfmax.data.w$ratio <- as.numeric(levels(SSBfmax.data.w$ratio))[SSBfmax.data.w$ratio]
-SSBfmax.data <- rbind(SSBfmax.data.w, SSBfmax.data.e)
-
-WestSSBfmax <- ggplot(data=subset(SSBfmax.data, stock %in% c("West")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(SSBfmax.data, stock %in% c("West")), color="black", fill="gray80") +
-  geom_abline(intercept=2.378549906, slope=0, linetype=1, size=1) +
-  geom_abline(intercept=8.923472479, slope=0, linetype=2, size=1) +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  coord_cartesian(ylim = c(0,10)) +
-  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
-  labs(y="SSBcurrent/SSBfmax", x="") +
-  theme(axis.title.y = element_text(family = "Times New Roman",
-                                    face = "bold",
-                                    size = 15),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
-        axis.text.y = element_text(family = "Times New Roman",
-                                   size = 13))
-
-EastSSBfmax <- ggplot(data=subset(SSBfmax.data,stock %in% c("East")), aes(x=stock, y=ratio)) +
-  geom_boxplot(data=subset(SSBfmax.data,stock %in% c("East")), color="black", fill="gray80") +
-  geom_abline(intercept=3.025364472, slope=0, linetype=1, size=1) +
-  geom_abline(intercept=2.409602629, slope=0, linetype=2, size=1) +
-  geom_abline(intercept=1, slope=0, linetype=3, size=1) +
-  theme_classic() +
-  coord_cartesian(ylim = c(0,10)) +
-  theme(plot.margin = unit(c(0,0,0,-.1), "cm")) +
-  labs(y="", x="") +
-  theme(axis.title.y = element_blank(),
-        #axis.title.x = element_text(family = "Times New Roman",
-        #                            face = "bold",
-        #                            size = 15),
-        axis.text.x = element_text(family = "Times New Roman",
-                                   size = 13),
-        axis.text.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.ticks.y = element_blank())
-
-plot_grid(WestF01, EastF01, WestF30, EastF30, WestF40, EastF40,
-          WestFmax, EastFmax, WestSSB01, EastSSB01, WestSSBfmax, EastSSBfmax#, 
-          #rel_widths = c(10,9)
-          )
-
-
-
-
-
-
-
-
-
-
-
-
-
+e.bias.1[1, 1] <- med - Expl_status_om[1, 1]                  #absolute bias with true population values
+e.bias.1[1, 2] <- e.bias.1[1, 1] / Expl_status_om[1, 1] * 100 #relative bias with true population values
+e.bias.1[2, 1] <- med - Expl_status_om[2, 1]                  #absolute bias with true stock values
+e.bias.1[2, 2] <- e.bias.1[2, 1] / Expl_status_om[2, 1] * 100 #relative bias with true stock values
 
 
 
@@ -1717,8 +1186,8 @@ write.csv(Expl_status_om_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/",
 
 
 ## Define variables ##
-dir_stock <- "West - 500 Sims - 2"  #directory name for the stock; for estimation model calcs only
-stock     <- 2                      #for estimation model calcs only; east (1) vs. west (2) 
+dir_stock <- "East - 500 Sims - 1"  #directory name for the stock; for estimation model calcs only
+stock     <- 1                      #for estimation model calcs only; east (1) vs. west (2) 
 wd        <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
 setwd(wd)
 filenums  <- gsub("[A-z \\.\\(\\)]", "", 
@@ -1830,7 +1299,6 @@ for (i in runnums) {
 }
 
 
-
 ## Save F0.1 results ##
 saveRDS(FF01, file = "F01_allyrs_v2.rds")
 
@@ -1847,10 +1315,9 @@ saveRDS(FF01, file = "F01_allyrs_v2.rds")
 
 #### >> Plots ####
 
-## Read in F/F01 results @@
+## Read in F/F01 results ##
 FF01.w <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_allyrs_v2.rds") #load rds object
-
-FF01.e  <- load("C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_results_allyrs_v2.rdata") #load rdata object
+FF01.e <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_allyrs_v2.rds") #load rds object
 
 FF01.pop <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_p_om_v2.csv", header = T)
 FF01.stk <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_s_om_v2.csv", header = T)
@@ -1858,19 +1325,19 @@ FF01.stk <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_
 
 
 ## West boxplots ##
-FF01.w2 <- as.data.frame(t(FF01.w1[, , 3]))     #take only F/F01 values, transpose, and convert to data frame
-years   <- matrix(1974:2015, nrow = 42, ncol=1) #create column of year values
-FF01.w2[, 1] <- years
-FF01.w2.1 <- melt(FF01.w2, id.vars = "years")
+FF01.w1 <- as.data.frame(t(FF01.w[, , 3]))     #take only F/F01 values, transpose, and convert to data frame
+years   <- matrix(1976:2015, nrow = 40, ncol=1) #create column of year values
+FF01.w1 <- cbind(years, FF01.w1)
+FF01.w2 <- melt(FF01.w1, id.vars = "years")
 
-FF01.omp <- as.data.frame(FF01.pop[, 2]) #create data frame of operating model data
+FF01.omp <- as.data.frame(FF01.pop[, c(1, 3)]) #create data frame of operating model data
 colnames(FF01.omp) <- c("years", "OMP")
 
-FF01.oms <- as.data.frame(FF01.stk[, 2]) #create data frame of operating model data
+FF01.oms <- as.data.frame(FF01.stk[, c(1, 3)]) #create data frame of operating model data
 colnames(FF01.oms) <- c("years", "OMS")
 
-allLevels <- levels(factor(c(FF01.w2.1$years, FF01.omp$years, FF01.oms$years)))  #change the x vars to factors
-FF01.w2.1$years <- factor(FF01.w2.1$years,levels=(allLevels))
+allLevels <- levels(factor(c(FF01.w2$years, FF01.omp$years, FF01.oms$years)))  #change the x vars to factors
+FF01.w2$years <- factor(FF01.w2$years,levels=(allLevels))
 FF01.omp$years  <- factor(FF01.omp$years,levels=(allLevels))
 FF01.oms$years  <- factor(FF01.oms$years,levels=(allLevels))
 
@@ -1878,58 +1345,59 @@ FF01.oms$years  <- factor(FF01.oms$years,levels=(allLevels))
 grob1 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
 w.all <-
   ggplot(data = FF01.omp, aes(x=factor(years), y=OMP)) +
-  geom_boxplot(data = FF01.w2.1, aes(x=years, y=value), color="lightblue4", fill="lightblue1", outlier.shape = NA) +
+  geom_abline(intercept=1, slope=0, linetype=1, size=1) +
+  geom_boxplot(data = FF01.w2, aes(x=years, y=value), color="lightblue4", fill="lightblue1", outlier.shape = NA) +
   geom_line(data = FF01.oms, aes(x=factor(years), y=OMS, group=1), linetype="dashed", size=1.5, color="black") +
   stat_summary(fun.y=mean, geom="line", aes(group=1), size=1.5, color="black") +
-  coord_cartesian(ylim = c(0, 1.5), clip = "off") +
-  labs(y="",x="", title = " ") +
+  coord_cartesian(ylim = c(0, 4), clip = "off") +
+  labs(y="Fcurrent/F0.1",x="", title = " ") +
   theme_classic() +
-  scale_x_discrete(breaks = seq(1974,2015,10)) +
+  scale_x_discrete(breaks = seq(1976,2015,10)) +
   theme(plot.title = element_text(family = "Times New Roman",
                                   face = "bold",
                                   size = 24,
                                   hjust = 0.5,
                                   margin = margin(b = 10)),
-        #axis.title.y = element_text(family = "Times New Roman",
-        #                               face = "bold",
-        #                              size = 14),
+        axis.title.y = element_text(family = "Times New Roman",
+                                    face = "bold",
+                                    size = 24,
+                                    margin = margin(r = 10)),
         axis.text.x = element_text(family = "Times New Roman",
                                    size = 20),
-        # axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
                                    size = 20)) +
   annotation_custom(grob1)
 
 
 
-
 ## East boxplots ##
-FF01.e2 <- as.data.frame(t(FF01.e1[, , 3]))     #take only F/F01 values, transpose, and convert to data frame
-years   <- matrix(1974:2015, nrow = 42, ncol=1) #create column of year values
-FF01.e2[, 1] <- years
-FF01.e2.1 <- melt(FF01.e2, id.vars = "years")
+FF01.e1 <- as.data.frame(t(FF01.e[, , 3]))     #take only F/F01 values, transpose, and convert to data frame
+years   <- matrix(1976:2015, nrow = 40, ncol=1) #create column of year values
+FF01.e1 <- cbind(years, FF01.e1)
+FF01.e2 <- melt(FF01.e1, id.vars = "years")
 
-FF01.omp <- as.data.frame(FF01.pop[, 1]) #create data frame of operating model data
+FF01.omp <- as.data.frame(FF01.pop[, c(1, 2)]) #create data frame of operating model data
 colnames(FF01.omp) <- c("years", "OMP")
 
-FF01.oms <- as.data.frame(FF01.stk[, 1]) #create data frame of operating model data
+FF01.oms <- as.data.frame(FF01.stk[, c(1, 2)]) #create data frame of operating model data
 colnames(FF01.oms) <- c("years", "OMS")
 
-allLevels <- levels(factor(c(FF01.e2.1$years, FF01.omp$years, FF01.oms$years)))  #change the x vars to factors
-FF01.e2.1$years <- factor(FF01.e2.1$years,levels=(allLevels))
+allLevels <- levels(factor(c(FF01.e2$years, FF01.omp$years, FF01.oms$years)))  #change the x vars to factors
+FF01.e2$years <- factor(FF01.e2$years,levels=(allLevels))
 FF01.omp$years  <- factor(FF01.omp$years,levels=(allLevels))
 FF01.oms$years  <- factor(FF01.oms$years,levels=(allLevels))
 
 grob2 <- grid.text("F", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
 e.all <-
   ggplot(data = FF01.omp, aes(x=factor(years), y=OMP)) +
-  geom_boxplot(data = FF01.e2.1, aes(x=years, y=value), color="lightblue4", fill="lightblue1", outlier.shape = NA) +
+  geom_abline(intercept=1, slope=0, linetype=1, size=1) +
+  geom_boxplot(data = FF01.e2, aes(x=years, y=value), color="lightblue4", fill="lightblue1", outlier.shape = NA) +
   geom_line(data = FF01.oms, aes(x=factor(years), y=OMS, group=1), linetype="dashed", size=1.5, color="black") +
   stat_summary(fun.y=mean, geom="line", aes(group=1), size=1.5, color="black") +
-  coord_cartesian(ylim = c(0, 1.5), clip = "off") +
+  coord_cartesian(ylim = c(0, 4.3), clip = "off") +
   labs(y="",x="", title = " ") +
   theme_classic() +
-  scale_x_discrete(breaks = seq(1974,2015,10)) +
+  scale_x_discrete(breaks = seq(1976,2015,10)) +
   theme(plot.title = element_text(family = "Times New Roman",
                                   face = "bold",
                                   size = 24,
@@ -1948,6 +1416,55 @@ e.all <-
 
 
 
+
+
+#### >> Calculate Bias ####
+
+## West
+w.bias <- array(NA, c(nrow(FF01.w1), 2, 2), dimnames = list(year = 1976:2015, unit = c("population", "stock"), type = c("absolute", "relative")))
+for (i in 1:nrow(FF01.w1)) {
+  med <- median(as.numeric(FF01.w1[i, -1]))                        #annual median of all realizations (take out 1st col which is years)
+  
+  if (i <= 39) {
+    w.bias[i, 1, 1] <- med - FF01.pop[i, 3]              #absolute bias with true population values
+    w.bias[i, 1, 2] <- w.bias[i, 1, 1] / FF01.pop[i, 3] * 100 #relative bias with true population values
+    w.bias[i, 2, 1] <- med - FF01.stk[i, 3]              #absolute bias with true stock values
+    w.bias[i, 2, 2] <- w.bias[i, 2, 1] / FF01.stk[i, 3] * 100 #relative bias with true stock values
+  } else {
+    w.bias[i, 2, 1] <- med - FF01.stk[i, 3]              #absolute bias with true stock values
+    w.bias[i, 2, 2] <- w.bias[i, 2, 1] / FF01.stk[i, 3] * 100 #relative bias with true stock values
+  }
+  
+}
+
+median(w.bias[, 1, 1], na.rm = T) #population absolute bias
+median(w.bias[, 1, 2], na.rm = T) #population relative bias
+median(w.bias[, 2, 1], na.rm = T) #stock absolute bias
+median(w.bias[, 2, 2], na.rm = T) #stock relative bias
+
+
+
+## East
+e.bias <- array(NA, c(nrow(FF01.e1), 2, 2), dimnames = list(year = 1976:2015, unit = c("population", "stock"), type = c("absolute", "relative")))
+for (i in 1:nrow(FF01.e1)) {
+  med <- median(as.numeric(FF01.e1[i, -1]))                        #annual median of all realizations (take out 1st col which is years)
+  
+  if (i <= 39) {
+    e.bias[i, 1, 1] <- med - FF01.pop[i, 2]              #absolute bias with true population values
+    e.bias[i, 1, 2] <- e.bias[i, 1, 1] / FF01.pop[i, 2] * 100 #relative bias with true population values
+    e.bias[i, 2, 1] <- med - FF01.stk[i, 2]              #absolute bias with true stock values
+    e.bias[i, 2, 2] <- e.bias[i, 2, 1] / FF01.stk[i, 2] * 100 #relative bias with true stock values
+  } else {
+    e.bias[i, 2, 1] <- med - FF01.stk[i, 2]              #absolute bias with true stock values
+    e.bias[i, 2, 2] <- e.bias[i, 2, 1] / FF01.stk[i, 2] * 100 #relative bias with true stock values
+  }
+  
+}
+
+median(e.bias[, 1, 1], na.rm = T) #population absolute bias
+median(e.bias[, 1, 2], na.rm = T) #population relative bias
+median(e.bias[, 2, 1], na.rm = T) #stock absolute bias
+median(e.bias[, 2, 2], na.rm = T) #stock relative bias
 
 
 

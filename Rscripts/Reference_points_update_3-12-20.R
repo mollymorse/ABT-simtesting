@@ -89,8 +89,8 @@ F01_fun <- function(ypr_par, F_par) {
 
 ## Settings ##
 
-dir_scen  <- "Simulations_2" #directory name for the scenario (e.g., base, low movement, self-test)
-dir_om    <- "OM_Base_Output"         #directory name for the OM outputs
+dir_scen  <- "Simulations_selftest" #directory name for the scenario (e.g., base, low movement, self-test)
+dir_om    <- "OM Output"         #directory name for the OM outputs
 
 
 
@@ -335,14 +335,14 @@ Expl_status_om[2, 2] <- F_cur_s_w/F01_om[2, 2]
 
 # Save true OM values (Fcur, F0.1, Fcur/F0.1)
 write.csv((matrix(c(F_cur_e, F_cur_w, F_cur_s_e, F_cur_s_w,
-         F01_om[1, 1], F01_om[1, 2], F01_om[2, 1], F01_om[2, 2],
-         Expl_status_om[1, 1], Expl_status_om[1, 2], Expl_status_om[2, 1], Expl_status_om[2, 2]),
-       nrow = 3,
-       ncol = 4,
-       byrow = TRUE,
-       dimnames = list(metric = c("Fcur", "F01", "Fcur/F01"),
-                       group  = c("e-pop", "w-pop", "e-stock", "w-stock")))),
-       paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_results_om_v3.csv"))
+                    F01_om[1, 1], F01_om[1, 2], F01_om[2, 1], F01_om[2, 2],
+                    Expl_status_om[1, 1], Expl_status_om[1, 2], Expl_status_om[2, 1], Expl_status_om[2, 2]),
+                  nrow = 3,
+                  ncol = 4,
+                  byrow = TRUE,
+                  dimnames = list(metric = c("Fcur", "F01", "Fcur/F01"),
+                                  group  = c("e-pop", "w-pop", "e-stock", "w-stock")))),
+          paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_results_om_v2.csv"))
 
 
 
@@ -480,7 +480,7 @@ write.csv((matrix(c(F_cur_e, F_cur_w,
                   byrow = TRUE,
                   dimnames = list(metric = c("Fcur", "F01", "Fcur/F01"),
                                   group  = c("e-pop", "w-pop")))),
-          paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_results_om.csv"))
+          paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_results_om_v2.csv"))
 
 
 
@@ -499,13 +499,13 @@ write.csv((matrix(c(F_cur_e, F_cur_w,
 
 ## Define variables ##
 
-dir_stock <- "West - 500 Sims - 2"  #directory name for the stock; for estimation model calcs
+dir_stock <- "West"  #directory name for the stock; for estimation model calcs
 stock     <- 2                      #for estimation model calcs; east (1) vs. west (2) 
-wd <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
-filenums <- gsub("[A-z \\.\\(\\)]", "", 
+wd        <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
+filenums  <- gsub("[A-z \\.\\(\\)]", "", 
                  list.files(path = paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged"), pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters
-runnums <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
-nyr <- 42
+runnums   <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
+nyr       <- 42
 if (stock == 1) #reference ages (from OM) and plus group age
 {
   a.ref <- ref.east
@@ -523,25 +523,6 @@ if (stock == 1) #reference ages (from OM) and plus group age
 FF01 <- matrix(NA, nrow=3, ncol=1, dimnames=list(reference=c("Fcur", "F01", "Fcur/F01"), value=1))
 
 setwd(wd)
-
-## True F0.1 ##
-if (stock == 1) {
-  F01.OM.p <- F01_om[1, 1] #east pop
-  F01.OM.s <- F01_om[2, 1] #east stock
-} else {
-  F01.OM.p <- F01_om[1, 2] #west pop
-  F01.OM.s <- F01_om[2, 2] #west stock
-}
-
-## True stock status (from low movement OM) ##
-F01.stat.true <- rep(NA,2)
-if (stock == 1) {
-  F01.stat.true[1] <- Expl_status_om[1, 1] #east pop
-  F01.stat.true[2] <- Expl_status_om[2, 1] #east stock
-} else {
-  F01.stat.true[1] <- Expl_status_om[1, 2] #west pop
-  F01.stat.true[2] <- Expl_status_om[2, 2]  #west stock
-}
 
 
 # This will take about 15 sec
@@ -623,17 +604,25 @@ write.csv(FF01[,-1], "F01_results_converge_v2.csv")
 
 
 
+
+
 #### >> Plots ####
 
 ## Plot F0.1 results ##
 
 # Read in existing Fcur/F01 results
+# OM
+FF01.base.om <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F01_results_om_v3.csv")
+FF01.low.om  <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/F01_results_om_v2.csv")
+FF01.self.om <- read.csv("C:/Users/mmorse1/Documents/Simulations_selftest/OM Output/F01_results_om_v2.csv")
+
+# EM
 FF01.west.base <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_results_converge_v2.csv")
 FF01.east.base <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_results_converge_v2.csv")
-FF01.west.low  <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged/F01_results_converge.csv")
-FF01.east.low  <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged/F01_results_converge.csv")
-FF01.west.self <- read.csv("C:/Users/mmorse1/Documents/Simulations_selftest/West/Converged/F01_results_converge.csv")
-FF01.east.self <- read.csv("C:/Users/mmorse1/Documents/Simulations_selftest/East/Converged/F01_results_converge.csv")
+FF01.west.low  <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged/F01_results_converge_v2.csv")
+FF01.east.low  <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged/F01_results_converge_v2.csv")
+FF01.west.self <- read.csv("C:/Users/mmorse1/Documents/Simulations_selftest/West/Converged/F01_results_converge_v2.csv")
+FF01.east.self <- read.csv("C:/Users/mmorse1/Documents/Simulations_selftest/East/Converged/F01_results_converge_v2.csv")
 
 
 # Boxplots of Fcur/F0.1 for each stock
@@ -686,8 +675,8 @@ w.cross.2 <-
   ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Cross-test")), aes(x = stock, y = ratio)) +
   geom_boxplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Cross-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
   geom_abline(intercept=1, slope=0, linetype=3, size=1.5) +
-  geom_abline(intercept = Expl_status_om[1, 2], slope=0, linetype=1, size=1.5) + #true population
-  geom_abline(intercept = Expl_status_om[2, 2], slope=0, linetype=2, size=1.5) + #true stock
+  geom_abline(intercept = FF01.base.om[3, 3], slope=0, linetype=1, size=1.5) + #true population
+  geom_abline(intercept = FF01.base.om[3, 5], slope=0, linetype=2, size=1.5) + #true stock
   coord_cartesian(ylim = c(0,1.5), clip = "off") +
   labs(y="Fcurrent/F0.1", x="", title = "") +
   theme_classic() +
@@ -709,8 +698,8 @@ e.cross.2 <-
   ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Cross-test")), aes(x = stock, y = ratio)) +
   geom_boxplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Cross-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
   geom_abline(intercept=1, slope=0, linetype=3, size=1.5) +
-  geom_abline(intercept = Expl_status_om[1, 1], slope=0, linetype=1, size=1.5) + #true population
-  geom_abline(intercept = Expl_status_om[2, 1], slope=0, linetype=2, size=1.5) + #true stock
+  geom_abline(intercept = FF01.base.om[3, 2], slope=0, linetype=1, size=1.5) + #true population
+  geom_abline(intercept = FF01.base.om[3, 4], slope=0, linetype=2, size=1.5) + #true stock
   coord_cartesian(ylim = c(0,1.5), clip = "off")  +
   labs(y="", x="", title = " ") +
   theme_classic() +
@@ -731,7 +720,7 @@ grob3 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar
 w.self.2  <- ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Self-test")), aes(x = stock, y = ratio)) +
   geom_boxplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Self-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
   geom_abline(intercept = 1, slope=0, linetype=3, size=1.5) +
-  geom_abline(intercept = 0.414283741188939, slope=0, linetype=1, size=1.5) + #true
+  geom_abline(intercept = FF01.self.om[3, 3], slope=0, linetype=1, size=1.5) + #true
   coord_cartesian(ylim = c(0,1.5), clip = "off") +
   labs(y="Fcurrent/F0.1", x="", title = " ") +
   theme_classic() +
@@ -752,7 +741,7 @@ grob4 <- grid.text("F", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar
 e.self.2  <- ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Self-test")), aes(x = stock, y = ratio)) +
   geom_boxplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Self-test")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
   geom_abline(intercept = 1, slope=0, linetype=3, size=1.5) +
-  geom_abline(intercept = 0.115735775896511, slope=0, linetype=1, size=1.5) + #true
+  geom_abline(intercept = FF01.self.om[3, 2], slope=0, linetype=1, size=1.5) + #true
   coord_cartesian(ylim = c(0,1.5), clip = "off")  +
   labs(y="", x="", title = " ") +
   theme_classic() +
@@ -773,8 +762,8 @@ grob5 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar
 w.low.2  <- ggplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Low-move")), aes(x = stock, y = ratio)) +
   geom_boxplot(data = subset(F01.data, stock %in% c("West") & scenario %in% c("Low-move")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
   geom_abline(intercept=1, slope=0, linetype=3, size=1.5) +
-  geom_abline(intercept = 0.150184015876974, slope=0, linetype=1, size=1.5) + #true population
-  geom_abline(intercept = 0.414965843264025, slope=0, linetype=2, size=1.5) + #true stock
+  geom_abline(intercept = FF01.low.om[3, 3], slope=0, linetype=1, size=1.5) + #true population
+  geom_abline(intercept = FF01.low.om[3, 5], slope=0, linetype=2, size=1.5) + #true stock
   coord_cartesian(ylim = c(0,2), clip = "off") +
   theme_classic() +
   labs(y="Fcurrent/F0.1", x="", title = " ") +
@@ -795,8 +784,8 @@ grob6 <- grid.text("F", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar
 e.low.2  <- ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Low-move")), aes(x = stock, y = ratio)) +
   geom_boxplot(data = subset(F01.data, stock %in% c("East") & scenario %in% c("Low-move")), outlier.shape = NA, color="lightblue4", fill="lightblue1") +
   geom_abline(intercept=1, slope=0, linetype=3, size=1.5) +
-  geom_abline(intercept = 0.0145333333333333, slope=0, linetype=1, size=1.5) + #true population
-  geom_abline(intercept = 0.115470838578193, slope=0, linetype=2, size=1.5) + #true stock
+  geom_abline(intercept = FF01.low.om[3, 2], slope=0, linetype=1, size=1.5) + #true population
+  geom_abline(intercept = FF01.low.om[3, 4], slope=0, linetype=2, size=1.5) + #true stock
   coord_cartesian(ylim = c(0,2), clip = "off")  +
   theme_classic() +
   labs(y="", x="", title = " ") +
@@ -822,26 +811,55 @@ e.low.2  <- ggplot(data = subset(F01.data, stock %in% c("East") & scenario %in% 
 
 #### >> Calculate Bias ####
 
+# Read in existing Fcur/F01 results (same as plots above)
+# OM
+FF01.base.om <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F01_results_om_v3.csv")
+FF01.low.om  <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/F01_results_om_v2.csv")
+FF01.self.om <- read.csv("C:/Users/mmorse1/Documents/Simulations_selftest/OM Output/F01_results_om_v2.csv")
+
+# EM
+FF01.west.base <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_results_converge_v2.csv")
+FF01.east.base <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_results_converge_v2.csv")
+FF01.west.low  <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged/F01_results_converge_v2.csv")
+FF01.east.low  <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged/F01_results_converge_v2.csv")
+FF01.west.self <- read.csv("C:/Users/mmorse1/Documents/Simulations_selftest/West/Converged/F01_results_converge_v2.csv")
+FF01.east.self <- read.csv("C:/Users/mmorse1/Documents/Simulations_selftest/East/Converged/F01_results_converge_v2.csv")
+
+FF01.true <- FF01.self.om
+FF01.west <- FF01.west.self
+FF01.east <- FF01.east.self
+
 ## West
-w.bias.1 <- array(NA, c(2, 2), dimnames = list(unit = c("population", "stock"), type = c("absolute", "relative")))
+w.bias.1  <- array(NA, c(2, 2), dimnames = list(unit = c("population", "stock"), type = c("absolute", "relative")))
 
-med <- median(as.numeric(FF01.west.base[3, -1])) #median of all realizations
+med <- median(as.numeric(FF01.west[3, -1])) #median of all realizations
 
-w.bias.1[1, 1] <- med - Expl_status_om[1, 2]                  #absolute bias with true population values
-w.bias.1[1, 2] <- w.bias.1[1, 1] / Expl_status_om[1, 2] * 100 #relative bias with true population values
-w.bias.1[2, 1] <- med - Expl_status_om[2, 2]                  #absolute bias with true stock values
-w.bias.1[2, 2] <- w.bias.1[2, 1] / Expl_status_om[2, 2] * 100 #relative bias with true stock values
+#cross tests
+w.bias.1[1, 1] <- med - FF01.true[3, 3]                  #absolute bias with true population values
+w.bias.1[1, 2] <- w.bias.1[1, 1] / FF01.true[3, 3] * 100 #relative bias with true population values
+w.bias.1[2, 1] <- med - FF01.true[3, 5]                  #absolute bias with true stock values
+w.bias.1[2, 2] <- w.bias.1[2, 1] / FF01.true[3, 5] * 100 #relative bias with true stock values
+
+#self test
+w.bias.1[2, 1] <- med - FF01.true[3, 3]                  #absolute bias with true stock values
+w.bias.1[2, 2] <- w.bias.1[2, 1] / FF01.true[3, 3] * 100 #relative bias with true stock values
+
 
 
 ## East
 e.bias.1 <- array(NA, c(2, 2), dimnames = list(unit = c("population", "stock"), type = c("absolute", "relative")))
 
-med <- median(as.numeric(FF01.east.base[3, -1])) #median of all realizations
+med <- median(as.numeric(FF01.east[3, -1])) #median of all realizations
 
-e.bias.1[1, 1] <- med - Expl_status_om[1, 1]                  #absolute bias with true population values
-e.bias.1[1, 2] <- e.bias.1[1, 1] / Expl_status_om[1, 1] * 100 #relative bias with true population values
-e.bias.1[2, 1] <- med - Expl_status_om[2, 1]                  #absolute bias with true stock values
-e.bias.1[2, 2] <- e.bias.1[2, 1] / Expl_status_om[2, 1] * 100 #relative bias with true stock values
+#cross tests
+e.bias.1[1, 1] <- med - FF01.true[3, 2]                    #absolute bias with true population values
+e.bias.1[1, 2] <- e.bias.1[1, 1] / FF01.true[3, 2] * 100   #relative bias with true population values
+e.bias.1[2, 1] <- med - FF01.true[3, 4]                    #absolute bias with true stock values
+e.bias.1[2, 2] <- e.bias.1[2, 1] / FF01.true[3, 4] * 100   #relative bias with true stock values
+
+#self tests
+e.bias.1[2, 1] <- med - FF01.true[3, 2]                    #absolute bias with true stock values
+e.bias.1[2, 2] <- e.bias.1[2, 1] / FF01.true[3, 2] * 100   #relative bias with true stock values
 
 
 
@@ -862,15 +880,12 @@ e.bias.1[2, 2] <- e.bias.1[2, 1] / Expl_status_om[2, 1] * 100 #relative bias wit
 ###################################### F/F01 for full time series ######################################
 
 
+#### >> True F0.1s from OM - Cross-tests ####
 
 ## Settings ##
+dir_scen  <- "Simulations_lomov"        #directory name for the scenario (e.g., base, low movement, self-test)
+dir_om    <- "OM_output"            #directory name for the OM outputs
 
-dir_scen  <- "Simulations_2"        #directory name for the scenario (e.g., base, low movement, self-test)
-dir_om    <- "OM_Base_Output"            #directory name for the OM outputs
-
-
-
-#### >> True F0.1s from OM - Cross-tests ####
 
 ## Population ##
 # read in parameters
@@ -1182,12 +1197,197 @@ write.csv(Expl_status_om_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/",
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+#### >> True F0.1s from OM - Self-test ####
+
+## Settings ##
+dir_scen  <- "Simulations_selftest" #directory name for the scenario (e.g., base, low movement, self-test)
+dir_om    <- "OM Output"            #directory name for the OM outputs
+
+# read in parameters
+nage     <- 29
+biolparm <- as.matrix(read.csv(paste0("C:/Users/mmorse1/Documents/", dir_scen, "/R Code + Inputs/BFTBiolparm.csv")), header = T)
+M        <- array(biolparm[1:nage,2:3],c(nage,2),dimnames=list(age=1:nage,unit=1:2)) #annualized M
+waa      <- array(biolparm[1:nage,4:5],c(nage,2),dimnames=list(age=1:nage,unit=1:2)) #weight-at-age
+
+# read in true fishing mortality array
+Fa       <- as.matrix(read.csv(paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/Fa.csv")))
+Fa       <- array(Fa[, -1], c(42, 29, 2), dimnames = list(year = 1974:2015, age = 1:29, unit = 1:2))
+
+# calculate partial recruitment - stock (years Y-2 to Y)
+P_oms_fin_e <- array(NA, c(40, 10), dimnames = list(iter = 1:40, age = 1:10))
+P_oms_fin_w <- array(NA, c(40, 16), dimnames = list(iter = 1:40, age = 1:16))
+
+for (i in 1:40) {
+  
+  P_oms_e <- array(NA, c(3, 10), dimnames = list(year = 1:3, age = 1:10))
+  P_oms_w <- array(NA, c(3, 16), dimnames = list(year = 1:3, age = 1:16))
+  
+  for (s in 1) {
+    Ffull_om <- max(Fa[i, , s])
+    for (a in 1:10) {
+      P_oms_e[1, a] <- Fa[i, a, s]/Ffull_om
+    }
+    Ffull_om <- max(Fa[(i+1), , s])
+    for (a in 1:10) {
+      P_oms_e[2, a] <- Fa[(i+1), a, s]/Ffull_om
+    }
+    Ffull_om <- max(Fa[(i+2), , s])
+    for (a in 1:10) {
+      P_oms_e[3, a] <- Fa[(i+2), a, s]/Ffull_om
+    }
+  }
+  for (s in 2) {
+    Ffull_om <- max(Fa[i, , s])
+    for (a in 1:16) {
+      P_oms_w[1, a] <- Fa[i, a, s]/Ffull_om
+    }
+    Ffull_om <- max(Fa[(i+1), , s])
+    for (a in 1:16) {
+      P_oms_w[2, a] <- Fa[(i+1), a, s]/Ffull_om
+    }
+    Ffull_om <- max(Fa[(i+2), , s])
+    for (a in 1:16) {
+      P_oms_w[3, a] <- Fa[(i+2), a, s]/Ffull_om
+    }
+  }
+  
+  
+  # average partial recruitment for each age over all reference years - stock
+  P_oms_avg_e <- rep(NA, 10)
+  P_oms_avg_w <- rep(NA, 16)
+  
+  #east
+  for (a in 1:10) {
+    P_oms_avg_e[a] <- mean(P_oms_e[, a])
+  }
+  
+  #west
+  for (a in 1:16) {
+    P_oms_avg_w[a] <- mean(P_oms_w[, a])
+  }
+  
+  
+  # scaled to 1 (maximum partial recruitment) - stock
+  #east
+  for (a in 1:10)
+  {
+    P_oms_fin_e[i, a] <- P_oms_avg_e[a]/max(P_oms_avg_e)
+  }
+  
+  #west
+  for (a in 1:16)
+  {
+    P_oms_fin_w[i, a] <- P_oms_avg_w[a]/max(P_oms_avg_w)
+  }
+  
+}  
+
+
+
+## Calculate true OM F0.1 ##
+F01_oms <- array(NA, c(40, 2), dimnames = list(iter = 1:40, stock = c("east", "west")))
+
+for (i in 1:40) {
+  # East stock
+  YPR_vec <- vector()
+  F_seq   <- seq(0, 1.0, 0.01)
+  for (j in F_seq) {
+    Fs <- j
+    YPR_vec <- append(YPR_vec, ypr_fun(P_oms_fin_e[i, ], Fs, 10, "E")) #calculate YPRs for a range of Fs
+  }
+  F01_oms[i, 1] <- F01_fun(YPR_vec, F_seq)
+  
+  # West stock
+  YPR_vec <- vector()
+  F_seq   <- seq(0, 1.0, 0.01)
+  for (j in F_seq) {
+    Fs <- j
+    YPR_vec <- append(YPR_vec, ypr_fun(P_oms_fin_w[i, ], Fs, 16, "W")) #calculate YPRs for a range of Fs
+  }
+  F01_oms[i, 2] <- F01_fun(YPR_vec, F_seq)
+  
+}
+
+
+
+## Derive reference ages (where partial R is > or = 0.8) ##
+
+ref.east <- vector(mode = "list")
+ref.west <- vector(mode = "list")
+
+for (i in 1:40) {
+  ref.east[[i]] <- which(P_oms_fin_e[i, ]  >= 0.8)  #east stock
+  ref.west[[i]] <- which(P_oms_fin_w[i, ]  >= 0.8)  #east stock
+}
+
+
+## Adjust F0.1 for the reference ages ##
+# using the average partial recruitment for the reference ages
+
+for (i in 1:40) {
+  F01_oms[i, 1] <- F01_oms[i, 1] * mean(P_oms_fin_e[i, ref.east[[i]]])
+  F01_oms[i, 2] <- F01_oms[i, 2] * mean(P_oms_fin_w[i, ref.west[[i]]])
+}
+
+
+
+
+## Determine stock status ##
+
+# Calculate Fy (average over reference ages) for each year
+F_s <- array(NA, c(40, 2), dimnames = list(year = 1976:2015, unit = c("east", "west")))
+
+for (i in 1:40) {
+  F_s[i, 1] <- mean(Fa[(i+2), ref.east[[i]], 1]) #east stock
+  F_s[i, 2] <- mean(Fa[(i+2), ref.west[[i]], 2]) #west stock
+}
+
+
+
+# Calculate Fy/F0.1
+Expl_status_om_s <- array(NA, c(40, 2), dimnames = list(year = 1976:2015, unit = c("east", "west")))
+
+for (i in 1:40) {
+  Expl_status_om_s[i, 1] <- F_s[i, 1] / F01_oms[i, 1] #east stock
+  Expl_status_om_s[i, 2] <- F_s[i, 2] / F01_oms[i, 2] #west stock
+}
+
+
+# Save true OM values (Fy, F0.1, Fy/F0.1)
+write.csv(F_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F_s_om_v2.csv"))
+write.csv(F01_oms, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F01_oms_v2.csv"))
+write.csv(Expl_status_om_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_om, "/F_F01_s_om_v2.csv"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #### >> Estimated F0.1s from VPA ####
 
 
 ## Define variables ##
-dir_stock <- "East - 500 Sims - 1"  #directory name for the stock; for estimation model calcs only
-stock     <- 1                      #for estimation model calcs only; east (1) vs. west (2) 
+dir_stock <- "West"  #directory name for the stock; for estimation model calcs only
+stock     <- 2                      #for estimation model calcs only; east (1) vs. west (2) 
 wd        <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
 setwd(wd)
 filenums  <- gsub("[A-z \\.\\(\\)]", "", 

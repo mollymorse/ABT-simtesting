@@ -26,8 +26,6 @@ library(dplyr)
 ## Settings ##
 
 dir_scen  <- "Simulations_2" #directory name for the scenario (e.g., base, low movement, self-test)
-dir_stock <- "West - 500 Sims - 2"              #directory name for the stock; for estimation model calcs
-stock     <- 2                 #for estimation model calcs; east (1) vs. west (2) 
 dir_om    <- "OM_Base_Output"         #directory name for the OM outputs
 
 
@@ -391,9 +389,11 @@ write.csv((matrix(c(F_cur_e, F_cur_w,
 
 ## Define variables ##
 
-wd <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
-filenums <- gsub("[A-z \\.\\(\\)]", "", 
-                 list.files(path = paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged"), pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters
+dir_stock <- "West - 500 Sims - 2"            #directory name for the stock; for estimation model calcs
+stock     <- 2                                #for estimation model calcs; east (1) vs. west (2) 
+wd        <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
+filenums  <- gsub("[A-z \\.\\(\\)]", "", 
+                  list.files(path = paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged"), pattern="\\.R$")) #create a list of Results filenames, removing non-numeric characters
 runnums <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the ID numbers of runs that converged
 nyr <- 42
 if (stock == 1) #reference ages (from OM) and plus group age

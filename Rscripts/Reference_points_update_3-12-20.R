@@ -11,7 +11,7 @@
 # ** Contact M.Morse for questions: mollymorse@ucsb.edu
 
 
-############################################ F/F01 for 2012-2014 #############################################
+############################################ Fcurrent/F01 for 2012-2014 #############################################
 
 
 
@@ -1386,8 +1386,8 @@ write.csv(Expl_status_om_s, paste0("C:/Users/mmorse1/Documents/", dir_scen, "/",
 
 
 ## Define variables ##
-dir_stock <- "West"  #directory name for the stock; for estimation model calcs only
-stock     <- 2                      #for estimation model calcs only; east (1) vs. west (2) 
+dir_stock <- "East"  #directory name for the stock; for estimation model calcs only
+stock     <- 1                      #for estimation model calcs only; east (1) vs. west (2) 
 wd        <- paste0("C:/Users/mmorse1/Documents/", dir_scen, "/", dir_stock, "/Converged") #switch folder
 setwd(wd)
 filenums  <- gsub("[A-z \\.\\(\\)]", "", 
@@ -1616,23 +1616,149 @@ e.all <-
 
 
 
+## Self test plots ##
+
+## Read in F/F01 results ##
+FF01.w <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_selftest/West/Converged/F01_allyrs_v2.rds") #load rds object
+FF01.e <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_selftest/East/Converged/F01_allyrs_v2.rds") #load rds object
+FF01.stk <- read.csv("C:/Users/mmorse1/Documents/Simulations_selftest/OM Output/F_F01_s_om_v2.csv", header = T)
+
+
+## West boxplots ##
+FF01.w1 <- as.data.frame(t(FF01.w[, , 3]))     #take only F/F01 values, transpose, and convert to data frame
+years   <- matrix(1976:2015, nrow = 40, ncol=1) #create column of year values
+FF01.w1 <- cbind(years, FF01.w1)
+FF01.w2 <- melt(FF01.w1, id.vars = "years")
+
+FF01.oms <- as.data.frame(FF01.stk[, c(1, 3)]) #create data frame of operating model data
+colnames(FF01.oms) <- c("years", "OMS")
+
+allLevels <- levels(factor(c(FF01.w2$years, FF01.oms$years)))  #change the x vars to factors
+FF01.w2$years  <- factor(FF01.w2$years,levels=(allLevels))
+FF01.oms$years <- factor(FF01.oms$years,levels=(allLevels))
+
+
+grob1 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+w.all <-
+  ggplot(data = FF01.oms, aes(x=factor(years), y=OMS)) +
+  geom_abline(intercept=1, slope=0, linetype=1, size=1) +
+  geom_boxplot(data = FF01.w2, aes(x=years, y=value), color="lightblue4", fill="lightblue1", outlier.shape = NA) +
+  stat_summary(fun.y=mean, geom="line", aes(group=1), size=1.5, color="black") +
+  coord_cartesian(ylim = c(0, 6), clip = "off") +
+  labs(y="F/F0.1",x="", title = " ") +
+  theme_classic() +
+  scale_x_discrete(breaks = seq(1976,2015,10)) +
+  theme(plot.title = element_text(family = "Times New Roman",
+                                  face = "bold",
+                                  size = 24,
+                                  hjust = 0.5,
+                                  margin = margin(b = 10)),
+        axis.title.y = element_text(family = "Times New Roman",
+                                    face = "bold",
+                                    size = 24,
+                                    margin = margin(r = 10)),
+        axis.text.x = element_text(family = "Times New Roman",
+                                   size = 20),
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 20)) +
+  annotation_custom(grob1)
+
+
+## East boxplots ##
+FF01.e1 <- as.data.frame(t(FF01.e[, , 3]))     #take only F/F01 values, transpose, and convert to data frame
+years   <- matrix(1976:2015, nrow = 40, ncol=1) #create column of year values
+FF01.e1 <- cbind(years, FF01.e1)
+FF01.e2 <- melt(FF01.e1, id.vars = "years")
+
+FF01.oms <- as.data.frame(FF01.stk[, c(1, 2)]) #create data frame of operating model data
+colnames(FF01.oms) <- c("years", "OMS")
+
+allLevels <- levels(factor(c(FF01.e2$years, FF01.oms$years)))  #change the x vars to factors
+FF01.e2$years  <- factor(FF01.e2$years,levels=(allLevels))
+FF01.oms$years <- factor(FF01.oms$years,levels=(allLevels))
+
+grob2 <- grid.text("F", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+e.all <-
+  ggplot(data = FF01.oms, aes(x=factor(years), y=OMS)) +
+  geom_abline(intercept=1, slope=0, linetype=1, size=1) +
+  geom_boxplot(data = FF01.e2, aes(x=years, y=value), color="lightblue4", fill="lightblue1", outlier.shape = NA) +
+  stat_summary(fun.y=mean, geom="line", aes(group=1), size=1.5, color="black") +
+  coord_cartesian(ylim = c(0, 6), clip = "off") +
+  labs(y="",x="", title = " ") +
+  theme_classic() +
+  scale_x_discrete(breaks = seq(1976,2015,10)) +
+  theme(plot.title = element_text(family = "Times New Roman",
+                                  face = "bold",
+                                  size = 24,
+                                  hjust = 0.5,
+                                  margin = margin(b = 10)),
+        #axis.title.y = element_text(family = "Times New Roman",
+        #                               face = "bold",
+        #                              size = 14),
+        axis.text.x = element_text(family = "Times New Roman",
+                                   size = 20),
+        # axis.text.x = element_blank(),
+        axis.text.y = element_text(family = "Times New Roman",
+                                   size = 20)) +
+  annotation_custom(grob2)
+
+
+
+
+
+
+
+
+
 
 
 #### >> Calculate Bias ####
 
-## West
-w.bias <- array(NA, c(nrow(FF01.w1), 2, 2), dimnames = list(year = 1976:2015, unit = c("population", "stock"), type = c("absolute", "relative")))
-for (i in 1:nrow(FF01.w1)) {
-  med <- median(as.numeric(FF01.w1[i, -1]))                        #annual median of all realizations (take out 1st col which is years)
+# Read in existing F/F01 results (same as plots above)
+
+# OM
+FF01.base.pop <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_p_om_v2.csv", header = T)
+FF01.base.stk <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_s_om_v2.csv", header = T)
+FF01.low.pop  <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/F_F01_p_om_v2.csv", header = T)
+FF01.low.stk  <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/F_F01_s_om_v2.csv", header = T)
+FF01.self     <- read.csv("C:/Users/mmorse1/Documents/Simulations_selftest/OM Output/F_F01_s_om_v2.csv", header = T)
+
+# EM 
+FF01.west.base <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_allyrs_v2.rds") #load rds object
+FF01.east.base <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_allyrs_v2.rds") #load rds object
+FF01.west.low  <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged/F01_allyrs_v2.rds") #load rds object
+FF01.east.low  <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged/F01_allyrs_v2.rds") #load rds object
+FF01.west.self <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_selftest/West/Converged/F01_allyrs_v2.rds") #load rds object
+FF01.east.self <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_selftest/East/Converged/F01_allyrs_v2.rds") #load rds object
   
+FF01.true.p <- FF01.low.pop
+FF01.true.s <- FF01.self
+FF01.west   <- FF01.west.self
+FF01.east   <- FF01.east.self
+
+## West
+w.bias <- array(NA, c(40, 2, 2), dimnames = list(year = 1976:2015, unit = c("population", "stock"), type = c("absolute", "relative")))
+for (i in 1:40) {
+  med <- median(FF01.west[, i, 3])  #annual median of all realizations for F/F01
+  
+  # cross test
   if (i <= 39) {
-    w.bias[i, 1, 1] <- med - FF01.pop[i, 3]              #absolute bias with true population values
-    w.bias[i, 1, 2] <- w.bias[i, 1, 1] / FF01.pop[i, 3] * 100 #relative bias with true population values
-    w.bias[i, 2, 1] <- med - FF01.stk[i, 3]              #absolute bias with true stock values
-    w.bias[i, 2, 2] <- w.bias[i, 2, 1] / FF01.stk[i, 3] * 100 #relative bias with true stock values
+    w.bias[i, 1, 1] <- med - FF01.true.p[i, 3]              #absolute bias with true population values
+    w.bias[i, 1, 2] <- w.bias[i, 1, 1] / FF01.true.p[i, 3] * 100 #relative bias with true population values
+    w.bias[i, 2, 1] <- med - FF01.true.s[i, 3]              #absolute bias with true stock values
+    w.bias[i, 2, 2] <- w.bias[i, 2, 1] / FF01.true.s[i, 3] * 100 #relative bias with true stock values
   } else {
-    w.bias[i, 2, 1] <- med - FF01.stk[i, 3]              #absolute bias with true stock values
-    w.bias[i, 2, 2] <- w.bias[i, 2, 1] / FF01.stk[i, 3] * 100 #relative bias with true stock values
+    w.bias[i, 2, 1] <- med - FF01.true.s[i, 3]              #absolute bias with true stock values
+    w.bias[i, 2, 2] <- w.bias[i, 2, 1] / FF01.true.s[i, 3] * 100 #relative bias with true stock values
+  }
+  
+  # self test
+  if (i <= 39) {
+    w.bias[i, 2, 1] <- med - FF01.true.s[i, 3]              #absolute bias with true stock values
+    w.bias[i, 2, 2] <- w.bias[i, 2, 1] / FF01.true.s[i, 3] * 100 #relative bias with true stock values
+  } else {
+    w.bias[i, 2, 1] <- med - FF01.true.s[i, 3]              #absolute bias with true stock values
+    w.bias[i, 2, 2] <- w.bias[i, 2, 1] / FF01.true.s[i, 3] * 100 #relative bias with true stock values
   }
   
 }
@@ -1645,20 +1771,29 @@ median(w.bias[, 2, 2], na.rm = T) #stock relative bias
 
 
 ## East
-e.bias <- array(NA, c(nrow(FF01.e1), 2, 2), dimnames = list(year = 1976:2015, unit = c("population", "stock"), type = c("absolute", "relative")))
-for (i in 1:nrow(FF01.e1)) {
-  med <- median(as.numeric(FF01.e1[i, -1]))                        #annual median of all realizations (take out 1st col which is years)
+e.bias <- array(NA, c(40, 2, 2), dimnames = list(year = 1976:2015, unit = c("population", "stock"), type = c("absolute", "relative")))
+for (i in 1:40) {
+  med <- median(FF01.east[, i, 3])  #annual median of all realizations (take out 1st col which is years)
   
+  # cross test
   if (i <= 39) {
-    e.bias[i, 1, 1] <- med - FF01.pop[i, 2]              #absolute bias with true population values
-    e.bias[i, 1, 2] <- e.bias[i, 1, 1] / FF01.pop[i, 2] * 100 #relative bias with true population values
-    e.bias[i, 2, 1] <- med - FF01.stk[i, 2]              #absolute bias with true stock values
-    e.bias[i, 2, 2] <- e.bias[i, 2, 1] / FF01.stk[i, 2] * 100 #relative bias with true stock values
+    e.bias[i, 1, 1] <- med - FF01.true.p[i, 2]              #absolute bias with true population values
+    e.bias[i, 1, 2] <- e.bias[i, 1, 1] / FF01.true.p[i, 2] * 100 #relative bias with true population values
+    e.bias[i, 2, 1] <- med - FF01.true.s[i, 2]              #absolute bias with true stock values
+    e.bias[i, 2, 2] <- e.bias[i, 2, 1] / FF01.true.s[i, 2] * 100 #relative bias with true stock values
   } else {
-    e.bias[i, 2, 1] <- med - FF01.stk[i, 2]              #absolute bias with true stock values
-    e.bias[i, 2, 2] <- e.bias[i, 2, 1] / FF01.stk[i, 2] * 100 #relative bias with true stock values
+    e.bias[i, 2, 1] <- med - FF01.true.s[i, 2]              #absolute bias with true stock values
+    e.bias[i, 2, 2] <- e.bias[i, 2, 1] / FF01.true.s[i, 2] * 100 #relative bias with true stock values
   }
   
+  # self test
+  if (i <= 39) {
+    e.bias[i, 2, 1] <- med - FF01.true.s[i, 2]              #absolute bias with true stock values
+    e.bias[i, 2, 2] <- e.bias[i, 2, 1] / FF01.true.s[i, 2] * 100 #relative bias with true stock values
+  } else {
+    e.bias[i, 2, 1] <- med - FF01.true.s[i, 2]              #absolute bias with true stock values
+    e.bias[i, 2, 2] <- e.bias[i, 2, 1] / FF01.true.s[i, 2] * 100 #relative bias with true stock values
+  }
 }
 
 median(e.bias[, 1, 1], na.rm = T) #population absolute bias

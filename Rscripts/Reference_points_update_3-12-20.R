@@ -1516,16 +1516,20 @@ saveRDS(FF01, file = "F01_allyrs_v2.rds")
 #### >> Plots ####
 
 ## Read in F/F01 results ##
-FF01.w <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_allyrs_v2.rds") #load rds object
-FF01.e <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_allyrs_v2.rds") #load rds object
+# FF01.w <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_allyrs_v2.rds") #load rds object
+# FF01.e <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_allyrs_v2.rds") #load rds object
+FF01.w <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged/F01_allyrs_v2.rds") #load rds object
+FF01.e <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged/F01_allyrs_v2.rds") #load rds object
 
-FF01.pop <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_p_om_v2.csv", header = T)
-FF01.stk <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_s_om_v2.csv", header = T)
+# FF01.pop <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_p_om_v2.csv", header = T)
+# FF01.stk <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_s_om_v2.csv", header = T)
+FF01.pop <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/F_F01_p_om_v2.csv", header = T)
+FF01.stk <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/F_F01_s_om_v2.csv", header = T)
 
 
 
 ## West boxplots ##
-FF01.w1 <- as.data.frame(t(FF01.w[, , 3]))     #take only F/F01 values, transpose, and convert to data frame
+FF01.w1 <- as.data.frame(t(FF01.w[, , 3]))      #take only F/F01 values, transpose, and convert to data frame
 years   <- matrix(1976:2015, nrow = 40, ncol=1) #create column of year values
 FF01.w1 <- cbind(years, FF01.w1)
 FF01.w2 <- melt(FF01.w1, id.vars = "years")
@@ -1549,8 +1553,8 @@ w.all <-
   geom_boxplot(data = FF01.w2, aes(x=years, y=value), color="lightblue4", fill="lightblue1", outlier.shape = NA) +
   geom_line(data = FF01.oms, aes(x=factor(years), y=OMS, group=1), linetype="dashed", size=1.5, color="black") +
   stat_summary(fun.y=mean, geom="line", aes(group=1), size=1.5, color="black") +
-  coord_cartesian(ylim = c(0, 4), clip = "off") +
-  labs(y="Fcurrent/F0.1",x="", title = " ") +
+  coord_cartesian(ylim = c(0, 5), clip = "off") +
+  labs(y="F/F0.1",x="", title = " ") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1976,2015,10)) +
   theme(plot.title = element_text(family = "Times New Roman",
@@ -1594,7 +1598,7 @@ e.all <-
   geom_boxplot(data = FF01.e2, aes(x=years, y=value), color="lightblue4", fill="lightblue1", outlier.shape = NA) +
   geom_line(data = FF01.oms, aes(x=factor(years), y=OMS, group=1), linetype="dashed", size=1.5, color="black") +
   stat_summary(fun.y=mean, geom="line", aes(group=1), size=1.5, color="black") +
-  coord_cartesian(ylim = c(0, 4.3), clip = "off") +
+  coord_cartesian(ylim = c(0, 5), clip = "off") +
   labs(y="",x="", title = " ") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1976,2015,10)) +

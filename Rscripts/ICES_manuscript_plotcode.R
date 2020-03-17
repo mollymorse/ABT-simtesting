@@ -2703,11 +2703,11 @@ plot_grid(W.selfR.plot,   E.selfR.plot,
 dev.off()
 
 #w/o apical F, w/ F/F0.1
-jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 12-4-19/EMplots_selftest_2.jpeg",
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 4-6-20/EMplots_selftest.jpeg",
      width = 4000, height = 4200, units = "px", quality = 100, res = 300)
 plot_grid(W.selfR.plot,   E.selfR.plot,
           W.selfSSB.plot, E.selfSSB.plot,
-          w.self.2, e.self.2,
+          w.all, e.all,
           ncol = 2, nrow = 3, align = "v")
 dev.off()
 

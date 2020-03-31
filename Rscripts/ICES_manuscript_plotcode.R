@@ -1925,23 +1925,6 @@ rate", x = "", title = " ") +
   annotation_custom(grob6)
 
 
-
-
-
-
-# w/ relative bias
-grid.arrange(W.R.plot, E.R.plot,
-             W.baseR.PRB, E.baseR.PRB,
-             W.SSB.plot, E.SSB.plot,
-             W.baseSSB.PRB, E.baseSSB.PRB,
-             nrow = 4, ncol = 2,
-             heights=c(5,3,5,3))
-# w/o relative bias
-grid.arrange(W.R.plot, E.R.plot,
-             W.SSB.plot, E.SSB.plot,
-             W.F.plot, E.F.plot,
-             nrow = 3, ncol = 2)
-
 jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 12-4-19/EMplots_lomov.jpeg",
      width = 4000, height = 4200, units = "px", quality = 100, res = 300)
 # w/ relative bias
@@ -1958,12 +1941,12 @@ plot_grid(W.R.plot, E.R.plot,
 dev.off()
 
 
-# revised for final 12/4/19 submission (R, SSB, F/F01) #
+# revised for 12/4/19 submission (R, SSB, F/F01) #
 jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 4-6-20/EMplots_lomov.jpeg",
      width = 4000, height = 4200, units = "px", quality = 100, res = 300)
 plot_grid(W.R.plot, E.R.plot,
           W.SSB.plot, E.SSB.plot,
-          w.all, e.all, #from Reference_points.R script
+          w.all, e.all, #from Reference_points_v2020.R script
           ncol = 2, nrow = 3, align = "v")
 dev.off()
 
@@ -4306,8 +4289,8 @@ grid.arrange(E.Rec.bias, E.R.boxplot,
 
 #### Fcurrent/F0.1 ####
 
-# ** See script "Reference_points.R" for code to calculate true F0.1 and Fcurrent from OM ** #
-# **   Recommend not to use this code because it has been updated in Reference_points.R   ** #
+# ** See script "Reference_points_v2020.R" for code to calculate true F0.1 and Fcurrent from OM ** #
+# **   Recommend not to use this code because it has been updated in Reference_points_v2020.R   ** #
 
 wd <- "C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged" #switch folder
 filenums <- gsub("[A-z \\.\\(\\)]", "", 
@@ -4316,7 +4299,7 @@ runnums <- sort(as.numeric(sub(pattern="2017", replacement="", filenums))) # the
 nyr <- 42
 stock <- 2 # switch east (1) vs. west (2)
 if (stock == 1) #reference ages (from OM) and plus group age 
-  #NOTE: MORE UPDATED CODE IN Reference_points.R SCRIPT CALCULATES THESE DIFFERENTLY,
+  #NOTE: MORE UPDATED CODE IN Reference_points_v2020.R SCRIPT CALCULATES THESE DIFFERENTLY,
   #USING ALL AGES WHERE P >= 0.8 AS OPPOSED TO A RANGE OF AGES - USE THAT ONE, NOT THIS ONE, FOR MANUSCRIPT
 {
   a.ref <- 4 #east

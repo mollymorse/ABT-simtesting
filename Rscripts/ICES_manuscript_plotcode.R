@@ -136,17 +136,17 @@ dev.off()
 
 
 ## Population SSB by area (for stacked area charts) ##
-# e_area <- read_csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/Pssb-eastarea.csv")
-# w_area <- read_csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/Pssb-westarea.csv")
-e_area <- read_csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/Pssb-eastarea.csv")
-w_area <- read_csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/Pssb-westarea.csv")
+e_area <- read_csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/Pssb-eastarea.csv") #base case
+w_area <- read_csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/Pssb-westarea.csv") #base case
+# e_area <- read_csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/Pssb-eastarea.csv")  #low movement
+# w_area <- read_csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/Pssb-westarea.csv")  #low movement
 e_area <- melt(e_area, id.vars = "year")
 w_area <- melt(w_area, id.vars = "year")
 
 # grob1 <- grobTree(textGrob("E", x = 0.05, y = 0.95, hjust = 0,
 #                            gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
 grob1 <- grobTree(textGrob("E", hjust = 0,
-                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5)))
 w_area_plot <-
   ggplot(w_area, aes(year, value, fill = variable)) +
   geom_area(color = "black") +
@@ -155,18 +155,18 @@ w_area_plot <-
   labs(y = "SSB
 (tonnes)", x = "", title = "") +
   theme(axis.title.y = element_text(family = "Times New Roman",
-                                    size = 24,
+                                    size = 18,
                                     face = "bold"),
         axis.text.x = element_text(family = "Times New Roman",
-                                   size = 20),
+                                   size = 14),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20),
+                                   size = 14),
         legend.position = c(0.08, 0.8),
         legend.title = element_blank(),
         legend.text = element_text(family = "Times New Roman",
-                                   size = 17),
+                                   size = 13),
         # legend.key.width = unit(.8, "cm"),
-        legend.key.size = unit(.8, "cm")) +
+        legend.key.size = unit(.6, "cm")) +
   scale_y_continuous(label = scientific_format(digits = 1), breaks = seq(0,100000,50000)) +
   scale_x_continuous(breaks = seq(1974,2015,10)) +
   coord_cartesian(ylim=c(0,100000), clip = "off") +
@@ -176,7 +176,7 @@ w_area_plot <-
 # grob2 <- grobTree(textGrob("F", x = 0.05, y = 0.95, hjust = 0,
 #                            gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
 grob2 <- grobTree(textGrob("F", hjust = 0,
-                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5)))
 e_area_plot <-
   ggplot(e_area, aes(year, value, fill =  variable)) +
   geom_area(color = "black") +
@@ -184,15 +184,15 @@ e_area_plot <-
   theme_classic() +
   labs(y = "", x = "", title = "") +
   theme(axis.text.x = element_text(family = "Times New Roman",
-                                   size = 20),
+                                   size = 14),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20),
+                                   size = 14),
         legend.position = c(0.08, 0.8),
         legend.title = element_blank(),
         legend.text = element_text(family = "Times New Roman",
-                                   size = 17),
+                                   size = 13),
         # legend.key.width = unit(1, "cm")) +
-        legend.key.size = unit(.8, "cm")) +
+        legend.key.size = unit(.6, "cm")) +
   scale_y_continuous(label = scientific_format(digits = 1), breaks = seq(0,1000000,500000)) +
   scale_x_continuous(breaks = seq(1974,2015,10)) +
   coord_cartesian(ylim=c(0,1000000), clip = "off") +
@@ -661,32 +661,32 @@ E.SSB_1 <- melt(E.SSB.df, id.vars = "years")
 # grob3 <- grobTree(textGrob("D", x = -0.05, y = 1, hjust = 0,
                            # gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
 grob3 <- grobTree(textGrob("D", hjust = 0,
-                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5)))
 
 E.SSB.OM.plot <-
   ggplot(data = E.SSB_1, aes(x = years, y = value)) +
-  geom_line(aes(linetype = variable), size = 1.5) +  
+  geom_line(aes(linetype = variable), size = 1) +  
   theme_classic() +
   labs(y = "", x = "", title = "") +
   theme(plot.title = element_text(family = "Times New Roman",
-                                  size = 24,
+                                  size = 18,
                                   face = "bold",
                                   hjust = 0.5,
                                   margin = margin(b = 10)),
         axis.title.y = element_text(family = "Times New Roman",
-                                    size = 24,
+                                    size = 18,
                                     face = "bold"),
         # axis.text.x = element_text(family = "Times New Roman",
         #                            size = 22),
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20),
+                                   size = 14),
         legend.position = c(0.1, 0.8),
         legend.title = element_blank(),
         legend.text = element_text(family = "Times New Roman",
-                                   size = 17),
-        legend.key.width = unit(1.6, "cm"),
-        legend.key.size = unit(.8, "cm")) +
+                                   size = 13),
+        legend.key.width = unit(1.4, "cm"),
+        legend.key.size = unit(.6, "cm")) +
   # scale_size_manual(values = c(1, 1, 2)) +
   scale_linetype_manual(values = c("solid","dashed")) +
   scale_y_continuous(label = scientific_format(digits = 1), breaks = seq(0,1000000,500000)) +
@@ -715,34 +715,34 @@ W.SSB_1 <- melt(W.SSB.df, id.vars="years")
 # grob4 <- grobTree(textGrob("C", x = 0.05, y = 0.95, hjust = 0,
                            # gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
 grob4 <- grobTree(textGrob("C", hjust = 0,
-                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5)))
 
 W.SSB.OM.plot <-
   ggplot(data = W.SSB_1, aes(x = years,y = value)) +
-  geom_line(aes(linetype = variable), size = 1.5) +
+  geom_line(aes(linetype = variable), size = 1) +
   theme_classic() +
   labs(y = "SSB
 (tonnes)", x="", title="") +
   theme(plot.title = element_text(family ="Times New Roman",
-                                  size = 24,
+                                  size = 18,
                                   face = "bold",
                                   hjust = 0.5,
                                   margin = margin(b = 10)),
         axis.title.y = element_text(family = "Times New Roman",
-                                    size = 24,
+                                    size = 18,
                                     face = "bold",
                                     margin = margin(r = 10)),
         # axis.text.x = element_text(family = "Times New Roman",
         #                            size = 22),
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20),
+                                   size = 14),
         legend.position = c(0.1, 0.8),
         legend.title = element_blank(),
         legend.text = element_text(family = "Times New Roman",
-                                   size = 17),
-        legend.key.width = unit(1.6, "cm"),
-        legend.key.size = unit(.8, "cm")) +
+                                   size = 13),
+        legend.key.width = unit(1.4, "cm"),
+        legend.key.size = unit(.6, "cm")) +
   scale_linetype_manual(values = c("solid", "dashed")) +
   # scale_size_manual(values = c(1,1,2)) +
   scale_y_continuous(label=scientific_format(digits = 1), breaks = seq(0,100000,50000)) +
@@ -767,25 +767,25 @@ E.R_1 <- melt(E.R.df, id.vars="years")
 # grob5 <- grobTree(textGrob("B", x = 0.05, y = 0.95, hjust = 0,
 #                            gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
 grob5 <- grobTree(textGrob("B", hjust = 0,
-                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5)))
 
 E.R.OM.plot <-
   ggplot(data = E.R_1,aes(x = years, y = value)) +
-  geom_line(size = 1.5) +
+  geom_line(size = 1) +
   theme_classic() +
   labs(y = "", x = "", title = "East") +
   theme(plot.title = element_text(family = "Times New Roman",
-                                  size = 24,
+                                  size = 18,
                                   face = "bold",
                                   hjust = 0.5),
         axis.title.y = element_text(family = "Times New Roman",
-                                    size = 24,
+                                    size = 18,
                                     face = "bold"),
         #axis.text.x = element_text(family = "Times New Roman",
         #                           size = 14),
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20),
+                                   size = 14),
         legend.position = "right",
         legend.title = element_blank(),
         legend.text = element_text(family = "Times New Roman")) +
@@ -814,26 +814,26 @@ W.R_1 <- melt(W.R.df, id.vars="years")
 # grob6 <- grobTree(textGrob("A", x = 0.05, y = 0.95, hjust = 0,
 #                            gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
 grob6 <- grobTree(textGrob("A", hjust = 0,
-                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
+                           gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5)))
 W.R.OM.plot <-
   ggplot(data=W.R_1,aes(x = years, y = value)) +
-  geom_line(size = 1.5) +
+  geom_line(size = 1) +
   theme_classic() +
   labs(y = "Recruitment
 (numbers)", x= "", title = "West") +
   theme(plot.title = element_text(family="Times New Roman",
-                                  size = 24,
+                                  size = 18,
                                   face = "bold",
                                   hjust = 0.5), 
         axis.title.y = element_text(family = "Times New Roman",
-                                    size = 24,
+                                    size = 18,
                                     face = "bold",
                                     margin = margin(r = 10)),
         #axis.text.x = element_text(family = "Times New Roman",
         #                           size = 14),
         axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20),
+                                   size = 14),
         legend.position = "none",
         legend.title = element_blank()) +
   scale_y_continuous(label=scientific_format(digits = 2)) +
@@ -844,6 +844,7 @@ W.R.OM.plot <-
 
 
 ## OM PLOT LAYOUTS ##
+# for 12-4-19 submission
 jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 12-4-19/OMplots_lomov.jpeg",
      width = 4000, height = 4200, units = "px", quality = 100, res = 300)
 # grid.arrange(W.R.OM.plot, E.R.OM.plot,
@@ -856,6 +857,15 @@ plot_grid(W.R.OM.plot, E.R.OM.plot,
           ncol = 2, nrow = 3, align = "v")
 dev.off()
 
+
+# for final publication
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Final files/OMplots_base.jpeg",
+     width = 4000, height = 4200, units = "px", quality = 100, res = 400)
+plot_grid(W.R.OM.plot, E.R.OM.plot,
+          W.SSB.OM.plot, E.SSB.OM.plot,
+          w_area_plot, e_area_plot,
+          ncol = 2, nrow = 3, align = "v")
+dev.off()
 
 
 
@@ -1442,8 +1452,8 @@ W.F.PRB <-
 
 #### ESTIMATION MODEL PLOTS ####
 
-e_wd   <- "C:/Users/mmorse1/Documents/Simulations_lomov/"
-e_fldr <- "East"
+e_wd   <- "C:/Users/mmorse1/Documents/Simulations_2/"
+e_fldr <- "East - 500 Sims - 1"
 
 # EAST Recruitment Cross-test #
 years <- matrix(1974:2011,nrow = 38,ncol=1)
@@ -1487,33 +1497,33 @@ E.R.om$years <- factor(E.R.om$years,levels=(allLevels))
 # color
 # grob1 <- grobTree(textGrob("B", x = 0.05, y = 0.95, hjust = 0,
                              # gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
-grob1 <- grid.text("B", x = unit(-0.15, "npc"), y = unit(1.07, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+grob1 <- grid.text("B", x = unit(-0.15, "npc"), y = unit(1.07, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5))
 
 E.R.plot <-
   ggplot(data=E.R.om, aes(x=factor(years), y=OM)) +
-  # coord_cartesian(ylim = c(0,8000000), clip = "off") + #for base movement
-  coord_cartesian(ylim = c(0,6000000), clip = "off") + #for low movement
+  coord_cartesian(ylim = c(0,8000000), clip = "off") + #for base movement
+  # coord_cartesian(ylim = c(0,6000000), clip = "off") + #for low movement
   geom_boxplot(data=E.R.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1",
                outlier.shape = NA) + 
-  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1,color="black") +
   labs(y = "", x = "", title = "East") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1974,2011,10)) +
-  # scale_y_continuous(breaks = seq(0,8000000,4000000)) + #for base movement
-  scale_y_continuous(breaks = seq(0,6000000,2000000)) + #for low movement
+  scale_y_continuous(breaks = seq(0,8000000,4000000)) + #for base movement
+  # scale_y_continuous(breaks = seq(0,6000000,2000000)) + #for low movement
   theme(plot.title = element_text(family = "Times New Roman",
                                   face = "bold",
-                                  size = 24,
+                                  size = 18,
                                   hjust = 0.5,
                                   margin = margin(b = 10)),
         #axis.title.y = element_text(family = "Times New Roman",
         #                            face = "bold",
         #                            size = 24),
         axis.text.x = element_text(family = "Times New Roman",
-                                  size = 20),
+                                  size = 14),
         # axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20)) +
+                                   size = 14)) +
   annotation_custom(grob1)
 
 
@@ -1559,32 +1569,32 @@ E.SSB.oms$years <- factor(E.SSB.oms$years,levels=(allLevels))
 # color
 # grob2 <- grobTree(textGrob("D", x = 0.05, y = 0.95, hjust = 0,
                             # gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
-grob2 <- grid.text("D", x = unit(-0.15, "npc"), y = unit(1.07, "npc"), gp = gpar(col = 1.2, fontfamily = "Times New Roman", cex = 2))
+grob2 <- grid.text("D", x = unit(-0.15, "npc"), y = unit(1.07, "npc"), gp = gpar(col = 1.2, fontfamily = "Times New Roman", cex = 1.5))
   
 E.SSB.plot <-
   ggplot(data=E.SSB.omp, aes(x=factor(years),y=OMP)) +
   coord_cartesian(ylim = c(0,1200000), clip = "off") +
   geom_boxplot(data=E.SSB.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1",
                outlier.shape = NA) +
-  geom_line(data=E.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="dashed",size=1.5,color="black") +
-  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  geom_line(data=E.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="dashed",size=1, color="black") +
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1, color="black") +
   labs(y="",x="", title = " ") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1974,2015,10)) +
   scale_y_continuous(breaks = seq(0,1200000,400000),label=scientific_format(digits = 2)) +
   theme(plot.title = element_text(family = "Times New Roman",
                                   face = "bold",
-                                  size = 24,
+                                  size = 18,
                                   hjust = 0.5,
                                   margin = margin(b = 10)),
     #axis.title.y = element_text(family = "Times New Roman",
     #                               face = "bold",
     #                              size = 14),
     axis.text.x = element_text(family = "Times New Roman",
-                              size = 20),
+                              size = 14),
     # axis.text.x = element_blank(),
     axis.text.y = element_text(family = "Times New Roman",
-                               size = 20)) +
+                               size = 14)) +
   annotation_custom(grob2)
 
 
@@ -1697,8 +1707,8 @@ E.F.plot <-
 
 ## WEST Recruitment ##
 
-w_wd   <- "C:/Users/mmorse1/Documents/Simulations_lomov/"
-w_fldr <- "West"
+w_wd   <- "C:/Users/mmorse1/Documents/Simulations_2/"
+w_fldr <- "West - 500 Sims - 2"
 
 years <- matrix(1974:2011,nrow = 38,ncol=1)
 W.R.data <- read.csv(paste0(w_wd, w_fldr, "/Converged/W_R_data_converge.csv"), header = TRUE)
@@ -1743,35 +1753,35 @@ W.R.om$years <- factor(W.R.om$years,levels=(allLevels))
 # grob4 <- grobTree(textGrob("A", x = 0.05, y = 0.95, hjust = 0,
                             # gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
 grob4 <-  grid.text("A", x = unit(-0.15, "npc"), y = unit(1.07, "npc"), 
-                    gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+                    gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5))
 
 W.R.plot <-
   ggplot(data=W.R.om, aes(x=factor(years), y=OM)) +
-  # coord_cartesian(ylim = c(0,2000000), clip = "off") + #for base movement
-  coord_cartesian(ylim = c(0,1500000), clip = "off") + #for low movement
+  coord_cartesian(ylim = c(0,2000000), clip = "off") + #for base movement
+  # coord_cartesian(ylim = c(0,1500000), clip = "off") + #for low movement
   geom_boxplot(data=W.R.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1",
                outlier.shape = NA) + 
-  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1, color="black") +
   labs(y = "Recruitment 
 (numbers)", x = "", title = "West") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1974,2011,10)) +
   theme(plot.title = element_text(family = "Times New Roman", 
-                                  size = 24,
+                                  size = 18,
                                   face = "bold",
                                   hjust = 0.5,
                                   margin = margin(b = 10)),
         axis.title.y = element_text(family = "Times New Roman",
-                                    size = 24,
+                                    size = 18,
                                     face = "bold",
                                     margin = margin(r = 10)),
         axis.text.x = element_text(family = "Times New Roman",
-                                  size = 20),
+                                  size = 14),
         # axis.text.x = element_blank(),    
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20)) +
-  # scale_y_continuous(breaks = seq(0,2000000,1000000), label=scientific_format(digits = 2)) + #for base movement
-  scale_y_continuous(breaks = seq(0,1500000,500000), label=scientific_format(digits = 2)) + #for low movement
+                                   size = 14)) +
+  scale_y_continuous(breaks = seq(0,2000000,1000000), label=scientific_format(digits = 2)) + #for base movement
+  # scale_y_continuous(breaks = seq(0,1500000,500000), label=scientific_format(digits = 2)) + #for low movement
   annotation_custom(grob4)
 
 
@@ -1818,36 +1828,36 @@ W.SSB.oms$years <- factor(W.SSB.oms$years,levels=(allLevels))
 # grob5 <- grobTree(textGrob("C", x = 0.05, y = 0.95, hjust = 0,
                             # gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
 grob5 <- grid.text("C", x = unit(-0.15, "npc"), y = unit(1.07, "npc"), 
-                   gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+                   gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5))
 
 W.SSB.plot <-
   ggplot(data=W.SSB.omp, aes(x=factor(years), y=OMP)) +
-  # coord_cartesian(ylim = c(0,150000), clip = "off") + #for base movement
-  coord_cartesian(ylim = c(0,100000), clip = "off") + #for low movement
+  coord_cartesian(ylim = c(0,150000), clip = "off") + #for base movement
+  # coord_cartesian(ylim = c(0,100000), clip = "off") + #for low movement
   geom_boxplot(data=W.SSB.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1",
                outlier.shape = NA) +
-  geom_line(data=W.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="longdash",size=1.5,color="black") +
-  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  geom_line(data=W.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="longdash",size=1, color="black") +
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1, color="black") +
   labs(y = "SSB
 (tonnes)", x = "", title = " ") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1974,2015,10)) +
-  # scale_y_continuous(breaks = seq(0,150000,50000), label=scientific_format(digits = 2)) + #for base movement
-  scale_y_continuous(breaks = seq(0,100000,50000), label=scientific_format(digits = 2)) + #for low movement
+  scale_y_continuous(breaks = seq(0,150000,50000), label=scientific_format(digits = 2)) + #for base movement
+  # scale_y_continuous(breaks = seq(0,100000,50000), label=scientific_format(digits = 2)) + #for low movement
   theme(plot.title = element_text(family = "Times New Roman",
                                   face = "bold",
-                                  size = 24,
+                                  size = 18,
                                   hjust = 0.5,
                                   margin = margin(b = 10)),
         axis.title.y = element_text(family = "Times New Roman",
                                     face = "bold",
-                                    size = 24,
+                                    size = 18,
                                     margin = margin(r = 10)),
         axis.text.x = element_text(family = "Times New Roman",
-                                  size = 20),
+                                  size = 14),
         # axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20)) +
+                                   size = 14)) +
   annotation_custom(grob5)
 
 
@@ -1950,6 +1960,22 @@ plot_grid(W.R.plot, E.R.plot,
           ncol = 2, nrow = 3, align = "v")
 dev.off()
 
+# for final publication
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Final files/EMplots_base.jpeg",
+     width = 4000, height = 4200, units = "px", quality = 100, res = 400)
+plot_grid(W.R.plot, E.R.plot,
+          W.SSB.plot, E.SSB.plot,
+          w.all, e.all, #from Reference_points_v2020.R script
+          ncol = 2, nrow = 3, align = "v")
+dev.off()
+
+
+
+
+
+
+
+
 
 
 
@@ -1996,14 +2022,14 @@ E.SSB.oms$years <- factor(E.SSB.oms$years,levels=(allLevels))
 # color
 # grob7 <- grobTree(textGrob("D", x = 0.05, y = 0.95, hjust = 0,
                              # gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
-grob7 <- grid.text("D", x = unit(-0.15, "npc"), y = unit(1.07, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+grob7 <- grid.text("D", x = unit(-0.15, "npc"), y = unit(1.07, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5))
   
 E.selfSSB.plot <- 
   ggplot(data=E.SSB.omp, aes(x=factor(years),y=OMP)) +
   geom_boxplot(data=E.SSB.sims_1,aes(x=years, y=value), color = "lightblue4", fill = "lightblue1",
                outlier.shape = NA) +
-  geom_line(data=E.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="dashed",size=1.5,color="black") +
-  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  geom_line(data=E.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="dashed",size=1, color="black") +
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1, color="black") +
   labs(y="",x="", title = "") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1974,2015,10)) +
@@ -2011,18 +2037,18 @@ E.selfSSB.plot <-
   coord_cartesian(ylim = c(0,1000000), clip = "off") +
   theme(plot.title = element_text(family = "Times New Roman",
                                   face = "bold",
-                                  size = 24,
+                                  size = 18,
                                   hjust = 0.5,
                                   margin = margin(b = 10)),
         axis.title.y = element_text(family = "Times New Roman",
                                     face = "bold",
-                                    size = 24,
+                                    size = 18,
                                     margin = margin(r = 10)),
         axis.text.x = element_text(family = "Times New Roman",
-                                    size = 20),
+                                    size = 14),
         # axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22)) +
+                                   size = 14)) +
   annotation_custom(grob7)
 
 
@@ -2098,13 +2124,13 @@ E.R.om$years <- factor(E.R.om$years,levels=(allLevels))
 # color
 # grob8 <- grobTree(textGrob("B", x = 0.05, y = 0.95, hjust = 0,
                              # gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
-grob8 <- grid.text("B", x = unit(-0.15, "npc"), y = unit(1.07, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+grob8 <- grid.text("B", x = unit(-0.15, "npc"), y = unit(1.07, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5))
 
 E.selfR.plot <-
   ggplot(data=E.R.om, aes(x=factor(years), y=OM)) +
   geom_boxplot(data=E.R.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1",
                outlier.shape = NA) + 
-  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1, color="black") +
   labs(y="",x="", title = "East") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1974,2011,10)) +
@@ -2116,14 +2142,14 @@ E.selfR.plot <-
     #                             size = 24,
     #                             margin = margin(r = 10)),
     axis.text.x = element_text(family = "Times New Roman",
-                                size = 20),
+                                size = 14),
     axis.title.y = element_blank(),
     # axis.text.x = element_blank(),
     axis.text.y = element_text(family = "Times New Roman",
-                               size = 22),
+                               size = 14),
     plot.title = element_text(family = "Times New Roman", 
                               face = "bold", 
-                              size = 24,
+                              size = 18,
                               hjust = 0.5,
                               margin = margin(b = 10))) +
   annotation_custom(grob8)
@@ -2344,14 +2370,14 @@ W.selfSSB.plot <- ggplot(data=W.SSB.omp, aes(x=factor(years),y=OMP)) +
 # grob10 <- grobTree(textGrob("C", x = 0.05, y = 0.95, hjust = 0,
                            # gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
 grob10 <- grid.text("C", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), 
-                    gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+                    gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5))
 
 W.selfSSB.plot <-
   ggplot(data=W.SSB.omp, aes(x=factor(years),y=OMP)) +
   geom_boxplot(data=W.SSB.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1",
                outlier.shape = NA) +
-  geom_line(data=W.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="dashed",size=1.5,color="black") +
-  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  geom_line(data=W.SSB.oms,aes(x=factor(years),y=OMS,group=1),linetype="dashed",size=1, color="black") +
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1, color="black") +
   labs(y="SSB
 (tonnes)",x="", title = "") +
   theme_classic() +
@@ -2360,18 +2386,18 @@ W.selfSSB.plot <-
   coord_cartesian(ylim = c(0,60000), clip = "off") +
   theme(plot.title = element_text(family = "Times New Roman", 
                                   face = "bold", 
-                                  size = 24,
+                                  size = 18,
                                   hjust = 0.5,
                                   margin = margin(b = 10)),
     axis.title.y = element_text(family = "Times New Roman",
                                 face = "bold",
-                                size = 24,
+                                size = 18,
                                 margin = margin(r = 10)),
     axis.text.x = element_text(family = "Times New Roman",
-                              size = 20),
+                              size = 14),
     # axis.text.x = element_blank(),
     axis.text.y = element_text(family = "Times New Roman",
-                               size = 22)) +
+                               size = 14)) +
   annotation_custom(grob10)
 
 
@@ -2443,13 +2469,13 @@ W.selfR.plot <- ggplot(data=W.R.om, aes(x=factor(years), y=OM)) +
 # grob11 <- grobTree(textGrob("A", x = 0.05, y = 0.95, hjust = 0,
                             # gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2)))
 grob11 <- grid.text("A", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), 
-                    gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+                    gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5))
 
 W.selfR.plot <-
   ggplot(data=W.R.om, aes(x=factor(years), y=OM)) +
   geom_boxplot(data=W.R.sims_1,aes(x=years, y=value), color="lightblue4",fill="lightblue1",
                outlier.shape = NA) + 
-  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1.5,color="black") +
+  stat_summary(fun.y=mean,geom="line",aes(group=1), size=1, color="black") +
   labs(y="Recruitment
 (numbers)",x="", title = "West") +
   theme_classic() +
@@ -2458,16 +2484,16 @@ W.selfR.plot <-
   coord_cartesian(ylim = c(0,1500000), clip = "off") +
   theme(axis.title.y = element_text(family = "Times New Roman",
                                     face = "bold",
-                                    size = 24,
+                                    size = 18,
                                     margin = margin(r = 10)),
         axis.text.x = element_text(family = "Times New Roman",
-                                  size = 20),
+                                  size = 14),
         # axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 22),
+                                   size = 14),
         plot.title = element_text(family = "Times New Roman", 
                                   face = "bold", 
-                                  size = 24,
+                                  size = 18,
                                   hjust = 0.5,
                                   margin = margin(b = 10))) +
   annotation_custom(grob11)
@@ -2699,6 +2725,19 @@ plot_grid(W.selfR.plot,   E.selfR.plot,
           w.all, e.all,
           ncol = 2, nrow = 3, align = "v")
 dev.off()
+
+
+# for final publication
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Final files/EMplots_selftest.jpeg",
+     width = 4000, height = 4200, units = "px", quality = 100, res = 400)
+plot_grid(W.selfR.plot,   E.selfR.plot,
+          W.selfSSB.plot, E.selfSSB.plot,
+          w.all, e.all,
+          ncol = 2, nrow = 3, align = "v")
+dev.off()
+
+
+
 
 
 
@@ -4531,6 +4570,8 @@ dev.off()
 
 
 
+
+
 #### MOVEMENT MATRICES ####
 
 base_move <- as.matrix(read.csv("C:/Users/mmorse1/Documents/Simulations_2/R Code + Inputs/MoveMatrix.csv"), header = T)
@@ -4548,8 +4589,8 @@ ex7 = expand.grid(1:7, 1:7)
 
 ## Base movement plots ##
 
-jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 12-4-19/move_base_Wjuv.jpeg",
-     width = 2200, height = 2000, units = "px", quality = 100, res = 300)
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Final files/move_base_Wjuv.jpeg",
+     width = 2200, height = 2000, units = "px", quality = 100, res = 400)
 par(mfrow=c(2,2))
 sapply(1:4, function(x) {
   # image.plot(1:7, 1:7, base_move[,,x,8,2], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
@@ -4562,8 +4603,8 @@ sapply(1:4, function(x) {
   # title(xlab = "end", ylab = "start", cex.lab = 1.3, font.lab = 2, family = "serif",
         # mar = c(1, 1, 1))
   title(paste0(seasons[x]), family = "serif", cex.main = 1.9)
-  mtext("end", side = 1, line = 2.3, family = "serif", font = 2, cex = 1.5)
-  mtext("start", side = 2, line = 2.3, family = "serif", font = 2, cex = 1.5)
+  mtext("end", side = 1, line = 2.3, family = "serif", font = 2, cex = 1.2)
+  mtext("start", side = 2, line = 2.3, family = "serif", font = 2, cex = 1.2)
   # if (x == 1) {
     # mtext("A", side = 3, family = "serif", font = 2, cex = 1.8, line = 3, adj = 0)
   # }
@@ -4571,15 +4612,15 @@ sapply(1:4, function(x) {
   # segments(3.5, y0 = 3.5, x1 = 7.5, y1 = 3.5, lwd = 2, col = 2, lty = 2)
   # segments(3.5, y0 = 3.5, x1 = 3.5, y1 = 7.5, lwd = 2, col = 2, lty = 2)
   if (x == 1) {
-    mtext("A", side = 3, line = 2, adj = -.25, cex = 1.8, font = 2, family = "serif")
+    mtext("A", side = 3, line = 2, adj = -.25, cex = 1.5, font = 2, family = "serif")
   }
 }
 )
 dev.off()
 
 
-jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 12-4-19/move_base_Wad.jpeg",
-     width = 2200, height = 2000, units = "px", quality = 100, res = 300)
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Final files/move_base_Wad.jpeg",
+     width = 2200, height = 2000, units = "px", quality = 100, res = 400)
 par(mfrow=c(2,2))
 sapply(1:4, function(x) {
   # image.plot(1:7, 1:7, base_move[,,x,8,2], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
@@ -4608,8 +4649,8 @@ sapply(1:4, function(x) {
 dev.off()
 
 
-jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Revisions for 12-4-19/move_base_e.jpeg",
-     width = 2200, height = 2000, units = "px", quality = 100, res = 300)
+jpeg("C:/Users/mmorse1/Documents/Publishing/Revisions - Bluefin Tuna Simulations/ICES JMS Review/Final files/move_base_e.jpeg",
+     width = 2200, height = 2000, units = "px", quality = 100, res = 400)
 par(mfrow=c(2,2))
 sapply(1:4, function(x) {
   # image.plot(1:7, 1:7, base_move[,,x,8,2], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value

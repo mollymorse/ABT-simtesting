@@ -1515,15 +1515,15 @@ saveRDS(FF01, file = "F01_allyrs_v2.rds")
 #### >> Plots ####
 
 ## Read in F/F01 results ##
-# FF01.w <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_allyrs_v2.rds") #load rds object
-# FF01.e <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_allyrs_v2.rds") #load rds object
-FF01.w <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged/F01_allyrs_v2.rds") #load rds object
-FF01.e <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged/F01_allyrs_v2.rds") #load rds object
+FF01.w <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_2/West - 500 Sims - 2/Converged/F01_allyrs_v2.rds") #load rds object
+FF01.e <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_2/East - 500 Sims - 1/Converged/F01_allyrs_v2.rds") #load rds object
+# FF01.w <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_lomov/West/Converged/F01_allyrs_v2.rds") #load rds object
+# FF01.e <- readRDS(file = "C:/Users/mmorse1/Documents/Simulations_lomov/East/Converged/F01_allyrs_v2.rds") #load rds object
 
-# FF01.pop <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_p_om_v2.csv", header = T)
-# FF01.stk <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_s_om_v2.csv", header = T)
-FF01.pop <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/F_F01_p_om_v2.csv", header = T)
-FF01.stk <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/F_F01_s_om_v2.csv", header = T)
+FF01.pop <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_p_om_v2.csv", header = T)
+FF01.stk <- read.csv("C:/Users/mmorse1/Documents/Simulations_2/OM_Base_Output/F_F01_s_om_v2.csv", header = T)
+# FF01.pop <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/F_F01_p_om_v2.csv", header = T)
+# FF01.stk <- read.csv("C:/Users/mmorse1/Documents/Simulations_lomov/OM_output/F_F01_s_om_v2.csv", header = T)
 
 
 
@@ -1545,30 +1545,30 @@ FF01.omp$years  <- factor(FF01.omp$years,levels=(allLevels))
 FF01.oms$years  <- factor(FF01.oms$years,levels=(allLevels))
 
 
-grob1 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+grob1 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5))
 w.all <-
   ggplot(data = FF01.omp, aes(x=factor(years), y=OMP)) +
   geom_abline(intercept=1, slope=0, linetype=1, size=1) +
   geom_boxplot(data = FF01.w2, aes(x=years, y=value), color="lightblue4", fill="lightblue1", outlier.shape = NA) +
-  geom_line(data = FF01.oms, aes(x=factor(years), y=OMS, group=1), linetype="dashed", size=1.5, color="black") +
-  stat_summary(fun.y=mean, geom="line", aes(group=1), size=1.5, color="black") +
-  coord_cartesian(ylim = c(0, 5), clip = "off") +
+  geom_line(data = FF01.oms, aes(x=factor(years), y=OMS, group=1), linetype="dashed", size=1, color="black") +
+  stat_summary(fun.y=mean, geom="line", aes(group=1), size=1, color="black") +
+  coord_cartesian(ylim = c(0, 4), clip = "off") +
   labs(y="F/F0.1",x="", title = " ") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1976,2015,10)) +
   theme(plot.title = element_text(family = "Times New Roman",
                                   face = "bold",
-                                  size = 24,
+                                  size = 18,
                                   hjust = 0.5,
                                   margin = margin(b = 10)),
         axis.title.y = element_text(family = "Times New Roman",
                                     face = "bold",
-                                    size = 24,
+                                    size = 18,
                                     margin = margin(r = 10)),
         axis.text.x = element_text(family = "Times New Roman",
-                                   size = 20),
+                                   size = 14),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20)) +
+                                   size = 14)) +
   annotation_custom(grob1)
 
 
@@ -1590,30 +1590,30 @@ FF01.e2$years <- factor(FF01.e2$years,levels=(allLevels))
 FF01.omp$years  <- factor(FF01.omp$years,levels=(allLevels))
 FF01.oms$years  <- factor(FF01.oms$years,levels=(allLevels))
 
-grob2 <- grid.text("F", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+grob2 <- grid.text("F", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5))
 e.all <-
   ggplot(data = FF01.omp, aes(x=factor(years), y=OMP)) +
   geom_abline(intercept=1, slope=0, linetype=1, size=1) +
   geom_boxplot(data = FF01.e2, aes(x=years, y=value), color="lightblue4", fill="lightblue1", outlier.shape = NA) +
-  geom_line(data = FF01.oms, aes(x=factor(years), y=OMS, group=1), linetype="dashed", size=1.5, color="black") +
-  stat_summary(fun.y=mean, geom="line", aes(group=1), size=1.5, color="black") +
-  coord_cartesian(ylim = c(0, 5), clip = "off") +
+  geom_line(data = FF01.oms, aes(x=factor(years), y=OMS, group=1), linetype="dashed", size=1, color="black") +
+  stat_summary(fun.y=mean, geom="line", aes(group=1), size=1, color="black") +
+  coord_cartesian(ylim = c(0, 4), clip = "off") +
   labs(y="",x="", title = " ") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1976,2015,10)) +
   theme(plot.title = element_text(family = "Times New Roman",
                                   face = "bold",
-                                  size = 24,
+                                  size = 18,
                                   hjust = 0.5,
                                   margin = margin(b = 10)),
         #axis.title.y = element_text(family = "Times New Roman",
         #                               face = "bold",
         #                              size = 14),
         axis.text.x = element_text(family = "Times New Roman",
-                                   size = 20),
+                                   size = 14),
         # axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20)) +
+                                   size = 14)) +
   annotation_custom(grob2)
 
 
@@ -1641,29 +1641,29 @@ FF01.w2$years  <- factor(FF01.w2$years,levels=(allLevels))
 FF01.oms$years <- factor(FF01.oms$years,levels=(allLevels))
 
 
-grob1 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+grob1 <- grid.text("E", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5))
 w.all <-
   ggplot(data = FF01.oms, aes(x=factor(years), y=OMS)) +
   geom_abline(intercept=1, slope=0, linetype=1, size=1) +
   geom_boxplot(data = FF01.w2, aes(x=years, y=value), color="lightblue4", fill="lightblue1", outlier.shape = NA) +
-  stat_summary(fun.y=mean, geom="line", aes(group=1), size=1.5, color="black") +
+  stat_summary(fun.y=mean, geom="line", aes(group=1), size=1, color="black") +
   coord_cartesian(ylim = c(0, 6), clip = "off") +
   labs(y="F/F0.1",x="", title = " ") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1976,2015,10)) +
   theme(plot.title = element_text(family = "Times New Roman",
                                   face = "bold",
-                                  size = 24,
+                                  size = 18,
                                   hjust = 0.5,
                                   margin = margin(b = 10)),
         axis.title.y = element_text(family = "Times New Roman",
                                     face = "bold",
-                                    size = 24,
+                                    size = 18,
                                     margin = margin(r = 10)),
         axis.text.x = element_text(family = "Times New Roman",
-                                   size = 20),
+                                   size = 14),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20)) +
+                                   size = 14)) +
   annotation_custom(grob1)
 
 
@@ -1680,29 +1680,29 @@ allLevels <- levels(factor(c(FF01.e2$years, FF01.oms$years)))  #change the x var
 FF01.e2$years  <- factor(FF01.e2$years,levels=(allLevels))
 FF01.oms$years <- factor(FF01.oms$years,levels=(allLevels))
 
-grob2 <- grid.text("F", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 2))
+grob2 <- grid.text("F", x = unit(-0.15, "npc"), y = unit(1.05, "npc"), gp = gpar(col = 1, fontfamily = "Times New Roman", cex = 1.5))
 e.all <-
   ggplot(data = FF01.oms, aes(x=factor(years), y=OMS)) +
   geom_abline(intercept=1, slope=0, linetype=1, size=1) +
   geom_boxplot(data = FF01.e2, aes(x=years, y=value), color="lightblue4", fill="lightblue1", outlier.shape = NA) +
-  stat_summary(fun.y=mean, geom="line", aes(group=1), size=1.5, color="black") +
+  stat_summary(fun.y=mean, geom="line", aes(group=1), size=1, color="black") +
   coord_cartesian(ylim = c(0, 6), clip = "off") +
   labs(y="",x="", title = " ") +
   theme_classic() +
   scale_x_discrete(breaks = seq(1976,2015,10)) +
   theme(plot.title = element_text(family = "Times New Roman",
                                   face = "bold",
-                                  size = 24,
+                                  size = 18,
                                   hjust = 0.5,
                                   margin = margin(b = 10)),
         #axis.title.y = element_text(family = "Times New Roman",
         #                               face = "bold",
         #                              size = 14),
         axis.text.x = element_text(family = "Times New Roman",
-                                   size = 20),
+                                   size = 14),
         # axis.text.x = element_blank(),
         axis.text.y = element_text(family = "Times New Roman",
-                                   size = 20)) +
+                                   size = 14)) +
   annotation_custom(grob2)
 
 

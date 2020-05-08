@@ -871,6 +871,8 @@ dev.off()
 
 
 
+
+
 #### BASE CASE vs. LOW MOVEMENT OM ####
 
 # East #
@@ -4596,15 +4598,15 @@ sapply(1:4, function(x) {
   # image.plot(1:7, 1:7, base_move[,,x,8,2], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
   # image.plot(1:7, 1:7, base_move[,,x,8,2], col = rev(pal(25)), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
   image(1:7, 1:7, base_move[,,x,8,1], col = rep("white", 100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # no colors or legend
-  text(ex7[,1], ex7[,2], paste0(round(t(base_move[,,x,8,2]),2)))#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
+  text(ex7[,1], ex7[,2], paste0(round(t(base_move[,,x,8,2]),2)), cex = 0.7)#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
   grid(7, 7, col = 'grey50')
-  axis(1, at = 1:7, labels=paste0(1:7), cex.axis = 1.2, font.axis = 1)
-  axis(2, at = 1:7, labels=paste0(1:7), cex.axis = 1.2, font.axis = 1)
+  axis(1, at = 1:7, labels=paste0(1:7), cex.axis = 0.9, font.axis = 1)
+  axis(2, at = 1:7, labels=paste0(1:7), cex.axis = 0.9, font.axis = 1)
   # title(xlab = "end", ylab = "start", cex.lab = 1.3, font.lab = 2, family = "serif",
         # mar = c(1, 1, 1))
-  title(paste0(seasons[x]), family = "serif", cex.main = 1.9)
-  mtext("end", side = 1, line = 2.3, family = "serif", font = 2, cex = 1.2)
-  mtext("start", side = 2, line = 2.3, family = "serif", font = 2, cex = 1.2)
+  title(paste0(seasons[x]), family = "serif", cex.main = 1.2)
+  mtext("end", side = 1, line = 2.3, family = "serif", font = 2, cex = 1)
+  mtext("start", side = 2, line = 2.3, family = "serif", font = 2, cex = 1)
   # if (x == 1) {
     # mtext("A", side = 3, family = "serif", font = 2, cex = 1.8, line = 3, adj = 0)
   # }
@@ -4612,7 +4614,7 @@ sapply(1:4, function(x) {
   # segments(3.5, y0 = 3.5, x1 = 7.5, y1 = 3.5, lwd = 2, col = 2, lty = 2)
   # segments(3.5, y0 = 3.5, x1 = 3.5, y1 = 7.5, lwd = 2, col = 2, lty = 2)
   if (x == 1) {
-    mtext("A", side = 3, line = 2, adj = -.25, cex = 1.5, font = 2, family = "serif")
+    mtext("A", side = 3, line = 2, adj = -.25, cex = 1.2, font = 2, family = "serif")
   }
 }
 )
@@ -4626,15 +4628,15 @@ sapply(1:4, function(x) {
   # image.plot(1:7, 1:7, base_move[,,x,8,2], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
   # image.plot(1:7, 1:7, base_move[,,x,10,2], col = rev(pal(25)), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
   image(1:7, 1:7, base_move[,,x,8,1], col = rep("white", 100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # no colors or legend
-  text(ex7[,1], ex7[,2], paste0(round(t(base_move[,,x,10,2]),2)))#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
+  text(ex7[,1], ex7[,2], paste0(round(t(base_move[,,x,10,2]),2)), cex = 0.7)#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
   grid(7, 7, col = 'grey50')
-  axis(1, at = 1:7, labels=paste0(1:7), cex.axis = 1.2, font.axis = 1)
-  axis(2, at = 1:7, labels=paste0(1:7), cex.axis = 1.2, font.axis = 1)
+  axis(1, at = 1:7, labels=paste0(1:7), cex.axis = 0.9, font.axis = 1)
+  axis(2, at = 1:7, labels=paste0(1:7), cex.axis = 0.9, font.axis = 1)
   # title(xlab = "end", ylab = "start", cex.lab = 1.3, font.lab = 2, family = "serif",
   # mar = c(1, 1, 1))
-  title(paste0(seasons[x]), family = "serif", cex.main = 1.9)
-  mtext("end", side = 1, line = 2.3, family = "serif", font = 2, cex = 1.5)
-  mtext("start", side = 2, line = 2.3, family = "serif", font = 2, cex = 1.5)
+  title(paste0(seasons[x]), family = "serif", cex.main = 1.2)
+  mtext("end", side = 1, line = 2.3, family = "serif", font = 2, cex = 1)
+  mtext("start", side = 2, line = 2.3, family = "serif", font = 2, cex = 1)
   # if (x == 1) {
   # mtext("A", side = 3, family = "serif", font = 2, cex = 1.8, line = 3, adj = 0)
   # }
@@ -4642,7 +4644,7 @@ sapply(1:4, function(x) {
   # segments(3.5, y0 = 3.5, x1 = 7.5, y1 = 3.5, lwd = 2, col = 2, lty = 2)
   # segments(3.5, y0 = 3.5, x1 = 3.5, y1 = 7.5, lwd = 2, col = 2, lty = 2)
   if (x == 1) {
-    mtext("B", side = 3, line = 2, adj = -.25, cex = 1.8, font = 2, family = "serif")
+    mtext("B", side = 3, line = 2, adj = -.25, cex = 1.2, font = 2, family = "serif")
   }
 }
 )
@@ -4656,15 +4658,15 @@ sapply(1:4, function(x) {
   # image.plot(1:7, 1:7, base_move[,,x,8,2], col = terrain.colors(100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
   # image.plot(1:7, 1:7, base_move[,,x,8,1], col = rev(pal(25)), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # highlights the mean value
   image(1:7, 1:7, base_move[,,x,8,1], col = rep("white", 100), xlab = '', ylab = '', zlim = c(0, 1), axes = F) # no colors or legend
-  text(ex7[,1], ex7[,2], paste0(round(t(base_move[,,x,8,1]),2)))#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
+  text(ex7[,1], ex7[,2], paste0(round(t(base_move[,,x,8,1]),2)), cex = 0.7)#,"\n" ,"(",round(t(boxq.low4[[x]]), 2), " - ", round(t(boxq.high4[[x]]), 2), ")"), font = 2)
   grid(7, 7, col = 'grey50')
-  axis(1, at = 1:7, labels=paste0(1:7), cex.axis = 1.2, font.axis = 1)
-  axis(2, at = 1:7, labels=paste0(1:7), cex.axis = 1.2, font.axis = 1)
+  axis(1, at = 1:7, labels=paste0(1:7), cex.axis = 0.9, font.axis = 1)
+  axis(2, at = 1:7, labels=paste0(1:7), cex.axis = 0.9, font.axis = 1)
   # title(xlab = "end", ylab = "start", cex.lab = 1.3, font.lab = 2, family = "serif",
   # mar = c(1, 1, 1))
-  title(paste0(seasons[x]), family = "serif", cex.main = 1.9)
-  mtext("end", side = 1, line = 2.3, family = "serif", font = 2, cex = 1.5)
-  mtext("start", side = 2, line = 2.3, family = "serif", font = 2, cex = 1.5)
+  title(paste0(seasons[x]), family = "serif", cex.main = 1.2)
+  mtext("end", side = 1, line = 2.3, family = "serif", font = 2, cex = 1)
+  mtext("start", side = 2, line = 2.3, family = "serif", font = 2, cex = 1)
   # if (x == 1) {
   # mtext("A", side = 3, family = "serif", font = 2, cex = 1.8, line = 3, adj = 0)
   # }
@@ -4672,7 +4674,7 @@ sapply(1:4, function(x) {
   # segments(3.5, y0 = 3.5, x1 = 7.5, y1 = 3.5, lwd = 2, col = 2, lty = 2)
   # segments(3.5, y0 = 3.5, x1 = 3.5, y1 = 7.5, lwd = 2, col = 2, lty = 2)
   if (x == 1) {
-    mtext("C", side = 3, line = 2, adj = -.25, cex = 1.8, font = 2, family = "serif")
+    mtext("C", side = 3, line = 2, adj = -.25, cex = 1.2, font = 2, family = "serif")
   }
 }
 )
